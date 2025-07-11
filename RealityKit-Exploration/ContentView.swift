@@ -242,6 +242,11 @@ class ProjectileSystem: System {
         for entity in context.entities(matching: Self.query, updatingSystemWhen: .rendering) {
             guard var projectile = entity.components[ProjectileComponent.self] else { continue }
             
+            // Skip if already marked for destruction
+            if entity.components.has(DestroyableComponent.self) {
+                continue
+            }
+            
             let currentTime = Date()
             let age = currentTime.timeIntervalSince(projectile.spawnTime)
             
@@ -251,38 +256,89 @@ class ProjectileSystem: System {
                 continue
             }
             
+            // Store old position for collision detection
+            let oldPosition = entity.position
+            
             // Move projectile
             let deltaTime = Float(context.deltaTime)
             let displacement = projectile.velocity * projectile.speed * deltaTime
-            entity.position += displacement
+            let newPosition = oldPosition + displacement
+            entity.position = newPosition
             
-            // Check for collision with enemies
-            checkProjectileCollisions(projectile: entity, in: context)
+            // Check for collision with enemies using both old and new positions
+            if checkProjectileCollisions(projectile: entity, oldPosition: oldPosition, newPosition: newPosition, in: context) {
+                // Collision detected, projectile is already marked for destruction
+                continue
+            }
             
             // Update component
             entity.components[ProjectileComponent.self] = projectile
         }
     }
     
-    private func checkProjectileCollisions(projectile: Entity, in context: SceneUpdateContext) {
+    private func checkProjectileCollisions(projectile: Entity, oldPosition: SIMD3<Float>, newPosition: SIMD3<Float>, in context: SceneUpdateContext) -> Bool {
         let enemyQuery = EntityQuery(where: .has(EnemyCapsuleComponent.self))
-        let projectilePosition = projectile.position
         
         for enemy in context.entities(matching: enemyQuery, updatingSystemWhen: .rendering) {
-            let enemyPosition = enemy.position
-            let distance = length(projectilePosition - enemyPosition)
+            // Skip if enemy is already marked for destruction
+            if enemy.components.has(DestroyableComponent.self) {
+                continue
+            }
             
-            // Simple collision detection (distance-based)
-            if distance < 0.5 { // Adjust collision radius as needed
-                // Mark both for destruction
+            let enemyPosition = enemy.position
+            
+            // Get enemy bounds for more accurate collision
+            let enemyBounds = enemy.visualBounds(relativeTo: enemy.parent)
+            // Use the largest extent as the collision radius (covers capsule height and width)
+            let extentX = (enemyBounds.max.x - enemyBounds.min.x) / 2.0
+            let extentY = (enemyBounds.max.y - enemyBounds.min.y) / 2.0
+            let extentZ = (enemyBounds.max.z - enemyBounds.min.z) / 2.0
+            let enemyRadius = max(extentX, extentY, extentZ)
+            
+            // Use line-sphere intersection for better collision detection
+            if lineIntersectsSphere(lineStart: oldPosition, lineEnd: newPosition,
+                                  sphereCenter: enemyPosition, sphereRadius: enemyRadius + 0.05) {
+                
+                // Mark both for destruction immediately
                 projectile.components.set(DestroyableComponent(shouldDestroy: true))
                 enemy.components.set(DestroyableComponent(shouldDestroy: true))
                 
-                // You can add score, effects, etc. here
-                print("Enemy hit!")
-                break
+                // Optional: Add hit effect or sound here
+                print("Enemy hit! (radius: \(enemyRadius), pos: \(enemyPosition))")
+                
+                return true // Collision detected
             }
         }
+        
+        return false // No collision
+    }
+    
+    // Line-sphere intersection test for more accurate collision detection
+    private func lineIntersectsSphere(lineStart: SIMD3<Float>, lineEnd: SIMD3<Float>,
+                                    sphereCenter: SIMD3<Float>, sphereRadius: Float) -> Bool {
+        let lineDirection = lineEnd - lineStart
+        let lineLength = length(lineDirection)
+        
+        // Handle zero-length line
+        if lineLength < 0.001 {
+            return length(lineStart - sphereCenter) <= sphereRadius
+        }
+        
+        let normalizedDirection = lineDirection / lineLength
+        let toSphere = sphereCenter - lineStart
+        
+        // Project sphere center onto line
+        let projectionLength = dot(toSphere, normalizedDirection)
+        
+        // Clamp projection to line segment
+        let clampedProjection = max(0, min(lineLength, projectionLength))
+        
+        // Find closest point on line segment to sphere center
+        let closestPoint = lineStart + normalizedDirection * clampedProjection
+        
+        // Check if distance is within sphere radius
+        let distanceSquared = length_squared(closestPoint - sphereCenter)
+        return distanceSquared <= (sphereRadius * sphereRadius)
     }
 }
 
@@ -305,6 +361,7 @@ class DestroySystem: System {
     }
 }
 
+// System to handle automatic shooting
 // System to handle automatic shooting
 class AutoShootSystem: System {
     static let query = EntityQuery(where: .has(AutoShootComponent.self))
@@ -363,7 +420,7 @@ class AutoShootSystem: System {
         let projectile = Entity()
         
         // Create a small sphere mesh
-      let sphereMesh = MeshResource.generateSphere(radius: 0.02)
+        let sphereMesh = MeshResource.generateSphere(radius: 0.02)
         var material = SimpleMaterial()
         material.color = .init(tint: .yellow, texture: nil)
         material.roughness = 0.1
@@ -371,10 +428,20 @@ class AutoShootSystem: System {
         
         projectile.components.set(ModelComponent(mesh: sphereMesh, materials: [material]))
         
-        // Position projectile slightly above and in front of the shooter
+        // Get shooter's actual bounds for precise positioning
+        let shooterBounds = shooter.visualBounds(relativeTo: shooter.parent)
         let shooterPosition = shooter.position
-        let offsetPosition = shooterPosition + [0, 0.2, 0] + (direction * 0.3)
-        projectile.position = offsetPosition
+        
+        // Calculate spawn position at the edge of the capsule in the shoot direction
+        let capsuleRadius = (shooterBounds.max.x - shooterBounds.min.x) / 2.0
+        let capsuleHeight = shooterBounds.max.y - shooterBounds.min.y
+        
+        // Spawn projectile at capsule's center height, offset by capsule radius in shoot direction
+        let spawnOffset = direction * (capsuleRadius + 0.1) // Small additional offset to prevent overlap
+        let heightOffset = SIMD3<Float>(0, capsuleHeight * 0.1, 0) // Slightly above center
+        let spawnPosition = shooterPosition + spawnOffset + heightOffset
+        
+        projectile.position = spawnPosition
         
         // Set projectile component
         var projectileComponent = ProjectileComponent()
