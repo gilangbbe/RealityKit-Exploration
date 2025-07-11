@@ -20,6 +20,44 @@ struct MovementComponent: Component {
     var surfaceOffset: Float = 0.0 // How far above the surface to stay
 }
 
+// Component to identify enemy capsules
+struct EnemyCapsuleComponent: Component {
+    var isActive: Bool = true
+    var spawnTime: Date = Date()
+    var health: Int = 1
+    var scoreValue: Int = 10
+}
+
+// Component to handle spawning logic
+struct SpawnerComponent: Component {
+    var spawnInterval: TimeInterval = 3.0 // Spawn every 3 seconds
+    var lastSpawnTime: Date = Date()
+    var maxEnemies: Int = 5
+    var spawnSurface: Entity? = nil // The surface to spawn on (cube)
+    var enemyPrefab: Entity? = nil // Reference to the enemy prefab
+}
+
+// Component for projectiles
+struct ProjectileComponent: Component {
+    var velocity: SIMD3<Float> = [0, 0, 0]
+    var speed: Float = 2.0
+    var damage: Int = 1
+    var lifetime: TimeInterval = 5.0
+    var spawnTime: Date = Date()
+}
+
+// Component to handle automatic shooting
+struct AutoShootComponent: Component {
+    var shootInterval: TimeInterval = 0.5 // Shoot every 0.5 seconds
+    var lastShootTime: Date = Date()
+    var shootWhileMoving: Bool = true
+    var isEnabled: Bool = true
+}
+
+struct DestroyableComponent: Component {
+    var shouldDestroy: Bool = false
+}
+
 // MARK: - Camera Component and System
 
 struct IsometricCameraComponent: Component {
@@ -119,6 +157,239 @@ class MovementSystem: System {
     }
 }
 
+// System to handle enemy spawning
+class SpawnerSystem: System {
+    static let query = EntityQuery(where: .has(SpawnerComponent.self))
+    
+    required init(scene: RealityKit.Scene) {
+        // System initialization
+    }
+    
+    func update(context: SceneUpdateContext) {
+        for entity in context.entities(matching: Self.query, updatingSystemWhen: .rendering) {
+            guard var spawner = entity.components[SpawnerComponent.self] else { continue }
+            
+            let currentTime = Date()
+            let timeSinceLastSpawn = currentTime.timeIntervalSince(spawner.lastSpawnTime)
+            
+            // Check if it's time to spawn and we haven't reached max enemies
+            if timeSinceLastSpawn >= spawner.spawnInterval {
+                let currentEnemyCount = countActiveEnemies(in: context)
+                
+                if currentEnemyCount < spawner.maxEnemies,
+                   let surface = spawner.spawnSurface,
+                   let prefab = spawner.enemyPrefab {
+                    
+                    spawnEnemy(on: surface, using: prefab, in: context)
+                    spawner.lastSpawnTime = currentTime
+                }
+            }
+            
+            // Update the component
+            entity.components[SpawnerComponent.self] = spawner
+        }
+    }
+    
+    private func countActiveEnemies(in context: SceneUpdateContext) -> Int {
+        let enemyQuery = EntityQuery(where: .has(EnemyCapsuleComponent.self))
+        var count = 0
+        for _ in context.entities(matching: enemyQuery, updatingSystemWhen: .rendering) {
+            count += 1
+        }
+        return count
+    }
+    
+    private func spawnEnemy(on surface: Entity, using prefab: Entity, in context: SceneUpdateContext) {
+        // Clone the prefab
+        let enemy = prefab.clone(recursive: true)
+        
+        // Generate random position on cube surface
+        let randomPosition = generateRandomPositionOnCubeSurface(cube: surface)
+        enemy.position = randomPosition
+        
+        // Add enemy component
+        enemy.components.set(EnemyCapsuleComponent())
+        
+        // Add to scene
+        surface.parent?.addChild(enemy)
+    }
+    
+    private func generateRandomPositionOnCubeSurface(cube: Entity) -> SIMD3<Float> {
+        let cubePosition = cube.position
+        let cubeScale = cube.scale
+        let halfSize = cubeScale.x / 2.0
+        
+        // Generate random X and Z within cube bounds
+        let randomX = Float.random(in: -halfSize...halfSize) + cubePosition.x
+        let randomZ = Float.random(in: -halfSize...halfSize) + cubePosition.z
+        
+        // Place on top surface with small offset
+        let surfaceY = cubePosition.y + halfSize + 0.1
+        
+        return SIMD3<Float>(randomX, surfaceY, randomZ)
+    }
+}
+
+// System to handle projectile movement and collision
+class ProjectileSystem: System {
+    static let query = EntityQuery(where: .has(ProjectileComponent.self))
+    
+    required init(scene: RealityKit.Scene) {
+        // System initialization
+    }
+    
+    func update(context: SceneUpdateContext) {
+        for entity in context.entities(matching: Self.query, updatingSystemWhen: .rendering) {
+            guard var projectile = entity.components[ProjectileComponent.self] else { continue }
+            
+            let currentTime = Date()
+            let age = currentTime.timeIntervalSince(projectile.spawnTime)
+            
+            // Remove old projectiles
+            if age > projectile.lifetime {
+                entity.components.set(DestroyableComponent(shouldDestroy: true))
+                continue
+            }
+            
+            // Move projectile
+            let deltaTime = Float(context.deltaTime)
+            let displacement = projectile.velocity * projectile.speed * deltaTime
+            entity.position += displacement
+            
+            // Check for collision with enemies
+            checkProjectileCollisions(projectile: entity, in: context)
+            
+            // Update component
+            entity.components[ProjectileComponent.self] = projectile
+        }
+    }
+    
+    private func checkProjectileCollisions(projectile: Entity, in context: SceneUpdateContext) {
+        let enemyQuery = EntityQuery(where: .has(EnemyCapsuleComponent.self))
+        let projectilePosition = projectile.position
+        
+        for enemy in context.entities(matching: enemyQuery, updatingSystemWhen: .rendering) {
+            let enemyPosition = enemy.position
+            let distance = length(projectilePosition - enemyPosition)
+            
+            // Simple collision detection (distance-based)
+            if distance < 0.5 { // Adjust collision radius as needed
+                // Mark both for destruction
+                projectile.components.set(DestroyableComponent(shouldDestroy: true))
+                enemy.components.set(DestroyableComponent(shouldDestroy: true))
+                
+                // You can add score, effects, etc. here
+                print("Enemy hit!")
+                break
+            }
+        }
+    }
+}
+
+// System to clean up destroyed entities
+class DestroySystem: System {
+    static let query = EntityQuery(where: .has(DestroyableComponent.self))
+    
+    required init(scene: RealityKit.Scene) {
+        // System initialization
+    }
+    
+    func update(context: SceneUpdateContext) {
+        for entity in context.entities(matching: Self.query, updatingSystemWhen: .rendering) {
+            guard let destroyable = entity.components[DestroyableComponent.self] else { continue }
+            
+            if destroyable.shouldDestroy {
+                entity.removeFromParent()
+            }
+        }
+    }
+}
+
+// System to handle automatic shooting
+class AutoShootSystem: System {
+    static let query = EntityQuery(where: .has(AutoShootComponent.self))
+    
+    required init(scene: RealityKit.Scene) {
+        // System initialization
+    }
+    
+    func update(context: SceneUpdateContext) {
+        for entity in context.entities(matching: Self.query, updatingSystemWhen: .rendering) {
+            guard var autoShoot = entity.components[AutoShootComponent.self] else { continue }
+            
+            // Skip if auto-shooting is disabled
+            guard autoShoot.isEnabled else { continue }
+            
+            // Check if entity has movement component
+            guard let movement = entity.components[MovementComponent.self] else { continue }
+            
+            // Only shoot if moving (if shootWhileMoving is true) or always shoot
+            let shouldShoot = !autoShoot.shootWhileMoving || movement.isMoving
+            
+            guard shouldShoot else { continue }
+            
+            let currentTime = Date()
+            let timeSinceLastShot = currentTime.timeIntervalSince(autoShoot.lastShootTime)
+            
+            // Check if enough time has passed since last shot
+            if timeSinceLastShot >= autoShoot.shootInterval {
+                // Get shoot direction based on movement
+                let shootDirection = getShootDirection(from: movement)
+                
+                // Create and shoot projectile
+                createProjectile(from: entity, direction: shootDirection, in: context)
+                
+                // Update last shot time
+                autoShoot.lastShootTime = currentTime
+            }
+            
+            // Update the component
+            entity.components[AutoShootComponent.self] = autoShoot
+        }
+    }
+    
+    private func getShootDirection(from movement: MovementComponent) -> SIMD3<Float> {
+        if movement.isMoving && length(movement.velocity) > 0.1 {
+            // Normalize the movement velocity to get direction
+            return normalize(movement.velocity)
+        }
+        
+        // If not moving, shoot forward (default direction)
+        return [0, 0, -1]
+    }
+    
+    private func createProjectile(from shooter: Entity, direction: SIMD3<Float>, in context: SceneUpdateContext) {
+        // Create a simple projectile (small sphere)
+        let projectile = Entity()
+        
+        // Create a small sphere mesh
+      let sphereMesh = MeshResource.generateSphere(radius: 0.02)
+        var material = SimpleMaterial()
+        material.color = .init(tint: .yellow, texture: nil)
+        material.roughness = 0.1
+        material.metallic = 0.0
+        
+        projectile.components.set(ModelComponent(mesh: sphereMesh, materials: [material]))
+        
+        // Position projectile slightly above and in front of the shooter
+        let shooterPosition = shooter.position
+        let offsetPosition = shooterPosition + [0, 0.2, 0] + (direction * 0.3)
+        projectile.position = offsetPosition
+        
+        // Set projectile component
+        var projectileComponent = ProjectileComponent()
+        projectileComponent.velocity = direction
+        projectileComponent.speed = 2.0
+        projectileComponent.lifetime = 3.0
+        projectileComponent.damage = 1
+        projectileComponent.spawnTime = Date()
+        projectile.components.set(projectileComponent)
+        
+        // Add to scene (same parent as shooter)
+        shooter.parent?.addChild(projectile)
+    }
+}
+
 // MARK: - Force Direction Enum
 
 enum ForceDirection {
@@ -148,7 +419,8 @@ enum ForceDirection {
 struct ContentView: View {
     @State private var capsuleEntity = Entity()
     @State private var cubeEntity = Entity()
-
+    @State private var redCapsuleEntity = Entity()
+    @State private var spawnerEntity = Entity()
 
     var body: some View {
         ZStack {
@@ -156,6 +428,9 @@ struct ContentView: View {
                 guard let loadedScene = try? await Entity(named: "Scene", in: arenaBundle) else { return }
                 guard let capsule = loadedScene.findEntity(named: "Capsule"),
                       let cube = loadedScene.findEntity(named: "Cube") else { return }
+                
+                // Try to find the red capsule (you'll need to create this in Reality Composer Pro)
+                let redCapsule = loadedScene.findEntity(named: "EnemyCapsule")
 
                 capsuleEntity = capsule
                 cubeEntity = cube
@@ -163,18 +438,34 @@ struct ContentView: View {
                 // Set up the movement component for the capsule
                 setupMovementComponent(for: capsule, constrainedTo: cube)
                 
+                // Set up auto-shooting for the player
+                setupAutoShooting(for: capsule)
+                
+                // Set up spawner if red capsule exists
+                if let redCapsule = redCapsule {
+                    redCapsuleEntity = redCapsule
+                    // Remove the red capsule from the scene initially (we'll use it as a prefab)
+                    redCapsule.removeFromParent()
+                    setupSpawner(surface: cube, enemyPrefab: redCapsule)
+                }
+                
                 // Set up isometric camera
                 let camera = setupIsometricCamera(target: capsule)
                 
-                // Register both systems
+                // Register all systems
                 MovementSystem.registerSystem()
                 IsometricCameraSystem.registerSystem()
+                SpawnerSystem.registerSystem()
+                ProjectileSystem.registerSystem()
+                DestroySystem.registerSystem()
+                AutoShootSystem.registerSystem()
                 
                 content.add(loadedScene)
                 content.add(camera)
+                content.add(spawnerEntity)
                 
             } update: { content in
-                // Update loop - the MovementSystem handles the actual movement
+                // Update loop - the systems handle everything
             }
 
             // Control Buttons
@@ -186,6 +477,18 @@ struct ContentView: View {
                 applyAnalogForce(analogVector: analogVector)
             }
         }
+    }
+    
+    private func setupSpawner(surface: Entity, enemyPrefab: Entity) {
+        spawnerEntity = Entity()
+        
+        var spawnerComponent = SpawnerComponent()
+        spawnerComponent.spawnSurface = surface
+        spawnerComponent.enemyPrefab = enemyPrefab
+        spawnerComponent.spawnInterval = 2.0 // Spawn every 2 seconds
+        spawnerComponent.maxEnemies = 3 // Maximum 3 enemies at once
+        
+        spawnerEntity.components.set(spawnerComponent)
     }
     
     private func setupIsometricCamera(target: Entity) -> Entity {
@@ -210,6 +513,15 @@ struct ContentView: View {
         camera.look(at: target.position, from: initialPosition, relativeTo: nil)
         
         return camera
+    }
+    
+    private func setupAutoShooting(for entity: Entity) {
+        var autoShootComponent = AutoShootComponent()
+        autoShootComponent.shootInterval = 0.3 // Shoot every 0.3 seconds
+        autoShootComponent.shootWhileMoving = true // Only shoot when moving
+        autoShootComponent.isEnabled = true
+        
+        entity.components.set(autoShootComponent)
     }
     
     private func setupMovementComponent(for entity: Entity, constrainedTo cube: Entity) {
@@ -282,21 +594,19 @@ struct ContentView: View {
 struct controlsView: View {
     let startApplyingForce: (ForceDirection) -> Void
     let stopApplyingForce: () -> Void
-    
-    // New analog control properties
     let applyAnalogForce: (SIMD2<Float>) -> Void
     
     var body: some View {
         VStack {
             Spacer()
             
-            // Analog joystick control
+            // Analog joystick control (centered)
             AnalogJoystick { analogVector in
                 applyAnalogForce(analogVector)
             } onRelease: {
                 stopApplyingForce()
             }
-            .frame(width: 200, height: 200)
+            .frame(width: 150, height: 150)
             .padding(.bottom, 50)
         }
     }
@@ -311,8 +621,8 @@ struct AnalogJoystick: View {
     @State private var knobPosition: CGPoint = .zero
     @State private var isDragging: Bool = false
     
-    private let joystickRadius: CGFloat = 80
-    private let knobRadius: CGFloat = 25
+    private let joystickRadius: CGFloat = 60
+    private let knobRadius: CGFloat = 20
     
     var body: some View {
         ZStack {
