@@ -11,10 +11,10 @@ struct ContentView: View {
     var body: some View {
         ZStack {
             RealityView { content in
-                guard let loadedScene = try? await Entity(named: "Scene", in: arenaBundle) else { return }
-                guard let capsule = loadedScene.findEntity(named: "Capsule"),
-                      let cube = loadedScene.findEntity(named: "Cube") else { return }
-                let redCapsule = loadedScene.findEntity(named: "EnemyCapsule")
+                guard let loadedScene = try? await Entity(named: GameConfig.EntityNames.scene, in: arenaBundle) else { return }
+                guard let capsule = loadedScene.findEntity(named: GameConfig.EntityNames.capsule),
+                      let cube = loadedScene.findEntity(named: GameConfig.EntityNames.cube) else { return }
+                let redCapsule = loadedScene.findEntity(named: GameConfig.EntityNames.enemyCapsule)
                 capsuleEntity = capsule
                 cubeEntity = cube
                 setupMovementComponent(for: capsule, constrainedTo: cube)
@@ -49,19 +49,19 @@ struct ContentView: View {
         var spawnerComponent = SpawnerComponent()
         spawnerComponent.spawnSurface = surface
         spawnerComponent.enemyPrefab = enemyPrefab
-        spawnerComponent.spawnInterval = 2.0
-        spawnerComponent.maxEnemies = 3
+        spawnerComponent.spawnInterval = GameConfig.enemySpawnInterval
+        spawnerComponent.maxEnemies = GameConfig.enemyMaxCount
         spawnerEntity.components.set(spawnerComponent)
     }
     private func setupIsometricCamera(target: Entity) -> Entity {
         let camera = Entity()
         var cameraComponent = PerspectiveCameraComponent()
-        cameraComponent.fieldOfViewInDegrees = 35
+        cameraComponent.fieldOfViewInDegrees = GameConfig.cameraFOV
         camera.components.set(cameraComponent)
         var isometricComponent = IsometricCameraComponent()
         isometricComponent.target = target
-        isometricComponent.offset = [1, 2, 1]
-        isometricComponent.smoothing = 0.05
+        isometricComponent.offset = GameConfig.cameraIsometricOffset
+        isometricComponent.smoothing = GameConfig.cameraSmoothing
         isometricComponent.lookAtTarget = true
         camera.components.set(isometricComponent)
         let initialPosition = target.position + isometricComponent.offset
@@ -71,8 +71,8 @@ struct ContentView: View {
     }
     private func setupAutoShooting(for entity: Entity) {
         var autoShootComponent = AutoShootComponent()
-        autoShootComponent.shootInterval = 0.3
-        autoShootComponent.shootWhileMoving = true
+        autoShootComponent.shootInterval = GameConfig.autoShootInterval
+        autoShootComponent.shootWhileMoving = GameConfig.autoShootWhileMoving
         autoShootComponent.isEnabled = true
         entity.components.set(autoShootComponent)
     }
@@ -80,9 +80,9 @@ struct ContentView: View {
         let capsuleBounds = entity.visualBounds(relativeTo: nil)
         let cubeBounds = cube.visualBounds(relativeTo: nil)
         let capsuleHeight = capsuleBounds.max.y - capsuleBounds.min.y
-        let surfaceOffset = capsuleHeight / 2.0 + 0.05
+        let surfaceOffset = capsuleHeight / 2.0 + GameConfig.playerSurfaceOffsetMargin
         var movementComponent = MovementComponent()
-        movementComponent.speed = 2.0
+        movementComponent.speed = GameConfig.playerSpeed
         movementComponent.constrainedTo = cube
         movementComponent.surfaceOffset = surfaceOffset
         entity.components.set(movementComponent)
@@ -103,8 +103,8 @@ struct ContentView: View {
     }
     private func applyAnalogForce(analogVector: SIMD2<Float>) {
         guard var movement = capsuleEntity.components[MovementComponent.self] else { return }
-        let isoX = (analogVector.x - analogVector.y) * 0.707
-        let isoZ = -(analogVector.x + analogVector.y) * 0.707
+        let isoX = (analogVector.x - analogVector.y) * GameConfig.isometricDiagonal
+        let isoZ = -(analogVector.x + analogVector.y) * GameConfig.isometricDiagonal
         let velocity = SIMD3<Float>(isoX, 0, isoZ)
         movement.velocity = velocity
         movement.isMoving = length(velocity) > 0.1

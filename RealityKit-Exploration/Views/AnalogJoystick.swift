@@ -6,7 +6,7 @@ struct AnalogJoystick: View {
     let onRelease: () -> Void
     @State private var knobPosition: CGPoint = .zero
     @State private var isDragging: Bool = false
-    private let joystickRadius: CGFloat = 60
+    private let joystickRadius: CGFloat = 60 // UI config, can be moved to a UIConfig if needed
     private let knobRadius: CGFloat = 20
     var body: some View {
         ZStack {
