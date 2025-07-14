@@ -6,9 +6,15 @@ struct GameConfig {
     static let playerSpeed: Float = 2.0
     static let playerSurfaceOffsetMargin: Float = 0.05
     
+    // Player health
+    static let playerMaxHealth: Int = 3
+    static let playerInvulnerabilityDuration: TimeInterval = 1.0
+    
     // Enemy
     static let enemyHealth: Int = 1
     static let enemyScoreValue: Int = 10
+    static let enemySpeed: Float = 1.0
+    static let enemyDamage: Int = 1
     
     // Spawner
     static let enemySpawnInterval: TimeInterval = 2.0
@@ -24,7 +30,7 @@ struct GameConfig {
     static let projectileHeightOffsetFactor: Float = 0.1
     
     // Auto-shoot
-    static let autoShootInterval: TimeInterval = 0.3
+    static let autoShootInterval: TimeInterval = 0.1
     static let autoShootWhileMoving: Bool = true
     
     // Camera

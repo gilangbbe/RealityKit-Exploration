@@ -31,7 +31,12 @@ class SpawnerSystem: System {
         let enemy = prefab.clone(recursive: true)
         let randomPosition = generateRandomPositionOnCubeSurface(cube: surface)
         enemy.position = randomPosition
-        enemy.components.set(EnemyCapsuleComponent())
+        
+        var enemyComponent = EnemyCapsuleComponent()
+        enemyComponent.speed = GameConfig.enemySpeed
+        enemyComponent.damage = GameConfig.enemyDamage
+        enemy.components.set(enemyComponent)
+        
         surface.parent?.addChild(enemy)
     }
     private func generateRandomPositionOnCubeSurface(cube: Entity) -> SIMD3<Float> {
