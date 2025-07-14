@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct GameOverView: View {
+    let finalScore: Int
+    let enemiesDefeated: Int
     let onReplay: () -> Void
     
     var body: some View {
@@ -14,13 +16,40 @@ struct GameOverView: View {
                     .fontWeight(.bold)
                     .foregroundColor(.red)
                 
-                Text("Your health reached zero!")
+                Text("You fell out of the arena!")
                     .font(.title2)
                     .foregroundColor(.white)
                     .multilineTextAlignment(.center)
                 
+                VStack(spacing: 15) {
+                    HStack {
+                        Text("Final Score:")
+                            .font(.title2)
+                            .foregroundColor(.white)
+                        Text("\(finalScore)")
+                            .font(.title)
+                            .fontWeight(.bold)
+                            .foregroundColor(.yellow)
+                    }
+                    
+                    HStack {
+                        Text("Enemies Defeated:")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                        Text("\(enemiesDefeated)")
+                            .font(.title2)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.orange)
+                    }
+                }
+                .padding()
+                .background(
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(Color.gray.opacity(0.3))
+                )
+                
                 Button(action: onReplay) {
-                    Text("REPLAY")
+                    Text("PLAY AGAIN")
                         .font(.title2)
                         .fontWeight(.semibold)
                         .foregroundColor(.white)
@@ -39,7 +68,7 @@ struct GameOverView: View {
 }
 
 #Preview {
-    GameOverView {
+    GameOverView(finalScore: 750, enemiesDefeated: 7) {
         print("Replay tapped")
     }
 }

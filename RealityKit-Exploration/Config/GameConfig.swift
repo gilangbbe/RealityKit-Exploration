@@ -3,35 +3,31 @@ import Foundation
 
 struct GameConfig {
     // Player movement
-    static let playerSpeed: Float = 2.0
+  static let playerSpeed: Float = 0.3
     static let playerSurfaceOffsetMargin: Float = 0.05
-    
-    // Player health
-    static let playerMaxHealth: Int = 3
-    static let playerInvulnerabilityDuration: TimeInterval = 1.0
+    static let playerMass: Float = 3.0
+  static let playerPushForceMultiplier: Float = 0.5 // Player pushes harder
+  static let playerResistance: Float = 3 // Player resists being pushed
     
     // Enemy
-    static let enemyHealth: Int = 1
-    static let enemyScoreValue: Int = 10
-    static let enemySpeed: Float = 1.0
-    static let enemyDamage: Int = 1
+  static let enemySpeed: Float = 0.3
+    static let enemyMass: Float = 1
+    static let enemyScoreValue: Int = 100
+    static let enemyPushForceMultiplier: Float = 0.3 // Enemies push weaker
+    
+    // Physics & Collision
+    static let collisionForceMultiplier: Float = 8.0 // Increased for more dramatic pushes
+    static let frictionCoefficient: Float = 0.92 // Slightly less friction for better sliding
+    static let bounceForceMultiplier: Float = 3.0 // Increased bounce force
+    
+    // Arena boundaries
+    static let arenaFallThreshold: Float = -2.0 // Y position below which entities are considered "fallen"
+    static let arenaEdgeBuffer: Float = 0.1 // Distance beyond arena edge before considering "fallen"
     
     // Spawner
     static let enemySpawnInterval: TimeInterval = 2.0
-    static let enemyMaxCount: Int = 3
+    static let enemyMaxCount: Int = 10
     static let enemySpawnYOffset: Float = 0.1
-    
-    // Projectile
-    static let projectileSpeed: Float = 2.0
-    static let projectileDamage: Int = 1
-    static let projectileLifetime: TimeInterval = 3.0
-    static let projectileRadius: Float = 0.02
-    static let projectileSpawnOffset: Float = 0.1
-    static let projectileHeightOffsetFactor: Float = 0.1
-    
-    // Auto-shoot
-    static let autoShootInterval: TimeInterval = 0.1
-    static let autoShootWhileMoving: Bool = true
     
     // Camera
     static let cameraFOV: Float = 35.0

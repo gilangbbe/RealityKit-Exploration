@@ -34,8 +34,17 @@ class SpawnerSystem: System {
         
         var enemyComponent = EnemyCapsuleComponent()
         enemyComponent.speed = GameConfig.enemySpeed
-        enemyComponent.damage = GameConfig.enemyDamage
+        enemyComponent.mass = GameConfig.enemyMass
+        enemyComponent.scoreValue = GameConfig.enemyScoreValue
         enemy.components.set(enemyComponent)
+        
+        // Add physics movement component
+        var physicsComponent = PhysicsMovementComponent()
+        physicsComponent.mass = GameConfig.enemyMass
+        physicsComponent.friction = GameConfig.frictionCoefficient
+        physicsComponent.constrainedTo = surface
+        physicsComponent.groundLevel = GameConfig.enemySpawnYOffset
+        enemy.components.set(physicsComponent)
         
         surface.parent?.addChild(enemy)
     }
