@@ -19,10 +19,12 @@ struct GameConfig {
     static let collisionForceMultiplier: Float = 8.0 // Increased for more dramatic pushes
     static let frictionCoefficient: Float = 0.92 // Slightly less friction for better sliding
     static let bounceForceMultiplier: Float = 3.0 // Increased bounce force
+    static let gravityStrength: Float = 9.8 // Gravity acceleration when off platform
     
     // Arena boundaries
     static let arenaFallThreshold: Float = -2.0 // Y position below which entities are considered "fallen"
-    static let arenaEdgeBuffer: Float = 0.1 // Distance beyond arena edge before considering "fallen"
+    static let arenaEdgeBuffer: Float = 0.05 // Very tight threshold for edge detection
+    static let arenaFallHeightThreshold: Float = 0.3 // Height below arena surface before considering fallen
     
     // Spawner
     static let enemySpawnInterval: TimeInterval = 1.5
