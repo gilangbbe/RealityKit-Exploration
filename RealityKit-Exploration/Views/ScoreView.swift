@@ -17,7 +17,7 @@ struct ScoreView: View {
             }
             
             HStack {
-                Text("Enemies Defeated:")
+                Text("Defeated:")
                     .font(.subheadline)
                     .foregroundColor(.white)
                 Text("\(enemiesDefeated)")
@@ -26,7 +26,8 @@ struct ScoreView: View {
                     .foregroundColor(.orange)
             }
         }
-        .padding()
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
         .background(
             RoundedRectangle(cornerRadius: 10)
                 .fill(Color.black.opacity(0.6))
