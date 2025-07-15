@@ -24,15 +24,6 @@ struct GameConfig {
     static let arenaFallThreshold: Float = -2.0 // Y position below which entities are considered "fallen"
     static let arenaEdgeBuffer: Float = 0.1 // Distance beyond arena edge before considering "fallen"
     
-    // Wave System
-    static let baseEnemiesPerWave: Int = 5
-    static let waveEnemyGrowthRate: Float = 1.3 // Each wave has 30% more enemies
-    static let waveSpeedIncrease: Float = 0.15 // 15% speed increase per wave
-    static let waveHealthIncrease: Float = 0.1 // 10% health increase per wave
-    static let waveScoreIncrease: Float = 0.2 // 20% score increase per wave
-    static let waveSpawnRateIncrease: Float = 0.1 // 10% faster spawning per wave
-    static let waveMaxEnemiesIncrease: Float = 0.25 // 25% more max enemies per wave
-    
     // Spawner
     static let enemySpawnInterval: TimeInterval = 2.0
     static let enemyMaxCount: Int = 10

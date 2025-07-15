@@ -7,17 +7,10 @@ struct ContentView: View {
     @State private var cubeEntity = Entity()
     @State private var redCapsuleEntity = Entity()
     @State private var spawnerEntity = Entity()
-    @State private var waveManagerEntity = Entity()
     @State private var isGameOver = false
     @State private var score = 0
     @State private var enemiesDefeated = 0
     @State private var gameKey = UUID() // For restarting the game
-    
-    // Wave system state
-    @State private var currentWave = 1
-    @State private var enemiesRemaining = 5
-    @State private var totalEnemiesInWave = 5
-    @State private var isWaveActive = false
     
     var body: some View {
         ZStack {
@@ -30,12 +23,6 @@ struct ContentView: View {
                 HStack {
                     ScoreView(score: score, enemiesDefeated: enemiesDefeated)
                     Spacer()
-                    WaveHUDView(
-                        waveNumber: currentWave,
-                        enemiesRemaining: enemiesRemaining,
-                        totalEnemies: totalEnemiesInWave,
-                        isWaveActive: isWaveActive
-                    )
                 }
                 Spacer()
             }
@@ -49,7 +36,7 @@ struct ContentView: View {
             }
             
             if isGameOver {
-                GameOverView(finalScore: score, enemiesDefeated: enemiesDefeated, waveReached: currentWave) {
+                GameOverView(finalScore: score, enemiesDefeated: enemiesDefeated) {
                     restartGame()
                 }
             }
@@ -67,28 +54,6 @@ struct ContentView: View {
                 enemiesDefeated += 1
             }
         }
-        .onReceive(NotificationCenter.default.publisher(for: .waveStarted)) { notification in
-            print("📱 UI received waveStarted notification")
-            if let waveInfo = notification.object as? WaveInfo {
-                print("📱 Wave info: \(waveInfo.waveNumber), enemies: \(waveInfo.enemiesInWave)")
-                currentWave = waveInfo.waveNumber
-                enemiesRemaining = waveInfo.enemiesRemaining
-                totalEnemiesInWave = waveInfo.enemiesInWave
-                isWaveActive = true
-            } else {
-                print("❌ Failed to cast notification object to WaveInfo")
-            }
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .waveEnemyDefeated)) { notification in
-            if let waveInfo = notification.object as? WaveInfo {
-                enemiesRemaining = waveInfo.enemiesRemaining
-            }
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .waveCompleted)) { notification in
-            if let waveInfo = notification.object as? WaveInfo {
-                isWaveActive = false
-            }
-        }
     }
     
     private func setupGame(content: RealityViewCameraContent) async {
@@ -102,7 +67,6 @@ struct ContentView: View {
         
         setupPlayerPhysics(for: capsule, constrainedTo: cube)
         setupPlayerGameState(for: capsule)
-        setupWaveManager()
         
         if let redCapsule = redCapsule {
             redCapsuleEntity = redCapsule
@@ -116,30 +80,19 @@ struct ContentView: View {
         PhysicsMovementSystem.registerSystem()
         IsometricCameraSystem.registerSystem()
         SpawnerSystem.registerSystem()
-        SumoSystem.registerSystem() // Use enhanced wave-based AI instead of basic EnemyCapsuleSystem
+        EnemyCapsuleSystem.registerSystem()
         GameManagementSystem.registerSystem()
         
         content.add(loadedScene)
         content.add(camera)
         content.add(spawnerEntity)
-        content.add(waveManagerEntity)
     }
     
     private func restartGame() {
         isGameOver = false
         score = 0
         enemiesDefeated = 0
-        currentWave = 1
-        enemiesRemaining = 5
-        totalEnemiesInWave = 5
-        isWaveActive = false
         gameKey = UUID() // This will trigger a complete recreation of the RealityView
-    }
-    
-    private func setupWaveManager() {
-        waveManagerEntity = Entity()
-        let waveManagerComponent = WaveManagerComponent()
-        waveManagerEntity.components.set(waveManagerComponent)
     }
     
     private func setupPlayerGameState(for entity: Entity) {
