@@ -7,18 +7,48 @@ class SpawnerSystem: System {
     func update(context: SceneUpdateContext) {
         for entity in context.entities(matching: Self.query, updatingSystemWhen: .rendering) {
             guard var spawner = entity.components[SpawnerComponent.self] else { continue }
+            
+            // Get current wave information
+            let waveComponent = getWaveComponent(context: context)
+            
+            // Only spawn if wave is active and hasn't reached its enemy limit
+            guard let wave = waveComponent, wave.isWaveActive else { continue }
+            guard wave.enemiesSpawnedThisWave < wave.currentWaveEnemyCount else { continue }
+            
             let currentTime = Date()
             let timeSinceLastSpawn = currentTime.timeIntervalSince(spawner.lastSpawnTime)
+            
             if timeSinceLastSpawn >= spawner.spawnInterval {
                 let currentEnemyCount = countActiveEnemies(in: context)
                 if currentEnemyCount < spawner.maxEnemies,
                    let surface = spawner.spawnSurface,
                    let prefab = spawner.enemyPrefab {
-                    spawnEnemy(on: surface, using: prefab, in: context)
+                    spawnEnemy(on: surface, using: prefab, waveStats: wave, in: context)
                     spawner.lastSpawnTime = currentTime
+                    
+                    // Update wave component
+                    updateWaveSpawnCount(context: context)
                 }
             }
             entity.components[SpawnerComponent.self] = spawner
+        }
+    }
+    
+    private func getWaveComponent(context: SceneUpdateContext) -> WaveComponent? {
+        let waveQuery = EntityQuery(where: .has(WaveComponent.self))
+        for entity in context.entities(matching: waveQuery, updatingSystemWhen: .rendering) {
+            return entity.components[WaveComponent.self]
+        }
+        return nil
+    }
+    
+    private func updateWaveSpawnCount(context: SceneUpdateContext) {
+        let waveQuery = EntityQuery(where: .has(WaveComponent.self))
+        for entity in context.entities(matching: waveQuery, updatingSystemWhen: .rendering) {
+            guard var wave = entity.components[WaveComponent.self] else { continue }
+            wave.enemiesSpawnedThisWave += 1
+            entity.components[WaveComponent.self] = wave
+            break
         }
     }
     private func countActiveEnemies(in context: SceneUpdateContext) -> Int {
@@ -27,20 +57,21 @@ class SpawnerSystem: System {
         for _ in context.entities(matching: enemyQuery, updatingSystemWhen: .rendering) { count += 1 }
         return count
     }
-    private func spawnEnemy(on surface: Entity, using prefab: Entity, in context: SceneUpdateContext) {
+    private func spawnEnemy(on surface: Entity, using prefab: Entity, waveStats: WaveComponent, in context: SceneUpdateContext) {
         let enemy = prefab.clone(recursive: true)
         let randomPosition = generateRandomPositionOnCubeSurface(cube: surface)
         enemy.position = randomPosition
         
+        // Apply wave-based enemy stats
         var enemyComponent = EnemyCapsuleComponent()
-        enemyComponent.speed = GameConfig.enemySpeed
-        enemyComponent.mass = GameConfig.enemyMass
-        enemyComponent.scoreValue = GameConfig.enemyScoreValue
+        enemyComponent.speed = waveStats.currentWaveEnemySpeed
+        enemyComponent.mass = waveStats.currentWaveEnemyMass
+        enemyComponent.scoreValue = GameConfig.enemyScoreValue + (waveStats.currentWave * 10) // More points for harder enemies
         enemy.components.set(enemyComponent)
         
-        // Add physics movement component
+        // Add physics movement component with wave-enhanced stats
         var physicsComponent = PhysicsMovementComponent()
-        physicsComponent.mass = GameConfig.enemyMass
+        physicsComponent.mass = waveStats.currentWaveEnemyMass
         physicsComponent.friction = GameConfig.frictionCoefficient
         physicsComponent.constrainedTo = surface
         physicsComponent.groundLevel = GameConfig.enemySpawnYOffset

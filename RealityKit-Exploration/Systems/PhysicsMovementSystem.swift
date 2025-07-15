@@ -53,6 +53,8 @@ class PhysicsMovementSystem: System {
         if let enemyComponent = entity.components[EnemyCapsuleComponent.self] {
             // Award points to player
             updatePlayerScore(points: enemyComponent.scoreValue, context: context)
+            // Update wave progress
+            updateWaveProgress(context: context)
             // Remove the fallen enemy
             entity.removeFromParent()
             // Post notification for UI update
@@ -63,6 +65,21 @@ class PhysicsMovementSystem: System {
         if entity.components[GameStateComponent.self] != nil {
             // Player fell - game over
             NotificationCenter.default.post(name: .playerFell, object: nil)
+        }
+    }
+    
+    private func updateWaveProgress(context: SceneUpdateContext) {
+        let waveQuery = EntityQuery(where: .has(WaveComponent.self))
+        for entity in context.entities(matching: waveQuery, updatingSystemWhen: .rendering) {
+            guard var wave = entity.components[WaveComponent.self] else { continue }
+            wave.enemyDefeated()
+            entity.components[WaveComponent.self] = wave
+            
+            // Check if wave is complete
+            if !wave.isWaveActive {
+                NotificationCenter.default.post(name: .waveCompleted, object: wave.currentWave)
+            }
+            break
         }
     }
     
@@ -83,4 +100,5 @@ class PhysicsMovementSystem: System {
 
 extension Notification.Name {
     static let entityFell = Notification.Name("entityFell")
+    static let waveCompleted = Notification.Name("waveCompleted")
 }

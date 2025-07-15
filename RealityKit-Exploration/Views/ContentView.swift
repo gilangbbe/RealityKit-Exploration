@@ -10,6 +10,7 @@ struct ContentView: View {
     @State private var isGameOver = false
     @State private var score = 0
     @State private var enemiesDefeated = 0
+    @State private var currentWave = 1
     @State private var gameKey = UUID() // For restarting the game
     
     var body: some View {
@@ -21,7 +22,7 @@ struct ContentView: View {
             
             VStack {
                 HStack {
-                    ScoreView(score: score, enemiesDefeated: enemiesDefeated)
+                    ScoreView(score: score, enemiesDefeated: enemiesDefeated, currentWave: currentWave)
                     Spacer()
                 }
                 Spacer()
@@ -36,7 +37,7 @@ struct ContentView: View {
             }
             
             if isGameOver {
-                GameOverView(finalScore: score, enemiesDefeated: enemiesDefeated) {
+                GameOverView(finalScore: score, enemiesDefeated: enemiesDefeated, wavesCompleted: max(1, currentWave - 1)) {
                     restartGame()
                 }
             }
@@ -54,6 +55,16 @@ struct ContentView: View {
                 enemiesDefeated += 1
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .waveStarted)) { notification in
+            if let wave = notification.object as? Int {
+                currentWave = wave
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .waveBonus)) { notification in
+            if let bonusPoints = notification.object as? Int {
+                score += bonusPoints
+            }
+        }
     }
     
     private func setupGame(content: RealityViewCameraContent) async {
@@ -67,6 +78,7 @@ struct ContentView: View {
         
         setupPlayerPhysics(for: capsule, constrainedTo: cube)
         setupPlayerGameState(for: capsule)
+        setupWaveSystem(for: capsule)
         
         if let redCapsule = redCapsule {
             redCapsuleEntity = redCapsule
@@ -82,6 +94,7 @@ struct ContentView: View {
         SpawnerSystem.registerSystem()
         EnemyCapsuleSystem.registerSystem()
         GameManagementSystem.registerSystem()
+        WaveSystem.registerSystem()
         
         content.add(loadedScene)
         content.add(camera)
@@ -92,7 +105,20 @@ struct ContentView: View {
         isGameOver = false
         score = 0
         enemiesDefeated = 0
+        currentWave = 1
         gameKey = UUID() // This will trigger a complete recreation of the RealityView
+    }
+    
+    private func setupWaveSystem(for entity: Entity) {
+        var waveComponent = WaveComponent()
+        waveComponent.baseEnemySpeed = GameConfig.enemySpeed
+        waveComponent.baseEnemyMass = GameConfig.enemyMass
+        waveComponent.enemiesPerWave = GameConfig.baseEnemiesPerWave
+        waveComponent.enemySpeedIncrease = GameConfig.enemySpeedIncreasePerWave
+        waveComponent.enemyMassIncrease = GameConfig.enemyMassIncreasePerWave
+        waveComponent.enemyCountIncrease = GameConfig.enemyCountIncreasePerWave
+        waveComponent.waveClearDelay = GameConfig.waveClearDelay
+        entity.components.set(waveComponent)
     }
     
     private func setupPlayerGameState(for entity: Entity) {

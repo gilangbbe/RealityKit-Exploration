@@ -25,9 +25,18 @@ struct GameConfig {
     static let arenaEdgeBuffer: Float = 0.1 // Distance beyond arena edge before considering "fallen"
     
     // Spawner
-    static let enemySpawnInterval: TimeInterval = 2.0
+    static let enemySpawnInterval: TimeInterval = 1.5
     static let enemyMaxCount: Int = 10
     static let enemySpawnYOffset: Float = 0.1
+    
+    // Wave System
+    static let baseEnemiesPerWave: Int = 2
+    static let enemyHealthIncreasePerWave: Int = 1
+    static let enemySpeedIncreasePerWave: Float = 0.15
+    static let enemyMassIncreasePerWave: Float = 0.1
+    static let enemyCountIncreasePerWave: Int = 1
+    static let waveClearDelay: TimeInterval = 3.0
+    static let waveScoreMultiplier: Int = 50 // Bonus points per wave completed
     
     // Camera
     static let cameraFOV: Float = 35.0

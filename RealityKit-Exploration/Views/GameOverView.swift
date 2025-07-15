@@ -3,6 +3,7 @@ import SwiftUI
 struct GameOverView: View {
     let finalScore: Int
     let enemiesDefeated: Int
+    let wavesCompleted: Int
     let onReplay: () -> Void
     
     var body: some View {
@@ -23,6 +24,16 @@ struct GameOverView: View {
                 
                 VStack(spacing: 15) {
                     HStack {
+                        Text("Waves Completed:")
+                            .font(.title2)
+                            .foregroundColor(.white)
+                        Text("\(wavesCompleted)")
+                            .font(.title)
+                            .fontWeight(.bold)
+                            .foregroundColor(.orange)
+                    }
+                    
+                    HStack {
                         Text("Final Score:")
                             .font(.title2)
                             .foregroundColor(.white)
@@ -39,7 +50,7 @@ struct GameOverView: View {
                         Text("\(enemiesDefeated)")
                             .font(.title2)
                             .fontWeight(.semibold)
-                            .foregroundColor(.orange)
+                            .foregroundColor(.red)
                     }
                 }
                 .padding()
@@ -68,7 +79,7 @@ struct GameOverView: View {
 }
 
 #Preview {
-    GameOverView(finalScore: 750, enemiesDefeated: 7) {
+    GameOverView(finalScore: 750, enemiesDefeated: 7, wavesCompleted: 3) {
         print("Replay tapped")
     }
 }

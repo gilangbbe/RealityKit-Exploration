@@ -3,9 +3,20 @@ import SwiftUI
 struct ScoreView: View {
     let score: Int
     let enemiesDefeated: Int
+    let currentWave: Int
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("Wave:")
+                    .font(.headline)
+                    .foregroundColor(.white)
+                Text("\(currentWave)")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .foregroundColor(.orange)
+            }
+            
             HStack {
                 Text("Score:")
                     .font(.headline)
@@ -17,13 +28,13 @@ struct ScoreView: View {
             }
             
             HStack {
-                Text("Enemies Defeated:")
+                Text("Enemies:")
                     .font(.subheadline)
                     .foregroundColor(.white)
                 Text("\(enemiesDefeated)")
                     .font(.headline)
                     .fontWeight(.semibold)
-                    .foregroundColor(.orange)
+                    .foregroundColor(.red)
             }
         }
         .padding()
@@ -35,5 +46,5 @@ struct ScoreView: View {
 }
 
 #Preview {
-    ScoreView(score: 500, enemiesDefeated: 5)
+    ScoreView(score: 500, enemiesDefeated: 5, currentWave: 3)
 }
