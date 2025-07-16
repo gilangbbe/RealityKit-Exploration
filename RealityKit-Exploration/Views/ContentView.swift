@@ -15,6 +15,7 @@ struct ContentView: View {
     @State private var enemiesDefeated = 0
     @State private var currentWave = 1
     @State private var activePowerUp: String? = nil
+    @State private var playerUpgrade: String? = nil
     @State private var gameKey = UUID() // For restarting the game
     
     var body: some View {
@@ -30,6 +31,9 @@ struct ContentView: View {
                     Spacer()
                     if let powerUp = activePowerUp {
                         PowerUpIndicator(powerUpName: powerUp)
+                    }
+                    if let upgrade = playerUpgrade {
+                        PlayerUpgradeIndicator(upgradeName: upgrade)
                     }
                 }
                 Spacer()
@@ -81,6 +85,15 @@ struct ContentView: View {
                 }
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .playerUpgraded)) { notification in
+            if let upgradeType = notification.object as? PlayerUpgradeType {
+                playerUpgrade = upgradeType.name
+                // Clear upgrade indicator after a delay
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                    playerUpgrade = nil
+                }
+            }
+        }
     }
     
     private func setupGame(content: RealityViewCameraContent) async {
@@ -127,6 +140,7 @@ struct ContentView: View {
         GameManagementSystem.registerSystem()
         WaveSystem.registerSystem()
         LootBoxSystem.registerSystem()
+        PlayerProgressionSystem.registerSystem()
         
         content.add(loadedScene)
         content.add(camera)
@@ -140,6 +154,8 @@ struct ContentView: View {
         score = 0
         enemiesDefeated = 0
         currentWave = 1
+        activePowerUp = nil
+        playerUpgrade = nil
         gameKey = UUID() // This will trigger a complete recreation of the RealityView
     }
     
@@ -162,6 +178,10 @@ struct ContentView: View {
         // Initialize power-up component for the player
         let powerUpComponent = PowerUpComponent()
         entity.components.set(powerUpComponent)
+        
+        // Initialize player progression component
+        let progressionComponent = PlayerProgressionComponent()
+        entity.components.set(progressionComponent)
     }
     
     private func setupPlayerPhysics(for entity: Entity, constrainedTo cube: Entity) {
@@ -215,7 +235,12 @@ struct ContentView: View {
     }
     private func startApplyingForce(direction: ForceDirection) {
         guard var physics = capsuleEntity.components[PhysicsMovementComponent.self] else { return }
-        physics.velocity += direction.velocity * GameConfig.playerSpeed * 0.15 // Increased force
+        let progression = capsuleEntity.components[PlayerProgressionComponent.self]
+        
+        let speedMultiplier = progression?.speedMultiplier ?? 1.0
+        let forceMultiplier = progression?.forceMultiplier ?? 1.0
+        
+        physics.velocity += direction.velocity * GameConfig.playerSpeed * speedMultiplier * forceMultiplier * 0.15
         capsuleEntity.components[PhysicsMovementComponent.self] = physics
     }
     
@@ -227,9 +252,14 @@ struct ContentView: View {
     
     private func applyAnalogForce(analogVector: SIMD2<Float>) {
         guard var physics = capsuleEntity.components[PhysicsMovementComponent.self] else { return }
+        let progression = capsuleEntity.components[PlayerProgressionComponent.self]
+        
+        let speedMultiplier = progression?.speedMultiplier ?? 1.0
+        let forceMultiplier = progression?.forceMultiplier ?? 1.0
+        
         let isoX = (analogVector.x - analogVector.y) * GameConfig.isometricDiagonal
         let isoZ = -(analogVector.x + analogVector.y) * GameConfig.isometricDiagonal
-        let force = SIMD3<Float>(isoX, 0, isoZ) * GameConfig.playerSpeed * 0.15 // Increased force
+        let force = SIMD3<Float>(isoX, 0, isoZ) * GameConfig.playerSpeed * speedMultiplier * forceMultiplier * 0.15
         physics.velocity += force
         capsuleEntity.components[PhysicsMovementComponent.self] = physics
     }

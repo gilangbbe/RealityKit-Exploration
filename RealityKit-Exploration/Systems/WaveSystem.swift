@@ -25,6 +25,9 @@ class WaveSystem: System {
                 if waveComponent.currentWave > 1 {
                     let bonusPoints = GameConfig.waveScoreMultiplier * (waveComponent.currentWave - 1)
                     NotificationCenter.default.post(name: .waveBonus, object: bonusPoints)
+                    
+                    // Apply random player upgrade after completing a wave
+                    applyPlayerProgression(context: context)
                 }
             }
             
@@ -39,6 +42,14 @@ class WaveSystem: System {
             gameState.currentWave = wave
             entity.components[GameStateComponent.self] = gameState
             break
+        }
+    }
+    
+    private func applyPlayerProgression(context: SceneUpdateContext) {
+        let playerQuery = EntityQuery(where: .has(PlayerProgressionComponent.self) && .has(PhysicsMovementComponent.self))
+        for entity in context.entities(matching: playerQuery, updatingSystemWhen: .rendering) {
+            PlayerProgressionSystem.applyPlayerUpgrade(to: entity)
+            break // Only one player
         }
     }
 }

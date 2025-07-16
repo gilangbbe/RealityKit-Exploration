@@ -40,6 +40,15 @@ struct GameConfig {
     static let waveClearDelay: TimeInterval = 3.0
     static let waveScoreMultiplier: Int = 50 // Bonus points per wave completed
     
+    // Wave progression limits
+    static let maxWaveForSpeedIncrease: Int = 4 // After wave 4, no more speed/mass increases
+    static let maxWaveForMassIncrease: Int = 4 // After wave 4, no more speed/mass increases
+    
+    // Player progression per wave
+    static let playerSpeedIncrease: Float = 0.05 // Speed boost per wave
+    static let playerMassIncrease: Float = 0.2 // Mass boost per wave
+    static let playerForceIncrease: Float = 0.1 // Force multiplier boost per wave
+    
     // Camera
     static let cameraFOV: Float = 35.0
     static let cameraIsometricOffset: SIMD3<Float> = [1, 2, 1]
@@ -56,8 +65,8 @@ struct GameConfig {
     // Power-ups
     static let timeSlowDuration: TimeInterval = 3.0 // Time slow effect duration
     static let timeSlowMultiplier: Float = 0.3 // Enemy speed multiplier during time slow
-    static let shockwaveForce: Float = 15.0 // Force applied to enemies during shockwave
-    static let shockwaveRadius: Float = 3.0 // Radius of shockwave effect
+    static let shockwaveForce: Float = 5.0 // Force applied to enemies during shockwave
+    static let shockwaveRadius: Float = 1.0 // Radius of shockwave effect
 
     // Entity names (for easy adjustment)
     struct EntityNames {

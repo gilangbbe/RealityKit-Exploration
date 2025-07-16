@@ -25,11 +25,15 @@ struct WaveComponent: Component {
     }
     
     var currentWaveEnemySpeed: Float {
-        return baseEnemySpeed + Float(currentWave - 1) * enemySpeedIncrease
+        // Cap speed increases after wave 4
+        let effectiveWave = min(currentWave, GameConfig.maxWaveForSpeedIncrease)
+        return baseEnemySpeed + Float(effectiveWave - 1) * enemySpeedIncrease
     }
     
     var currentWaveEnemyMass: Float {
-        return baseEnemyMass + Float(currentWave - 1) * enemyMassIncrease
+        // Cap mass increases after wave 4
+        let effectiveWave = min(currentWave, GameConfig.maxWaveForMassIncrease)
+        return baseEnemyMass + Float(effectiveWave - 1) * enemyMassIncrease
     }
     
     var currentWaveEnemyCount: Int {
