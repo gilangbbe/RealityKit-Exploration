@@ -47,6 +47,17 @@ struct GameConfig {
     
     // Isometric movement mapping
     static let isometricDiagonal: Float = 0.707
+    
+    // LootBox System
+    static let lootBoxSpawnInterval: TimeInterval = 3.0 // Spawn loot box every 8 seconds
+    static let lootBoxCollectionRadius: Float = 0.1 // Distance to collect loot box
+    static let lootBoxLifetime: TimeInterval = 15.0 // How long loot box stays before disappearing
+    
+    // Power-ups
+    static let timeSlowDuration: TimeInterval = 3.0 // Time slow effect duration
+    static let timeSlowMultiplier: Float = 0.3 // Enemy speed multiplier during time slow
+    static let shockwaveForce: Float = 15.0 // Force applied to enemies during shockwave
+    static let shockwaveRadius: Float = 3.0 // Radius of shockwave effect
 
     // Entity names (for easy adjustment)
     struct EntityNames {
@@ -54,5 +65,6 @@ struct GameConfig {
         static let capsule = "Capsule"
         static let cube = "Cube"
         static let enemyCapsule = "EnemyCapsule"
+        static let lootBox = "LootBox"
     }
 }

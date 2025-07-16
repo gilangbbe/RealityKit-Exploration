@@ -6,11 +6,15 @@ struct ContentView: View {
     @State private var capsuleEntity = Entity()
     @State private var cubeEntity = Entity()
     @State private var redCapsuleEntity = Entity()
+    @State private var lootBoxEntity = Entity()
+    @State private var lootBoxContainerEntity = Entity()
     @State private var spawnerEntity = Entity()
+    @State private var lootBoxSpawnerEntity = Entity()
     @State private var isGameOver = false
     @State private var score = 0
     @State private var enemiesDefeated = 0
     @State private var currentWave = 1
+    @State private var activePowerUp: String? = nil
     @State private var gameKey = UUID() // For restarting the game
     
     var body: some View {
@@ -24,6 +28,9 @@ struct ContentView: View {
                 HStack {
                     ScoreView(score: score, enemiesDefeated: enemiesDefeated, currentWave: currentWave)
                     Spacer()
+                    if let powerUp = activePowerUp {
+                        PowerUpIndicator(powerUpName: powerUp)
+                    }
                 }
                 Spacer()
             }
@@ -65,6 +72,15 @@ struct ContentView: View {
                 score += bonusPoints
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .powerUpCollected)) { notification in
+            if let powerUpName = notification.object as? String {
+                activePowerUp = powerUpName
+                // Clear power-up indicator after a delay
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                    activePowerUp = nil
+                }
+            }
+        }
     }
     
     private func setupGame(content: RealityViewCameraContent) async {
@@ -72,6 +88,7 @@ struct ContentView: View {
         guard let capsule = loadedScene.findEntity(named: GameConfig.EntityNames.capsule),
               let cube = loadedScene.findEntity(named: GameConfig.EntityNames.cube) else { return }
         let redCapsule = loadedScene.findEntity(named: GameConfig.EntityNames.enemyCapsule)
+        let lootBox = loadedScene.findEntity(named: GameConfig.EntityNames.lootBox)
         
         capsuleEntity = capsule
         cubeEntity = cube
@@ -86,6 +103,20 @@ struct ContentView: View {
             setupSpawner(surface: cube, enemyPrefab: redCapsule)
         }
         
+        if let lootBox = lootBox {
+            lootBoxEntity = lootBox
+            lootBox.removeFromParent()
+            
+            // Create a dedicated container for LootBoxes to prevent camera issues
+            lootBoxContainerEntity = Entity()
+            lootBoxContainerEntity.name = "LootBoxContainer"
+            
+            // Position the container at the scene origin to avoid affecting camera bounds
+            lootBoxContainerEntity.position = SIMD3<Float>(0, 0, 0)
+            
+            setupLootBoxSpawner(surface: cube, lootBoxPrefab: lootBox, container: lootBoxContainerEntity)
+        }
+        
         let camera = setupIsometricCamera(target: capsule)
         
         // Register all systems
@@ -95,10 +126,13 @@ struct ContentView: View {
         EnemyCapsuleSystem.registerSystem()
         GameManagementSystem.registerSystem()
         WaveSystem.registerSystem()
+        LootBoxSystem.registerSystem()
         
         content.add(loadedScene)
         content.add(camera)
         content.add(spawnerEntity)
+        content.add(lootBoxSpawnerEntity)
+        content.add(lootBoxContainerEntity)
     }
     
     private func restartGame() {
@@ -124,6 +158,10 @@ struct ContentView: View {
     private func setupPlayerGameState(for entity: Entity) {
         let gameStateComponent = GameStateComponent()
         entity.components.set(gameStateComponent)
+        
+        // Initialize power-up component for the player
+        let powerUpComponent = PowerUpComponent()
+        entity.components.set(powerUpComponent)
     }
     
     private func setupPlayerPhysics(for entity: Entity, constrainedTo cube: Entity) {
@@ -149,6 +187,15 @@ struct ContentView: View {
         spawnerComponent.spawnInterval = GameConfig.enemySpawnInterval
         spawnerComponent.maxEnemies = GameConfig.enemyMaxCount
         spawnerEntity.components.set(spawnerComponent)
+    }
+    private func setupLootBoxSpawner(surface: Entity, lootBoxPrefab: Entity, container: Entity) {
+        lootBoxSpawnerEntity = Entity()
+        var lootBoxSpawnerComponent = LootBoxSpawnerComponent()
+        lootBoxSpawnerComponent.spawnSurface = surface
+        lootBoxSpawnerComponent.lootBoxPrefab = lootBoxPrefab
+        lootBoxSpawnerComponent.lootBoxContainer = container
+        lootBoxSpawnerComponent.spawnInterval = GameConfig.lootBoxSpawnInterval
+        lootBoxSpawnerEntity.components.set(lootBoxSpawnerComponent)
     }
     private func setupIsometricCamera(target: Entity) -> Entity {
         let camera = Entity()
