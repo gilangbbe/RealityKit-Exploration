@@ -15,6 +15,17 @@ struct ScoreView: View {
                     .font(.title2)
                     .fontWeight(.bold)
                     .foregroundColor(.orange)
+                
+                // Difficulty indicator
+                if currentWave > 4 {
+                    Text("⚡")
+                        .font(.caption)
+                        .foregroundColor(.red)
+                } else {
+                    Text("📈")
+                        .font(.caption)
+                        .foregroundColor(.green)
+                }
             }
             
             HStack {

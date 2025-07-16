@@ -36,6 +36,15 @@ struct ContentView: View {
                         PlayerUpgradeIndicator(upgradeName: upgrade)
                     }
                 }
+                
+                // Optional: Add progression debug view (remove for production)
+                if currentWave > 1 {
+                    HStack {
+                        ProgressionDebugView(currentWave: currentWave)
+                        Spacer()
+                    }
+                }
+                
                 Spacer()
             }
             

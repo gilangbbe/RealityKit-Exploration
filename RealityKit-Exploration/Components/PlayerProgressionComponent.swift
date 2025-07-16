@@ -58,13 +58,19 @@ struct PlayerProgressionComponent: Component, Codable {
         let upgradeType = PlayerUpgradeType.allCases.randomElement()!
         wavesCompleted += 1
         
+        // Calculate diminishing upgrade values based on waves completed
+        let diminishingMultiplier = pow(GameConfig.playerUpgradeDiminishingFactor, Float(wavesCompleted - 1))
+        
         switch upgradeType {
         case .speed:
-            speedMultiplier += GameConfig.playerSpeedIncrease
+            let upgradeAmount = GameConfig.playerSpeedIncrease * diminishingMultiplier
+            speedMultiplier += upgradeAmount
         case .mass:
-            massMultiplier += GameConfig.playerMassIncrease
+            let upgradeAmount = GameConfig.playerMassIncrease * diminishingMultiplier
+            massMultiplier += upgradeAmount
         case .force:
-            forceMultiplier += GameConfig.playerForceIncrease
+            let upgradeAmount = GameConfig.playerForceIncrease * diminishingMultiplier
+            forceMultiplier += upgradeAmount
         }
         
         return upgradeType

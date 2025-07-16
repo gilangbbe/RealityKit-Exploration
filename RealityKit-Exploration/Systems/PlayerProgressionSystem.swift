@@ -33,6 +33,7 @@ struct PlayerProgressionSystem: System {
         }
         
         print("Player upgraded: \(upgradeType.name)")
+        print("Wave \(progression.wavesCompleted) - Diminishing multiplier: \(String(format: "%.3f", pow(GameConfig.playerUpgradeDiminishingFactor, Float(progression.wavesCompleted - 1))))")
         print("New stats - Speed: \(String(format: "%.2f", progression.currentSpeed)), Mass: \(String(format: "%.2f", progression.currentMass)), Force: \(String(format: "%.2f", progression.currentForce))")
     }
 }

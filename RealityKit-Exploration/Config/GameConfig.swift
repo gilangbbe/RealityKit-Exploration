@@ -1,7 +1,29 @@
 import simd
 import Foundation
 
-struct GameConfig {
+struct GameConfig {    // Wave System
+    static let baseEnemiesPerWave: Int = 6
+    static let enemyHealthIncreasePerWave: Int = 1
+    static let enemySpeedIncreasePerWave: Float = 0.15
+    static let enemyMassIncreasePerWave: Float = 0.1
+    static let enemyCountIncreasePerWave: Int = 1
+    static let waveClearDelay: TimeInterval = 3.0
+    static let waveScoreMultiplier: Int = 50 // Bonus points per wave completed
+    
+    // Wave progression limits
+    static let maxWaveForSpeedIncrease: Int = 4 // After wave 4, no more speed/mass increases
+    static let maxWaveForMassIncrease: Int = 4 // After wave 4, no more speed/mass increases
+    
+    // Diminishing returns progression
+    static let enemyCountDiminishingFactor: Float = 0.8 // Each wave enemy count increase gets 20% smaller
+    static let playerUpgradeDiminishingFactor: Float = 0.85 // Each wave player upgrade gets 15% smaller
+    static let waveScoreDiminishingFactor: Float = 0.9 // Each wave score bonus gets 10% smaller
+    
+    // Player progression per wave (base values that will diminish)
+    static let playerSpeedIncrease: Float = 0.1 // Speed boost per wave (starts higher for diminishing)
+    static let playerMassIncrease: Float = 0.3 // Mass boost per wave (starts higher for diminishing)
+    static let playerForceIncrease: Float = 0.15 // Force multiplier boost per wave (starts higher for diminishing)
+  
     // Player movement
   static let playerSpeed: Float = 0.3
     static let playerSurfaceOffsetMargin: Float = 0.05
@@ -31,24 +53,6 @@ struct GameConfig {
     static let enemyMaxCount: Int = 10
     static let enemySpawnYOffset: Float = 0.1
     
-    // Wave System
-    static let baseEnemiesPerWave: Int = 2
-    static let enemyHealthIncreasePerWave: Int = 1
-    static let enemySpeedIncreasePerWave: Float = 0.15
-    static let enemyMassIncreasePerWave: Float = 0.1
-    static let enemyCountIncreasePerWave: Int = 1
-    static let waveClearDelay: TimeInterval = 3.0
-    static let waveScoreMultiplier: Int = 50 // Bonus points per wave completed
-    
-    // Wave progression limits
-    static let maxWaveForSpeedIncrease: Int = 4 // After wave 4, no more speed/mass increases
-    static let maxWaveForMassIncrease: Int = 4 // After wave 4, no more speed/mass increases
-    
-    // Player progression per wave
-    static let playerSpeedIncrease: Float = 0.05 // Speed boost per wave
-    static let playerMassIncrease: Float = 0.2 // Mass boost per wave
-    static let playerForceIncrease: Float = 0.1 // Force multiplier boost per wave
-    
     // Camera
     static let cameraFOV: Float = 35.0
     static let cameraIsometricOffset: SIMD3<Float> = [1, 2, 1]
@@ -58,7 +62,7 @@ struct GameConfig {
     static let isometricDiagonal: Float = 0.707
     
     // LootBox System
-    static let lootBoxSpawnInterval: TimeInterval = 3.0 // Spawn loot box every 8 seconds
+    static let lootBoxSpawnInterval: TimeInterval = 5.0 // Spawn loot box every 8 seconds
     static let lootBoxCollectionRadius: Float = 0.1 // Distance to collect loot box
     static let lootBoxLifetime: TimeInterval = 15.0 // How long loot box stays before disappearing
     

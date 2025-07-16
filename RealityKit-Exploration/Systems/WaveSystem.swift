@@ -23,7 +23,7 @@ class WaveSystem: System {
                 
                 // Award wave completion bonus (except for first wave)
                 if waveComponent.currentWave > 1 {
-                    let bonusPoints = GameConfig.waveScoreMultiplier * (waveComponent.currentWave - 1)
+                    let bonusPoints = calculateDiminishingWaveBonus(wave: waveComponent.currentWave)
                     NotificationCenter.default.post(name: .waveBonus, object: bonusPoints)
                     
                     // Apply random player upgrade after completing a wave
@@ -43,6 +43,17 @@ class WaveSystem: System {
             entity.components[GameStateComponent.self] = gameState
             break
         }
+    }
+    
+    private func calculateDiminishingWaveBonus(wave: Int) -> Int {
+        // Calculate wave bonus with diminishing returns
+        var totalBonus = 0
+        for completedWave in 1..<wave {
+            let diminishingMultiplier = pow(GameConfig.waveScoreDiminishingFactor, Float(completedWave - 1))
+            let waveBonus = Int(Float(GameConfig.waveScoreMultiplier) * diminishingMultiplier)
+            totalBonus += waveBonus
+        }
+        return totalBonus
     }
     
     private func applyPlayerProgression(context: SceneUpdateContext) {

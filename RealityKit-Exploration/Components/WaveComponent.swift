@@ -37,7 +37,13 @@ struct WaveComponent: Component {
     }
     
     var currentWaveEnemyCount: Int {
-        return enemiesPerWave + (currentWave - 1) * enemyCountIncrease
+        // Apply diminishing returns to enemy count increases
+        var totalIncrease = 0
+        for wave in 1..<currentWave {
+            let diminishingMultiplier = pow(GameConfig.enemyCountDiminishingFactor, Float(wave - 1))
+            totalIncrease += Int(Float(enemyCountIncrease) * diminishingMultiplier)
+        }
+        return enemiesPerWave + totalIncrease
     }
     
     mutating func startNextWave() {
@@ -46,6 +52,12 @@ struct WaveComponent: Component {
         enemiesDefeatedThisWave = 0
         isWaveActive = true
         lastWaveClearTime = Date()
+        
+        // Debug: Show diminishing returns progression
+        print("Wave \(currentWave) started:")
+        print("- Enemies this wave: \(currentWaveEnemyCount)")
+        print("- Enemy speed: \(String(format: "%.2f", currentWaveEnemySpeed))")
+        print("- Enemy mass: \(String(format: "%.2f", currentWaveEnemyMass))")
     }
     
     mutating func enemyDefeated() {
