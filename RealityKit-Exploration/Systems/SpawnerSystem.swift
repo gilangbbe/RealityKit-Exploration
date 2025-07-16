@@ -20,7 +20,19 @@ class SpawnerSystem: System {
             
             if timeSinceLastSpawn >= spawner.spawnInterval {
                 let currentEnemyCount = countActiveEnemies(in: context)
-                if currentEnemyCount < spawner.maxEnemies,
+                
+                // Calculate wave-based max enemies with diminishing returns
+                var maxEnemiesIncrease: Float = 0
+                for waveIncrement in 1..<wave.currentWave {
+                    let diminishingFactor = pow(GameConfig.maxEnemiesDiminishingFactor, Float(waveIncrement - 1))
+                    maxEnemiesIncrease += Float(GameConfig.enemyMaxCountIncreasePerWave) * diminishingFactor
+                }
+                let waveBasedMaxEnemies = GameConfig.enemyMaxCount + Int(maxEnemiesIncrease)
+                
+                // Debug: Uncomment to see max enemy progression
+                // print("Wave \(wave.currentWave): Max enemies = \(waveBasedMaxEnemies), Current = \(currentEnemyCount)")
+                
+                if currentEnemyCount < waveBasedMaxEnemies,
                    let surface = spawner.spawnSurface,
                    let prefab = spawner.enemyPrefab {
                     spawnEnemy(on: surface, using: prefab, waveStats: wave, in: context)

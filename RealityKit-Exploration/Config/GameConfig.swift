@@ -11,13 +11,14 @@ struct GameConfig {    // Wave System
     static let waveScoreMultiplier: Int = 50 // Bonus points per wave completed
     
     // Wave progression limits
-    static let maxWaveForSpeedIncrease: Int = 4 // After wave 4, no more speed/mass increases
-    static let maxWaveForMassIncrease: Int = 4 // After wave 4, no more speed/mass increases
+    static let maxWaveForSpeedIncrease: Int = 6 // After wave 4, no more speed/mass increases
+    static let maxWaveForMassIncrease: Int = 6 // After wave 4, no more speed/mass increases
     
     // Diminishing returns progression
     static let enemyCountDiminishingFactor: Float = 0.8 // Each wave enemy count increase gets 20% smaller
     static let playerUpgradeDiminishingFactor: Float = 0.85 // Each wave player upgrade gets 15% smaller
     static let waveScoreDiminishingFactor: Float = 0.9 // Each wave score bonus gets 10% smaller
+    static let maxEnemiesDiminishingFactor: Float = 0.85 // Each wave max enemies increase gets 15% smaller
     
     // Player progression per wave (base values that will diminish)
     static let playerSpeedIncrease: Float = 0.1 // Speed boost per wave (starts higher for diminishing)
@@ -43,6 +44,11 @@ struct GameConfig {    // Wave System
     static let bounceForceMultiplier: Float = 3.0 // Increased bounce force
     static let gravityStrength: Float = 9.8 // Gravity acceleration when off platform
     
+    // Collision detection
+    static let playerCollisionRadius: Float = 0.05 // Player collision detection radius
+    static let enemyCollisionRadius: Float = 0.05 // Enemy-enemy collision detection radius
+    static let enemySeparationForce: Float = 0.5 // Force multiplier for enemy separation
+    
     // Arena boundaries
     static let arenaFallThreshold: Float = -2.0 // Y position below which entities are considered "fallen"
     static let arenaEdgeBuffer: Float = 0.05 // Very tight threshold for edge detection
@@ -50,7 +56,8 @@ struct GameConfig {    // Wave System
     
     // Spawner
     static let enemySpawnInterval: TimeInterval = 1.5
-    static let enemyMaxCount: Int = 10
+    static let enemyMaxCount: Int = 10 // Base max enemies for wave 1
+    static let enemyMaxCountIncreasePerWave: Int = 2 // How many more enemies can spawn each wave
     static let enemySpawnYOffset: Float = 0.1
     
     // Camera

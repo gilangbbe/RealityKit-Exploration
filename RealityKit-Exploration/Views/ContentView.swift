@@ -214,7 +214,7 @@ struct ContentView: View {
         spawnerComponent.spawnSurface = surface
         spawnerComponent.enemyPrefab = enemyPrefab
         spawnerComponent.spawnInterval = GameConfig.enemySpawnInterval
-        spawnerComponent.maxEnemies = GameConfig.enemyMaxCount
+        spawnerComponent.maxEnemies = GameConfig.enemyMaxCount // This will be dynamically calculated per wave
         spawnerEntity.components.set(spawnerComponent)
     }
     private func setupLootBoxSpawner(surface: Entity, lootBoxPrefab: Entity, container: Entity) {
