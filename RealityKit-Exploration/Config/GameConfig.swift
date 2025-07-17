@@ -11,8 +11,8 @@ struct GameConfig {    // Wave System
     static let waveScoreMultiplier: Int = 50 // Bonus points per wave completed
     
     // Wave progression limits
-    static let maxWaveForSpeedIncrease: Int = 6 // After wave 4, no more speed/mass increases
-    static let maxWaveForMassIncrease: Int = 6 // After wave 4, no more speed/mass increases
+    static let maxWaveForSpeedIncrease: Int = 8 // After wave 4, no more speed/mass increases
+    static let maxWaveForMassIncrease: Int = 8 // After wave 4, no more speed/mass increases
     
     // Diminishing returns progression
     static let enemyCountDiminishingFactor: Float = 0.8 // Each wave enemy count increase gets 20% smaller
@@ -50,9 +50,9 @@ struct GameConfig {    // Wave System
     static let enemySeparationForce: Float = 0.5 // Force multiplier for enemy separation
     
     // Arena boundaries
-    static let arenaFallThreshold: Float = -2.0 // Y position below which entities are considered "fallen"
+    static let arenaFallThreshold: Float = -1.0 // Y position below which entities are considered "fallen"
     static let arenaEdgeBuffer: Float = 0.05 // Very tight threshold for edge detection
-    static let arenaFallHeightThreshold: Float = 0.3 // Height below arena surface before considering fallen
+    static let arenaFallHeightThreshold: Float = 0.1 // Height below arena surface before considering fallen
     
     // Spawner
     static let enemySpawnInterval: TimeInterval = 1.5

@@ -38,12 +38,16 @@ struct WaveComponent: Component {
     
     var currentWaveEnemyCount: Int {
         // Apply diminishing returns to enemy count increases
-        var totalIncrease = 0
-        for wave in 1..<currentWave {
-            let diminishingMultiplier = pow(GameConfig.enemyCountDiminishingFactor, Float(wave - 1))
-            totalIncrease += Int(Float(enemyCountIncrease) * diminishingMultiplier)
+        if currentWave == 1 {
+            return enemiesPerWave // Base amount for wave 1
         }
-        return enemiesPerWave + totalIncrease
+        
+        var totalIncrease: Float = 0
+        for waveIncrement in 1..<currentWave {
+            let diminishingMultiplier = pow(GameConfig.enemyCountDiminishingFactor, Float(waveIncrement - 1))
+            totalIncrease += Float(enemyCountIncrease) * diminishingMultiplier
+        }
+        return enemiesPerWave + Int(totalIncrease)
     }
     
     mutating func startNextWave() {
