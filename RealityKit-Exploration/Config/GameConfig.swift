@@ -1,7 +1,11 @@
 import simd
 import Foundation
 
-struct GameConfig {    // Wave System
+struct GameConfig {
+    // Game State
+    static var isGamePaused: Bool = false
+    
+    // Wave System
     static let baseEnemiesPerWave: Int = 6
     static let enemyHealthIncreasePerWave: Int = 1
     static let enemySpeedIncreasePerWave: Float = 0.15
@@ -82,9 +86,9 @@ struct GameConfig {    // Wave System
     // Entity names (for easy adjustment)
     struct EntityNames {
         static let scene = "Scene"
-        static let capsule = "Capsule"
+        static let capsule = "Max"
         static let cube = "Cube"
-        static let enemyCapsule = "EnemyCapsule"
+        static let enemyCapsule = "enemy_chasing"
         static let lootBox = "LootBox"
     }
 }

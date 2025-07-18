@@ -7,6 +7,9 @@ class WaveSystem: System {
     required init(scene: RealityKit.Scene) {}
     
     func update(context: SceneUpdateContext) {
+        // Skip update if game is paused
+        if GameConfig.isGamePaused { return }
+        
         for entity in context.entities(matching: Self.query, updatingSystemWhen: .rendering) {
             guard var waveComponent = entity.components[WaveComponent.self] else { continue }
             

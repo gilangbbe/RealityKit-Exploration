@@ -5,6 +5,9 @@ class SpawnerSystem: System {
     static let query = EntityQuery(where: .has(SpawnerComponent.self))
     required init(scene: RealityKit.Scene) {}
     func update(context: SceneUpdateContext) {
+        // Skip update if game is paused
+        if GameConfig.isGamePaused { return }
+        
         for entity in context.entities(matching: Self.query, updatingSystemWhen: .rendering) {
             guard var spawner = entity.components[SpawnerComponent.self] else { continue }
             

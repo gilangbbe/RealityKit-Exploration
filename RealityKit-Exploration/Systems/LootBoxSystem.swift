@@ -15,6 +15,9 @@ struct LootBoxSystem: System {
     }
     
     func update(context: SceneUpdateContext) {
+        // Skip update if game is paused
+        if GameConfig.isGamePaused { return }
+        
         let currentTime = CACurrentMediaTime()
         
         // Handle LootBox spawning

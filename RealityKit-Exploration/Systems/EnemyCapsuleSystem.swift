@@ -7,6 +7,9 @@ class EnemyCapsuleSystem: System {
     required init(scene: RealityKit.Scene) {}
     
     func update(context: SceneUpdateContext) {
+        // Skip update if game is paused
+        if GameConfig.isGamePaused { return }
+        
         let deltaTime = Float(context.deltaTime)
         let allEnemies = Array(context.entities(matching: Self.query, updatingSystemWhen: .rendering))
         

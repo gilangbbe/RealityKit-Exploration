@@ -3,6 +3,7 @@ import RealityKit
 import Arena
 
 struct ContentView: View {
+    @State private var gameState: GameState = .mainMenu
     @State private var capsuleEntity = Entity()
     @State private var cubeEntity = Entity()
     @State private var redCapsuleEntity = Entity()
@@ -10,7 +11,6 @@ struct ContentView: View {
     @State private var lootBoxContainerEntity = Entity()
     @State private var spawnerEntity = Entity()
     @State private var lootBoxSpawnerEntity = Entity()
-    @State private var isGameOver = false
     @State private var score = 0
     @State private var enemiesDefeated = 0
     @State private var currentWave = 1
@@ -20,50 +20,96 @@ struct ContentView: View {
     
     var body: some View {
         ZStack {
-            RealityView { content in
-                await setupGame(content: content)
-            } update: { content in }
-            .id(gameKey) // This will recreate the RealityView when gameKey changes
-            
-            VStack {
-                HStack {
-                    ScoreView(score: score, enemiesDefeated: enemiesDefeated, currentWave: currentWave)
-                    Spacer()
-                    if let powerUp = activePowerUp {
-                        PowerUpIndicator(powerUpName: powerUp)
-                    }
-                    if let upgrade = playerUpgrade {
-                        PlayerUpgradeIndicator(upgradeName: upgrade)
-                    }
+            // Main Menu
+            if gameState == .mainMenu {
+                MainMenuView {
+                    startNewGame()
                 }
-                
-                // Optional: Add progression debug view (remove for production)
-                if currentWave > 1 {
-                    HStack {
-                        ProgressionDebugView(currentWave: currentWave)
-                        Spacer()
-                    }
-                }
-                
-                Spacer()
             }
             
-            ControlsView { direction in
-                startApplyingForce(direction: direction)
-            } stopApplyingForce: {
-                stopApplyingForce()
-            } applyAnalogForce: { analogVector in
-                applyAnalogForce(analogVector: analogVector)
+            // Game View (only rendered when playing or paused)
+            if gameState == .playing || gameState == .paused {
+                ZStack {
+                    RealityView { content in
+                        await setupGame(content: content)
+                    } update: { content in }
+                    .id(gameKey) // This will recreate the RealityView when gameKey changes
+                    
+                    // Game UI Overlay (only visible when playing)
+                    if gameState == .playing {
+                        VStack {
+                            HStack {
+                                ScoreView(score: score, enemiesDefeated: enemiesDefeated, currentWave: currentWave)
+                                
+                                Spacer()
+                                
+                                // Pause Button
+                                Button(action: pauseGame) {
+                                    Image(systemName: "pause.fill")
+                                        .font(.title2)
+                                        .foregroundColor(.white)
+                                        .padding(12)
+                                        .background(Color.black.opacity(0.6))
+                                        .cornerRadius(10)
+                                }
+                                
+                                if let powerUp = activePowerUp {
+                                    PowerUpIndicator(powerUpName: powerUp)
+                                }
+                                if let upgrade = playerUpgrade {
+                                    PlayerUpgradeIndicator(upgradeName: upgrade)
+                                }
+                            }
+                            
+                            // Optional: Add progression debug view (remove for production)
+                            if currentWave > 1 {
+                                HStack {
+                                    ProgressionDebugView(currentWave: currentWave)
+                                    Spacer()
+                                }
+                            }
+                            
+                            Spacer()
+                        }
+                        .padding()
+                        
+                        // Controls (only visible when playing)
+                        ControlsView { direction in
+                            startApplyingForce(direction: direction)
+                        } stopApplyingForce: {
+                            stopApplyingForce()
+                        } applyAnalogForce: { analogVector in
+                            applyAnalogForce(analogVector: analogVector)
+                        }
+                    }
+                }
             }
             
-            if isGameOver {
-                GameOverView(finalScore: score, enemiesDefeated: enemiesDefeated, wavesCompleted: max(1, currentWave - 1)) {
-                    restartGame()
-                }
+            // Pause Menu Overlay
+            if gameState == .paused {
+                PauseMenuView(
+                    onResume: resumeGame,
+                    onMainMenu: returnToMainMenu,
+                    currentScore: score,
+                    currentWave: currentWave
+                )
+            }
+            
+            // Game Over Overlay
+            if gameState == .gameOver {
+                GameOverView(
+                    finalScore: score,
+                    enemiesDefeated: enemiesDefeated,
+                    wavesCompleted: max(1, currentWave - 1),
+                    onReplay: startNewGame,
+                    onMainMenu: returnToMainMenu
+                )
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: .playerFell)) { _ in
-            isGameOver = true
+            if gameState == .playing {
+                gameOver()
+            }
         }
         .onReceive(NotificationCenter.default.publisher(for: .scoreChanged)) { notification in
             if let newScore = notification.object as? Int {
@@ -103,6 +149,47 @@ struct ContentView: View {
                 }
             }
         }
+    }
+    
+    // MARK: - Game State Management
+    
+    private func startNewGame() {
+        score = 0
+        enemiesDefeated = 0
+        currentWave = 1
+        activePowerUp = nil
+        playerUpgrade = nil
+        gameKey = UUID() // This will trigger a complete recreation of the RealityView
+        GameConfig.isGamePaused = false
+        gameState = .playing
+    }
+    
+    private func pauseGame() {
+        gameState = .paused
+        GameConfig.isGamePaused = true
+    }
+    
+    private func resumeGame() {
+        gameState = .playing
+        GameConfig.isGamePaused = false
+    }
+    
+    private func gameOver() {
+        gameState = .gameOver
+        // Game is now stopped, no systems are running in background
+    }
+    
+    private func returnToMainMenu() {
+        gameState = .mainMenu
+        GameConfig.isGamePaused = false
+        // Clear all game data
+        score = 0
+        enemiesDefeated = 0
+        currentWave = 1
+        activePowerUp = nil
+        playerUpgrade = nil
+        // Generate new key to ensure clean state
+        gameKey = UUID()
     }
     
     private func setupGame(content: RealityViewCameraContent) async {
@@ -156,16 +243,6 @@ struct ContentView: View {
         content.add(spawnerEntity)
         content.add(lootBoxSpawnerEntity)
         content.add(lootBoxContainerEntity)
-    }
-    
-    private func restartGame() {
-        isGameOver = false
-        score = 0
-        enemiesDefeated = 0
-        currentWave = 1
-        activePowerUp = nil
-        playerUpgrade = nil
-        gameKey = UUID() // This will trigger a complete recreation of the RealityView
     }
     
     private func setupWaveSystem(for entity: Entity) {
@@ -243,6 +320,9 @@ struct ContentView: View {
         return camera
     }
     private func startApplyingForce(direction: ForceDirection) {
+        // Don't apply force if game is paused
+        if GameConfig.isGamePaused { return }
+        
         guard var physics = capsuleEntity.components[PhysicsMovementComponent.self] else { return }
         let progression = capsuleEntity.components[PlayerProgressionComponent.self]
         
@@ -254,12 +334,18 @@ struct ContentView: View {
     }
     
     private func stopApplyingForce() {
+        // Don't apply force if game is paused
+        if GameConfig.isGamePaused { return }
+        
         guard var physics = capsuleEntity.components[PhysicsMovementComponent.self] else { return }
         physics.velocity *= 0.9 // Better control when stopping
         capsuleEntity.components[PhysicsMovementComponent.self] = physics
     }
     
     private func applyAnalogForce(analogVector: SIMD2<Float>) {
+        // Don't apply force if game is paused
+        if GameConfig.isGamePaused { return }
+        
         guard var physics = capsuleEntity.components[PhysicsMovementComponent.self] else { return }
         let progression = capsuleEntity.components[PlayerProgressionComponent.self]
         

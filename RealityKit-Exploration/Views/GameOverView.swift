@@ -5,6 +5,7 @@ struct GameOverView: View {
     let enemiesDefeated: Int
     let wavesCompleted: Int
     let onReplay: () -> Void
+    let onMainMenu: () -> Void
     
     var body: some View {
         ZStack {
@@ -59,17 +60,51 @@ struct GameOverView: View {
                         .fill(Color.gray.opacity(0.3))
                 )
                 
-                Button(action: onReplay) {
-                    Text("PLAY AGAIN")
-                        .font(.title2)
-                        .fontWeight(.semibold)
+                // Action Buttons
+                VStack(spacing: 15) {
+                    Button(action: onReplay) {
+                        HStack {
+                            Image(systemName: "arrow.clockwise")
+                                .font(.title3)
+                            Text("PLAY AGAIN")
+                                .font(.title2)
+                                .fontWeight(.semibold)
+                        }
                         .foregroundColor(.white)
                         .padding(.horizontal, 40)
                         .padding(.vertical, 15)
                         .background(
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(Color.blue)
+                            LinearGradient(
+                                gradient: Gradient(colors: [Color.blue, Color.blue.opacity(0.8)]),
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
                         )
+                        .cornerRadius(20)
+                        .shadow(color: .blue.opacity(0.3), radius: 8)
+                    }
+                    
+                    Button(action: onMainMenu) {
+                        HStack {
+                            Image(systemName: "house.fill")
+                                .font(.title3)
+                            Text("MAIN MENU")
+                                .font(.title2)
+                                .fontWeight(.semibold)
+                        }
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 40)
+                        .padding(.vertical, 15)
+                        .background(
+                            LinearGradient(
+                                gradient: Gradient(colors: [Color.gray, Color.gray.opacity(0.8)]),
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+                        .cornerRadius(20)
+                        .shadow(color: .gray.opacity(0.3), radius: 8)
+                    }
                 }
                 .buttonStyle(PlainButtonStyle())
             }
@@ -79,7 +114,11 @@ struct GameOverView: View {
 }
 
 #Preview {
-    GameOverView(finalScore: 750, enemiesDefeated: 7, wavesCompleted: 3) {
-        print("Replay tapped")
-    }
+    GameOverView(
+        finalScore: 750, 
+        enemiesDefeated: 7, 
+        wavesCompleted: 3,
+        onReplay: { print("Replay tapped") },
+        onMainMenu: { print("Main Menu tapped") }
+    )
 }
