@@ -134,7 +134,11 @@ struct LootBoxSystem: System {
     }
     
     private func activateTimeSlow(player: Entity, powerUpComp: inout PowerUpComponent, context: SceneUpdateContext, currentTime: TimeInterval) {
-        powerUpComp.activateTimeSlow(currentTime: currentTime)
+        // Get player's upgraded slow duration
+        let progression = player.components[PlayerProgressionComponent.self]
+        let slowDuration = progression?.currentSlowDuration ?? TimeInterval(GameConfig.timeSlowDuration)
+        
+        powerUpComp.activateTimeSlow(currentTime: currentTime, duration: slowDuration)
         
         // Apply time slow effect to all enemies immediately
         let enemies = context.scene.performQuery(Self.enemyQuery)
@@ -148,10 +152,14 @@ struct LootBoxSystem: System {
             }
         }
         
-        print("Time Slow activated for \(GameConfig.timeSlowDuration) seconds")
+        print("Time Slow activated for \(slowDuration) seconds (upgraded)")
     }
     
     private func activateShockwave(player: Entity, context: SceneUpdateContext) {
+        // Get player's upgraded shockwave force
+        let progression = player.components[PlayerProgressionComponent.self]
+        let shockwaveForce = progression?.currentShockwaveForce ?? GameConfig.shockwaveForce
+        
         let enemies = context.scene.performQuery(Self.enemyQuery)
         
         // Trigger shockwave animation (index 4) on player
@@ -162,7 +170,7 @@ struct LootBoxSystem: System {
             if distance <= GameConfig.shockwaveRadius {
                 // Calculate push direction away from player
                 let pushDirection = normalize(enemy.position - player.position)
-                let pushForce = pushDirection * GameConfig.shockwaveForce
+                let pushForce = pushDirection * shockwaveForce
                 
                 // Apply force to enemy physics
                 if var physics = enemy.components[PhysicsMovementComponent.self] {
@@ -172,7 +180,7 @@ struct LootBoxSystem: System {
             }
         }
         
-        print("Shockwave activated - pushed enemies within \(GameConfig.shockwaveRadius) radius")
+        print("Shockwave activated with force \(shockwaveForce) - pushed enemies within \(GameConfig.shockwaveRadius) radius")
     }
     
     private func handlePowerUpEffects(context: SceneUpdateContext, currentTime: TimeInterval) {

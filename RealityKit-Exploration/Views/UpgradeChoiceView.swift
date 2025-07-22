@@ -93,7 +93,7 @@ struct UpgradeOptionButton: View {
 
 #Preview {
     UpgradeChoiceView(
-        upgradeChoices: [.speed, .mass, .agility],
+        upgradeChoices: [.resilience, .force, .slowDuration],
         currentWave: 3,
         onChoiceMade: { upgradeType in
             print("Chosen: \(upgradeType.name)")

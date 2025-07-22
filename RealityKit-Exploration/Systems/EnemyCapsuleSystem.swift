@@ -101,9 +101,8 @@ class EnemyCapsuleSystem: System {
         
         // Get player progression for enhanced attributes
         let progression = player.components[PlayerProgressionComponent.self]
-        let resilience = progression?.currentResilience ?? GameConfig.playerResistance
+        let resilience = progression?.currentResistance ?? GameConfig.playerResistance
         let forceMultiplier = progression?.forceMultiplier ?? 1.0
-        let momentum = progression?.currentMomentum ?? 1.0
         
         // Calculate forces based on mass difference and strength multipliers
         let baseForce = GameConfig.bounceForceMultiplier
@@ -116,9 +115,7 @@ class EnemyCapsuleSystem: System {
         
         // Apply force to player (reduced by resilience)
         if var playerPhysics = player.components[PhysicsMovementComponent.self] {
-            // Momentum helps preserve existing velocity
-            let currentMomentum = length(playerPhysics.velocity) * momentum * 0.5
-            playerPhysics.velocity = playerPhysics.velocity * momentum + playerForce
+            playerPhysics.velocity += playerForce
             player.components[PhysicsMovementComponent.self] = playerPhysics
         }
         

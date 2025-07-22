@@ -12,20 +12,15 @@ struct PlayerProgressionSystem: System {
     }
     
     static func applyPlayerUpgrade(to playerEntity: Entity, upgradeType: PlayerUpgradeType) {
-        guard var progression = playerEntity.components[PlayerProgressionComponent.self],
-              var physics = playerEntity.components[PhysicsMovementComponent.self] else {
+        guard var progression = playerEntity.components[PlayerProgressionComponent.self] else {
             return
         }
         
         // Apply chosen upgrade
         progression.applyChosenUpgrade(upgradeType)
         
-        // Update physics component with new values
-        physics.mass = progression.currentMass
-        
-        // Save updated components
+        // Save updated components (no need to update physics mass anymore)
         playerEntity.components[PlayerProgressionComponent.self] = progression
-        playerEntity.components[PhysicsMovementComponent.self] = physics
         
         // Notify UI about the upgrade
         DispatchQueue.main.async {
@@ -34,7 +29,7 @@ struct PlayerProgressionSystem: System {
         
         print("Player upgraded: \(upgradeType.name)")
         print("Wave \(progression.wavesCompleted) - Diminishing multiplier: \(String(format: "%.3f", pow(GameConfig.playerUpgradeDiminishingFactor, Float(progression.wavesCompleted - 1))))")
-        print("New stats - Speed: \(String(format: "%.2f", progression.currentSpeed)), Mass: \(String(format: "%.2f", progression.currentMass)), Force: \(String(format: "%.2f", progression.currentForce))")
+        print("New stats - Resilience: \(String(format: "%.2f", progression.currentResistance)), Force: \(String(format: "%.2f", progression.currentForce)), Slow Duration: \(String(format: "%.2f", progression.currentSlowDuration))s, Shockwave Power: \(String(format: "%.2f", progression.currentShockwaveForce))")
     }
 }
 

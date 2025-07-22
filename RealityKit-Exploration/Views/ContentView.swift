@@ -38,6 +38,7 @@ struct ContentView: View {
                         await setupGame(content: content)
                     } update: { content in }
                     .id(gameKey) // This will recreate the RealityView when gameKey changes
+                    .ignoresSafeArea(.all)
                     
                     // Game UI Overlay (only visible when playing)
                     if gameState == .playing {
@@ -62,14 +63,6 @@ struct ContentView: View {
                                 }
                                 if let upgrade = playerUpgrade {
                                     PlayerUpgradeIndicator(upgradeName: upgrade)
-                                }
-                            }
-                            
-                            // Optional: Add progression debug view (remove for production)
-                            if currentWave > 1 {
-                                HStack {
-                                    ProgressionDebugView(currentWave: currentWave)
-                                    Spacer()
                                 }
                             }
                             
@@ -222,12 +215,6 @@ struct ContentView: View {
         guard var progression = capsuleEntity.components[PlayerProgressionComponent.self] else { return }
         progression.applyChosenUpgrade(chosenUpgrade)
         capsuleEntity.components[PlayerProgressionComponent.self] = progression
-        
-        // Also update physics component with new values
-        if var physics = capsuleEntity.components[PhysicsMovementComponent.self] {
-            physics.mass = progression.currentMass
-            capsuleEntity.components[PhysicsMovementComponent.self] = physics
-        }
         
         // Show upgrade notification
         playerUpgrade = chosenUpgrade.name
@@ -394,14 +381,9 @@ struct ContentView: View {
         guard var physics = capsuleEntity.components[PhysicsMovementComponent.self] else { return }
         let progression = capsuleEntity.components[PlayerProgressionComponent.self]
         
-        let speedMultiplier = progression?.speedMultiplier ?? 1.0
         let forceMultiplier = progression?.forceMultiplier ?? 1.0
-        let agilityMultiplier = progression?.agilityMultiplier ?? 1.0
         
-        // Agility affects acceleration and responsiveness
-        let totalSpeedMultiplier = speedMultiplier * (1.0 + (agilityMultiplier - 1.0) * 0.5)
-        
-        physics.velocity += direction.velocity * GameConfig.playerSpeed * totalSpeedMultiplier * forceMultiplier * 0.15
+        physics.velocity += direction.velocity * GameConfig.playerSpeed * forceMultiplier * 0.15
         capsuleEntity.components[PhysicsMovementComponent.self] = physics
         
         // Handle character orientation based on movement direction
@@ -415,12 +397,9 @@ struct ContentView: View {
         if GameConfig.isGamePaused { return }
         
         guard var physics = capsuleEntity.components[PhysicsMovementComponent.self] else { return }
-        let progression = capsuleEntity.components[PlayerProgressionComponent.self]
-        let agilityMultiplier = progression?.agilityMultiplier ?? 1.0
         
-        // Agility affects how quickly player can stop/change direction
-        let stopMultiplier = 0.9 + (agilityMultiplier - 1.0) * 0.05 // Better stopping with agility
-        physics.velocity *= stopMultiplier
+        // Apply friction to stop player movement
+        physics.velocity *= GameConfig.frictionCoefficient
         capsuleEntity.components[PhysicsMovementComponent.self] = physics
     }
     
@@ -437,16 +416,11 @@ struct ContentView: View {
         guard var physics = capsuleEntity.components[PhysicsMovementComponent.self] else { return }
         let progression = capsuleEntity.components[PlayerProgressionComponent.self]
         
-        let speedMultiplier = progression?.speedMultiplier ?? 1.0
         let forceMultiplier = progression?.forceMultiplier ?? 1.0
-        let agilityMultiplier = progression?.agilityMultiplier ?? 1.0
-        
-        // Agility affects acceleration and responsiveness
-        let totalSpeedMultiplier = speedMultiplier * (1.0 + (agilityMultiplier - 1.0) * 0.5)
         
         let isoX = (analogVector.x - analogVector.y) * GameConfig.isometricDiagonal
         let isoZ = -(analogVector.x + analogVector.y) * GameConfig.isometricDiagonal
-        let force = SIMD3<Float>(isoX, 0, isoZ) * GameConfig.playerSpeed * totalSpeedMultiplier * forceMultiplier * 0.15
+        let force = SIMD3<Float>(isoX, 0, isoZ) * GameConfig.playerSpeed * forceMultiplier * 0.15
         physics.velocity += force
         capsuleEntity.components[PhysicsMovementComponent.self] = physics
         

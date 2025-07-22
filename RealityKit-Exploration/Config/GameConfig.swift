@@ -87,7 +87,7 @@ struct GameConfig {
     
     // Camera
     static let cameraFOV: Float = 35.0
-    static let cameraIsometricOffset: SIMD3<Float> = [1, 2, 1]
+  static let cameraIsometricOffset: SIMD3<Float> = [1, 2.5, 1]
     static let cameraSmoothing: Float = 0.05
     
     // Isometric movement mapping
@@ -101,8 +101,8 @@ struct GameConfig {
     // Power-ups
     static let timeSlowDuration: TimeInterval = 3.0 // Time slow effect duration
     static let timeSlowMultiplier: Float = 0.3 // Enemy speed multiplier during time slow
-    static let shockwaveForce: Float = 5.0 // Force applied to enemies during shockwave
-    static let shockwaveRadius: Float = 1.0 // Radius of shockwave effect
+    static let shockwaveForce: Float = 4.0 // Force applied to enemies during shockwave (balanced for 150cm arena)
+    static let shockwaveRadius: Float = 0.8 // Radius of shockwave effect (80cm radius for 150cm arena)
 
     // Entity names (for easy adjustment)
     struct EntityNames {

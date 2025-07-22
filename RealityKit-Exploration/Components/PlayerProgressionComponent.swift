@@ -1,112 +1,89 @@
 import RealityKit
 import Foundation
 
-// Enhanced player progression types with more variety
+// Focused player progression types suitable for sumo-style gameplay
 enum PlayerUpgradeType: String, CaseIterable, Codable {
-    case speed = "speed"
-    case mass = "mass"
-    case force = "force"
-    case agility = "agility"         // New: Better turning and control
-    case resilience = "resilience"   // New: Resist enemy pushes better
-    case momentum = "momentum"       // New: Keep moving through enemies
+    case resilience = "resilience"     // Resist enemy pushes better
+    case force = "force"              // Push enemies with more power
+    case slowDuration = "slowDuration" // Time slow effects last longer
+    case shockwavePower = "shockwavePower" // Stronger shockwave effects
     
     var name: String {
         switch self {
-        case .speed:
-            return "Speed Boost"
-        case .mass:
-            return "Mass Increase" 
-        case .force:
-            return "Force Boost"
-        case .agility:
-            return "Agility"
         case .resilience: 
-            return "Resilience"
-        case .momentum:
-            return "Momentum"
+            return "Iron Will"
+        case .force:
+            return "Crushing Force"
+        case .slowDuration:
+            return "Extended Slow"
+        case .shockwavePower:
+            return "Devastating Shockwave"
         }
     }
     
     var description: String {
         switch self {
-        case .speed:
-            return "Move faster across the arena"
-        case .mass:
-            return "Become heavier and harder to push"
-        case .force:
-            return "Push enemies with more power"
-        case .agility:
-            return "Better control and maneuverability"
         case .resilience:
-            return "Resist enemy attacks better"
-        case .momentum:
-            return "Keep moving when colliding with enemies"
+            return "Become harder to push around"
+        case .force:
+            return "Push enemies with devastating power"
+        case .slowDuration:
+            return "Time slow effects last much longer"
+        case .shockwavePower:
+            return "Shockwave pushes enemies harder and further"
         }
     }
     
     var icon: String {
         switch self {
-        case .speed:
-            return "bolt.fill"
-        case .mass:
-            return "cube.fill"
-        case .force:
-            return "hand.raised.fill"
-        case .agility:
-            return "arrow.triangle.2.circlepath"
         case .resilience:
             return "shield.fill"
-        case .momentum:
-            return "arrow.forward.circle.fill"
+        case .force:
+            return "hand.raised.fill"
+        case .slowDuration:
+            return "clock.arrow.circlepath"
+        case .shockwavePower:
+            return "burst.fill"
         }
     }
 }
 
 // Component for tracking player progression
 struct PlayerProgressionComponent: Component, Codable {
-    var speedMultiplier: Float = 1.0
-    var massMultiplier: Float = 1.0
-    var forceMultiplier: Float = 1.0
-    var agilityMultiplier: Float = 1.0      // New: affects friction and control
-    var resilienceMultiplier: Float = 1.0   // New: affects resistance to pushes
-    var momentumMultiplier: Float = 1.0     // New: affects collision preservation
+    var resilienceMultiplier: Float = 1.0   // Resist being pushed
+    var forceMultiplier: Float = 1.0        // Push enemies harder
+    var slowDurationMultiplier: Float = 1.0  // Time slow lasts longer
+    var shockwavePowerMultiplier: Float = 1.0 // Shockwave is stronger
     var wavesCompleted: Int = 0
     
     // Tracking upgrade counts for better balance
     var upgradesApplied: [PlayerUpgradeType: Int] = [:]
     
     // Base values for calculating current stats
-    var baseSpeed: Float = GameConfig.playerSpeed
-    var baseMass: Float = GameConfig.playerMass
-    var baseForce: Float = 1.0
+    var baseResistance: Float = GameConfig.playerResistance
+    var baseForce: Float = GameConfig.playerPushForceMultiplier
+    var baseSlowDuration: Float = Float(GameConfig.timeSlowDuration)
+    var baseShockwaveForce: Float = GameConfig.shockwaveForce
     
     // Default initializer
     init() {
         // All properties already have default values, so this is sufficient
     }
     
-    var currentSpeed: Float {
-        return baseSpeed * speedMultiplier
-    }
-    
-    var currentMass: Float {
-        return baseMass * massMultiplier
+    var currentResistance: Float {
+        return baseResistance * resilienceMultiplier
     }
     
     var currentForce: Float {
         return baseForce * forceMultiplier
     }
     
-    var currentAgility: Float {
-        return agilityMultiplier
+    var currentSlowDuration: TimeInterval {
+        return TimeInterval(baseSlowDuration * slowDurationMultiplier)
     }
     
-    var currentResilience: Float {
-        return GameConfig.playerResistance * resilienceMultiplier
-    }
-    
-    var currentMomentum: Float {
-        return momentumMultiplier
+    var currentShockwaveForce: Float {
+        return baseShockwaveForce * shockwavePowerMultiplier
     }
     
     mutating func applyChosenUpgrade(_ upgradeType: PlayerUpgradeType) {
@@ -120,24 +97,18 @@ struct PlayerProgressionComponent: Component, Codable {
         let diminishingMultiplier = pow(GameConfig.playerUpgradeDiminishingFactor, Float(upgradeCount - 1))
         
         switch upgradeType {
-        case .speed:
-            let upgradeAmount = GameConfig.playerSpeedIncrease * diminishingMultiplier
-            speedMultiplier += upgradeAmount
-        case .mass:
-            let upgradeAmount = GameConfig.playerMassIncrease * diminishingMultiplier
-            massMultiplier += upgradeAmount
+        case .resilience:
+            let upgradeAmount = 0.4 * diminishingMultiplier // Significant resistance boost
+            resilienceMultiplier += upgradeAmount
         case .force:
             let upgradeAmount = GameConfig.playerForceIncrease * diminishingMultiplier
             forceMultiplier += upgradeAmount
-        case .agility:
-            let upgradeAmount = 0.2 * diminishingMultiplier // Improves control
-            agilityMultiplier += upgradeAmount
-        case .resilience:
-            let upgradeAmount = 0.3 * diminishingMultiplier // Better resistance
-            resilienceMultiplier += upgradeAmount
-        case .momentum:
-            let upgradeAmount = 0.25 * diminishingMultiplier // Better collision handling
-            momentumMultiplier += upgradeAmount
+        case .slowDuration:
+            let upgradeAmount = 0.5 * diminishingMultiplier // +50% slow duration each upgrade
+            slowDurationMultiplier += upgradeAmount
+        case .shockwavePower:
+            let upgradeAmount = 0.25 * diminishingMultiplier // +25% shockwave power each upgrade (more balanced for small arena)
+            shockwavePowerMultiplier += upgradeAmount
         }
     }
     
@@ -176,21 +147,18 @@ struct PlayerProgressionComponent: Component, Codable {
     // MARK: - Codable Implementation
     
     enum CodingKeys: String, CodingKey {
-        case speedMultiplier, massMultiplier, forceMultiplier
-        case agilityMultiplier, resilienceMultiplier, momentumMultiplier
+        case resilienceMultiplier, forceMultiplier, slowDurationMultiplier, shockwavePowerMultiplier
         case wavesCompleted, upgradesApplied
-        case baseSpeed, baseMass, baseForce
+        case baseResistance, baseForce, baseSlowDuration, baseShockwaveForce
     }
     
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         
-        speedMultiplier = try container.decodeIfPresent(Float.self, forKey: .speedMultiplier) ?? 1.0
-        massMultiplier = try container.decodeIfPresent(Float.self, forKey: .massMultiplier) ?? 1.0
-        forceMultiplier = try container.decodeIfPresent(Float.self, forKey: .forceMultiplier) ?? 1.0
-        agilityMultiplier = try container.decodeIfPresent(Float.self, forKey: .agilityMultiplier) ?? 1.0
         resilienceMultiplier = try container.decodeIfPresent(Float.self, forKey: .resilienceMultiplier) ?? 1.0
-        momentumMultiplier = try container.decodeIfPresent(Float.self, forKey: .momentumMultiplier) ?? 1.0
+        forceMultiplier = try container.decodeIfPresent(Float.self, forKey: .forceMultiplier) ?? 1.0
+        slowDurationMultiplier = try container.decodeIfPresent(Float.self, forKey: .slowDurationMultiplier) ?? 1.0
+        shockwavePowerMultiplier = try container.decodeIfPresent(Float.self, forKey: .shockwavePowerMultiplier) ?? 1.0
         wavesCompleted = try container.decodeIfPresent(Int.self, forKey: .wavesCompleted) ?? 0
         
         // Decode dictionary with string keys and convert back
@@ -202,28 +170,28 @@ struct PlayerProgressionComponent: Component, Codable {
             }
         }
         
-        baseSpeed = try container.decodeIfPresent(Float.self, forKey: .baseSpeed) ?? GameConfig.playerSpeed
-        baseMass = try container.decodeIfPresent(Float.self, forKey: .baseMass) ?? GameConfig.playerMass
-        baseForce = try container.decodeIfPresent(Float.self, forKey: .baseForce) ?? 1.0
+        baseResistance = try container.decodeIfPresent(Float.self, forKey: .baseResistance) ?? GameConfig.playerResistance
+        baseForce = try container.decodeIfPresent(Float.self, forKey: .baseForce) ?? GameConfig.playerPushForceMultiplier
+        baseSlowDuration = try container.decodeIfPresent(Float.self, forKey: .baseSlowDuration) ?? Float(GameConfig.timeSlowDuration)
+        baseShockwaveForce = try container.decodeIfPresent(Float.self, forKey: .baseShockwaveForce) ?? GameConfig.shockwaveForce
     }
     
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         
-        try container.encode(speedMultiplier, forKey: .speedMultiplier)
-        try container.encode(massMultiplier, forKey: .massMultiplier)
-        try container.encode(forceMultiplier, forKey: .forceMultiplier)
-        try container.encode(agilityMultiplier, forKey: .agilityMultiplier)
         try container.encode(resilienceMultiplier, forKey: .resilienceMultiplier)
-        try container.encode(momentumMultiplier, forKey: .momentumMultiplier)
+        try container.encode(forceMultiplier, forKey: .forceMultiplier)
+        try container.encode(slowDurationMultiplier, forKey: .slowDurationMultiplier)
+        try container.encode(shockwavePowerMultiplier, forKey: .shockwavePowerMultiplier)
         try container.encode(wavesCompleted, forKey: .wavesCompleted)
         
         // Convert dictionary to string keys for encoding
         let upgradesDict = Dictionary(uniqueKeysWithValues: upgradesApplied.map { ($0.key.rawValue, $0.value) })
         try container.encode(upgradesDict, forKey: .upgradesApplied)
         
-        try container.encode(baseSpeed, forKey: .baseSpeed)
-        try container.encode(baseMass, forKey: .baseMass)
+        try container.encode(baseResistance, forKey: .baseResistance)
         try container.encode(baseForce, forKey: .baseForce)
+        try container.encode(baseSlowDuration, forKey: .baseSlowDuration)
+        try container.encode(baseShockwaveForce, forKey: .baseShockwaveForce)
     }
 }

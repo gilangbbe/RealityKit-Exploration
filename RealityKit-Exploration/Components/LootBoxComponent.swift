@@ -47,8 +47,8 @@ struct PowerUpComponent: Component, Codable {
         return currentTime < timeSlowEndTime
     }
     
-    mutating func activateTimeSlow(currentTime: TimeInterval) {
-        timeSlowEndTime = currentTime + GameConfig.timeSlowDuration
+    mutating func activateTimeSlow(currentTime: TimeInterval, duration: TimeInterval) {
+        timeSlowEndTime = currentTime + duration
     }
 }
 
