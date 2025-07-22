@@ -2,45 +2,66 @@ import simd
 import Foundation
 
 struct GameConfig {
-    // Game State
+     // Character animations
+    static let walkAnimationName: String = "player_walk"
+    static let walkAnimationIndex: Int = 5 // Row 6 in animation library (0-based index)
+    static let attackAnimationIndices: [Int] = [0, 1, 2, 3] // Attack animations at indices 1-4
+    static let shockwaveAnimationIndex: Int = 4 // Shockwave animation at index 4
+  static let attackAnimationDuration: TimeInterval = 0.5 // How long attack animation plays
+    static let shockwaveAnimationDuration: TimeInterval = 1.5 // How long shockwave animation plays
+    static let minMovementForWalkAnimation: Float = 0.02 // Minimum movement threshold to trigger walk animation
+    static let playerChildEntityName: String = "player" // Child entity containing animationsame State
     static var isGamePaused: Bool = false
     
     // Wave System
-    static let baseEnemiesPerWave: Int = 6
+    static let baseEnemiesPerWave: Int = 5
     static let enemyHealthIncreasePerWave: Int = 1
-    static let enemySpeedIncreasePerWave: Float = 0.15
+    static let enemySpeedIncreasePerWave: Float = 0.1
     static let enemyMassIncreasePerWave: Float = 0.1
     static let enemyCountIncreasePerWave: Int = 1
     static let waveClearDelay: TimeInterval = 3.0
     static let waveScoreMultiplier: Int = 50 // Bonus points per wave completed
     
     // Wave progression limits
-    static let maxWaveForSpeedIncrease: Int = 8 // After wave 4, no more speed/mass increases
-    static let maxWaveForMassIncrease: Int = 8 // After wave 4, no more speed/mass increases
+    static let maxWaveForSpeedIncrease: Int = 5 // After wave 4, no more speed/mass increases
+    static let maxWaveForMassIncrease: Int = 5 // After wave 4, no more speed/mass increases
     
-    // Diminishing returns progression
+    // Balanced progression system
+    static let playerUpgradeChoicesPerWave: Int = 3 // Player chooses from 3 options
+    static let playerUpgradeBaseValue: Float = 0.15 // Smaller, more balanced upgrades
+    static let playerUpgradeDiminishingFactor: Float = 0.95 // Slower diminishing than before
+    
+    // Enemy scaling to match player progression
+    static let enemyScalingPerWave: Float = 0.15 // Enemies get 15% stronger each wave (was 0.1)
+    static let enemyMaxScalingWaves: Int = 15 // After wave 15, enemies cap out (was 10)
+    static let enemyForceScalingPerWave: Float = 0.2 // Enemy push force scales 20% per wave
+    
+    // Diminishing returns for other systems
     static let enemyCountDiminishingFactor: Float = 0.8 // Each wave enemy count increase gets 20% smaller
-    static let playerUpgradeDiminishingFactor: Float = 0.85 // Each wave player upgrade gets 15% smaller
     static let waveScoreDiminishingFactor: Float = 0.9 // Each wave score bonus gets 10% smaller
     static let maxEnemiesDiminishingFactor: Float = 0.85 // Each wave max enemies increase gets 15% smaller
     
-    // Player progression per wave (base values that will diminish)
-    static let playerSpeedIncrease: Float = 0.1 // Speed boost per wave (starts higher for diminishing)
-    static let playerMassIncrease: Float = 0.3 // Mass boost per wave (starts higher for diminishing)
-    static let playerForceIncrease: Float = 0.15 // Force multiplier boost per wave (starts higher for diminishing)
+    // Player progression per wave (balanced values)
+    static let playerSpeedIncrease: Float = 0.15 // Moderate speed boost
+    static let playerMassIncrease: Float = 0.25 // Reasonable mass boost (was 0.5)
+    static let playerForceIncrease: Float = 0.2 // Balanced force boost
   
     // Player movement
-  static let playerSpeed: Float = 0.3
+    static let playerSpeed: Float = 0.3
     static let playerSurfaceOffsetMargin: Float = 0.05
     static let playerMass: Float = 3.0
-  static let playerPushForceMultiplier: Float = 0.5 // Player pushes harder
-  static let playerResistance: Float = 3 // Player resists being pushed
+    static let playerPushForceMultiplier: Float = 0.5 // Player pushes harder
+    static let playerResistance: Float = 3 // Player resists being pushed
     
-    // Enemy
+    // Character orientation
+    static let characterRotationSmoothness: Float = 0.15 // How smoothly character rotates (0.1 = slow, 0.3 = fast)
+    static let minMovementForRotation: Float = 0.01 // Minimum movement threshold to trigger rotation
+    static let instantCollisionOrientation: Bool = true // Player immediately faces enemy on collision (true) or smooth rotation (false)
+    
   static let enemySpeed: Float = 0.3
     static let enemyMass: Float = 1
     static let enemyScoreValue: Int = 100
-    static let enemyPushForceMultiplier: Float = 0.3 // Enemies push weaker
+    static let enemyPushForceMultiplier: Float = 0.5 // Enemies push harder (was 0.3)
     
     // Physics & Collision
     static let collisionForceMultiplier: Float = 8.0 // Increased for more dramatic pushes
@@ -49,8 +70,8 @@ struct GameConfig {
     static let gravityStrength: Float = 9.8 // Gravity acceleration when off platform
     
     // Collision detection
-    static let playerCollisionRadius: Float = 0.05 // Player collision detection radius
-    static let enemyCollisionRadius: Float = 0.05 // Enemy-enemy collision detection radius
+    static let playerCollisionRadius: Float = 0.1 // Player collision detection radius
+    static let enemyCollisionRadius: Float = 0.1 // Enemy-enemy collision detection radius
     static let enemySeparationForce: Float = 0.5 // Force multiplier for enemy separation
     
     // Arena boundaries
@@ -86,7 +107,7 @@ struct GameConfig {
     // Entity names (for easy adjustment)
     struct EntityNames {
         static let scene = "Scene"
-        static let capsule = "Max"
+        static let capsule = "player_root"
         static let cube = "Cube"
         static let enemyCapsule = "enemy_chasing"
         static let lootBox = "LootBox"

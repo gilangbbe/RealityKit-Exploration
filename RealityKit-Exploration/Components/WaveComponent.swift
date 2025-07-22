@@ -10,8 +10,8 @@ struct WaveComponent: Component {
     var waveClearDelay: TimeInterval = 2.0
     var lastWaveClearTime: Date = Date.distantPast
     var baseEnemyHealth: Int = 1
-    var baseEnemySpeed: Float = 1.0
-    var baseEnemyMass: Float = 0.8
+    var baseEnemySpeed: Float = 1.2 // Increased from 1.0 for more challenge
+    var baseEnemyMass: Float = 1.2 // Increased from 0.8 for stronger pushes
     
     // Wave progression settings
     var enemyHealthIncrease: Int = 1 // Health increase per wave
@@ -25,15 +25,24 @@ struct WaveComponent: Component {
     }
     
     var currentWaveEnemySpeed: Float {
-        // Cap speed increases after wave 4
-        let effectiveWave = min(currentWave, GameConfig.maxWaveForSpeedIncrease)
-        return baseEnemySpeed + Float(effectiveWave - 1) * enemySpeedIncrease
+        // Balanced enemy scaling to match player progression
+        let effectiveWave = min(currentWave, GameConfig.enemyMaxScalingWaves)
+        let scalingFactor = 1.0 + (Float(effectiveWave - 1) * GameConfig.enemyScalingPerWave)
+        return baseEnemySpeed * scalingFactor
     }
     
     var currentWaveEnemyMass: Float {
-        // Cap mass increases after wave 4
-        let effectiveWave = min(currentWave, GameConfig.maxWaveForMassIncrease)
-        return baseEnemyMass + Float(effectiveWave - 1) * enemyMassIncrease
+        // Balanced enemy mass scaling
+        let effectiveWave = min(currentWave, GameConfig.enemyMaxScalingWaves)
+        let scalingFactor = 1.0 + (Float(effectiveWave - 1) * GameConfig.enemyScalingPerWave)
+        return baseEnemyMass * scalingFactor
+    }
+    
+    var currentWaveEnemyForceMultiplier: Float {
+        // Progressive enemy push force scaling
+        let effectiveWave = min(currentWave, GameConfig.enemyMaxScalingWaves)
+        let forceScaling = 1.0 + (Float(effectiveWave - 1) * GameConfig.enemyForceScalingPerWave)
+        return GameConfig.enemyPushForceMultiplier * forceScaling
     }
     
     var currentWaveEnemyCount: Int {
@@ -62,6 +71,7 @@ struct WaveComponent: Component {
         print("- Enemies this wave: \(currentWaveEnemyCount)")
         print("- Enemy speed: \(String(format: "%.2f", currentWaveEnemySpeed))")
         print("- Enemy mass: \(String(format: "%.2f", currentWaveEnemyMass))")
+        print("- Enemy push force: \(String(format: "%.2f", currentWaveEnemyForceMultiplier))")
     }
     
     mutating func enemyDefeated() {

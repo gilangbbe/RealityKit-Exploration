@@ -95,14 +95,30 @@ class EnemyCapsuleSystem: System {
         let playerMass = player.components[PhysicsMovementComponent.self]?.mass ?? GameConfig.playerMass
         let enemyMass = enemy.components[PhysicsMovementComponent.self]?.mass ?? GameConfig.enemyMass
         
+        // Get wave-scaled enemy push force
+        let enemyComponent = enemy.components[EnemyCapsuleComponent.self]
+        let enemyPushForce = enemyComponent?.pushForceMultiplier ?? GameConfig.enemyPushForceMultiplier
+        
+        // Get player progression for enhanced attributes
+        let progression = player.components[PlayerProgressionComponent.self]
+        let resilience = progression?.currentResilience ?? GameConfig.playerResistance
+        let forceMultiplier = progression?.forceMultiplier ?? 1.0
+        let momentum = progression?.currentMomentum ?? 1.0
+        
         // Calculate forces based on mass difference and strength multipliers
         let baseForce = GameConfig.bounceForceMultiplier
-        let playerForce = collisionDirection * baseForce * GameConfig.enemyPushForceMultiplier * (enemyMass / playerMass) * GameConfig.playerResistance
-        let enemyForce = -collisionDirection * baseForce * GameConfig.playerPushForceMultiplier * (playerMass / enemyMass)
         
-        // Apply force to player (reduced due to higher mass and resistance)
+        // Player force is calculated with wave-scaled enemy push force, reduced by resilience
+        let playerForce = collisionDirection * baseForce * enemyPushForce * (enemyMass / playerMass) / resilience
+        
+        // Enemy force is enhanced by player's force multiplier
+        let enemyForce = -collisionDirection * baseForce * GameConfig.playerPushForceMultiplier * (playerMass / enemyMass) * forceMultiplier
+        
+        // Apply force to player (reduced by resilience)
         if var playerPhysics = player.components[PhysicsMovementComponent.self] {
-            playerPhysics.velocity += playerForce
+            // Momentum helps preserve existing velocity
+            let currentMomentum = length(playerPhysics.velocity) * momentum * 0.5
+            playerPhysics.velocity = playerPhysics.velocity * momentum + playerForce
             player.components[PhysicsMovementComponent.self] = playerPhysics
         }
         
@@ -111,6 +127,43 @@ class EnemyCapsuleSystem: System {
             enemyPhysics.velocity += enemyForce
             enemy.components[PhysicsMovementComponent.self] = enemyPhysics
         }
+        
+        // Orient player to face the colliding enemy
+        orientPlayerTowardEnemy(player: player, enemy: enemy)
+        
+        // Trigger attack animation on player collision
+        PlayerAnimationSystem.triggerAttackAnimation(for: player, currentTime: Date().timeIntervalSince1970)
+    }
+    
+    private func orientPlayerTowardEnemy(player: Entity, enemy: Entity) {
+        // Calculate direction from player to enemy (player should face enemy)
+        let directionToEnemy = enemy.position - player.position
+        
+        // Only rotate if there's a meaningful distance between them
+        let distance = length(directionToEnemy)
+        guard distance > 0.01 else { return }
+        
+        // Normalize the direction vector
+        let normalizedDirection = directionToEnemy / distance
+        
+        // Calculate the target rotation angle based on direction to enemy
+        let targetAngle = atan2(normalizedDirection.x, normalizedDirection.z)
+        
+        // Create rotation quaternion around Y-axis (up vector)
+        let targetRotation = simd_quatf(angle: targetAngle, axis: SIMD3<Float>(0, 1, 0))
+        
+        if GameConfig.instantCollisionOrientation {
+            // Apply immediate rotation for combat responsiveness
+            player.orientation = targetRotation
+        } else {
+            // Apply smooth rotation interpolation
+            let currentRotation = player.orientation
+            let smoothingFactor = GameConfig.characterRotationSmoothness * 2.0 // Faster than movement rotation
+            let interpolatedRotation = simd_slerp(currentRotation, targetRotation, smoothingFactor)
+            player.orientation = interpolatedRotation
+        }
+        
+        print("Player oriented to face enemy at angle: \(targetAngle * 180 / .pi) degrees")
     }
     
     private func preventPhasing(enemy1: Entity, enemy2: Entity) {

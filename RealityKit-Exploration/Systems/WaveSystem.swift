@@ -29,8 +29,8 @@ class WaveSystem: System {
                     let bonusPoints = calculateDiminishingWaveBonus(wave: waveComponent.currentWave)
                     NotificationCenter.default.post(name: .waveBonus, object: bonusPoints)
                     
-                    // Apply random player upgrade after completing a wave
-                    applyPlayerProgression(context: context)
+                    // Show upgrade choices to player after completing a wave
+                    showUpgradeChoices(context: context)
                 }
             }
             
@@ -59,10 +59,17 @@ class WaveSystem: System {
         return totalBonus
     }
     
-    private func applyPlayerProgression(context: SceneUpdateContext) {
+    private func showUpgradeChoices(context: SceneUpdateContext) {
         let playerQuery = EntityQuery(where: .has(PlayerProgressionComponent.self) && .has(PhysicsMovementComponent.self))
         for entity in context.entities(matching: playerQuery, updatingSystemWhen: .rendering) {
-            PlayerProgressionSystem.applyPlayerUpgrade(to: entity)
+            if let progression = entity.components[PlayerProgressionComponent.self] {
+                let choices = progression.generateUpgradeChoices()
+                
+                // Send upgrade choices to UI
+                DispatchQueue.main.async {
+                    NotificationCenter.default.post(name: .showUpgradeChoice, object: choices)
+                }
+            }
             break // Only one player
         }
     }
@@ -71,4 +78,5 @@ class WaveSystem: System {
 extension Notification.Name {
     static let waveStarted = Notification.Name("waveStarted")
     static let waveBonus = Notification.Name("waveBonus")
+    static let showUpgradeChoice = Notification.Name("showUpgradeChoice")
 }

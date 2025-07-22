@@ -18,6 +18,10 @@ struct ContentView: View {
     @State private var playerUpgrade: String? = nil
     @State private var gameKey = UUID() // For restarting the game
     
+    // New upgrade choice system
+    @State private var showUpgradeChoice = false
+    @State private var upgradeChoices: [PlayerUpgradeType] = []
+    
     var body: some View {
         ZStack {
             // Main Menu
@@ -105,6 +109,15 @@ struct ContentView: View {
                     onMainMenu: returnToMainMenu
                 )
             }
+            
+            // Upgrade Choice Overlay
+            if showUpgradeChoice {
+                UpgradeChoiceView(
+                    upgradeChoices: upgradeChoices,
+                    currentWave: currentWave,
+                    onChoiceMade: handleUpgradeChoice
+                )
+            }
         }
         .onReceive(NotificationCenter.default.publisher(for: .playerFell)) { _ in
             if gameState == .playing {
@@ -149,6 +162,14 @@ struct ContentView: View {
                 }
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .showUpgradeChoice)) { notification in
+            if let choices = notification.object as? [PlayerUpgradeType] {
+                upgradeChoices = choices
+                showUpgradeChoice = true
+                // Pause game while choosing upgrade
+                GameConfig.isGamePaused = true
+            }
+        }
     }
     
     // MARK: - Game State Management
@@ -182,6 +203,7 @@ struct ContentView: View {
     private func returnToMainMenu() {
         gameState = .mainMenu
         GameConfig.isGamePaused = false
+        showUpgradeChoice = false // Clear any upgrade choice overlay
         // Clear all game data
         score = 0
         enemiesDefeated = 0
@@ -190,6 +212,30 @@ struct ContentView: View {
         playerUpgrade = nil
         // Generate new key to ensure clean state
         gameKey = UUID()
+    }
+    
+    private func handleUpgradeChoice(_ chosenUpgrade: PlayerUpgradeType) {
+        showUpgradeChoice = false
+        GameConfig.isGamePaused = false
+        
+        // Apply the chosen upgrade to the player
+        guard var progression = capsuleEntity.components[PlayerProgressionComponent.self] else { return }
+        progression.applyChosenUpgrade(chosenUpgrade)
+        capsuleEntity.components[PlayerProgressionComponent.self] = progression
+        
+        // Also update physics component with new values
+        if var physics = capsuleEntity.components[PhysicsMovementComponent.self] {
+            physics.mass = progression.currentMass
+            capsuleEntity.components[PhysicsMovementComponent.self] = physics
+        }
+        
+        // Show upgrade notification
+        playerUpgrade = chosenUpgrade.name
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+            playerUpgrade = nil
+        }
+        
+        print("Player upgraded: \(chosenUpgrade.name)")
     }
     
     private func setupGame(content: RealityViewCameraContent) async {
@@ -237,6 +283,7 @@ struct ContentView: View {
         WaveSystem.registerSystem()
         LootBoxSystem.registerSystem()
         PlayerProgressionSystem.registerSystem()
+        PlayerAnimationSystem.registerSystem()
         
         content.add(loadedScene)
         content.add(camera)
@@ -268,6 +315,21 @@ struct ContentView: View {
         // Initialize player progression component
         let progressionComponent = PlayerProgressionComponent()
         entity.components.set(progressionComponent)
+        
+        // Initialize player animation component
+        let animationComponent = PlayerAnimationComponent()
+        entity.components.set(animationComponent)
+        
+        // Debug: List available animations in the entity hierarchy
+        print("Player root entity name: \(entity.name ?? "unnamed")")
+        let rootAnimations = entity.availableAnimations.map { $0.name ?? "unnamed" }
+        print("Player root available animations: \(rootAnimations)")
+        
+        // Check child entities for animations
+        for child in entity.children {
+            let childAnimations = child.availableAnimations.map { $0.name ?? "unnamed" }
+            print("Child entity '\(child.name ?? "unnamed")' available animations: \(childAnimations)")
+        }
     }
     
     private func setupPlayerPhysics(for entity: Entity, constrainedTo cube: Entity) {
@@ -323,14 +385,29 @@ struct ContentView: View {
         // Don't apply force if game is paused
         if GameConfig.isGamePaused { return }
         
+        // Check if player is immobilized (during shockwave)
+        if let animationComp = capsuleEntity.components[PlayerAnimationComponent.self],
+           animationComp.isImmobilized {
+            return // Player cannot move during shockwave animation
+        }
+        
         guard var physics = capsuleEntity.components[PhysicsMovementComponent.self] else { return }
         let progression = capsuleEntity.components[PlayerProgressionComponent.self]
         
         let speedMultiplier = progression?.speedMultiplier ?? 1.0
         let forceMultiplier = progression?.forceMultiplier ?? 1.0
+        let agilityMultiplier = progression?.agilityMultiplier ?? 1.0
         
-        physics.velocity += direction.velocity * GameConfig.playerSpeed * speedMultiplier * forceMultiplier * 0.15
+        // Agility affects acceleration and responsiveness
+        let totalSpeedMultiplier = speedMultiplier * (1.0 + (agilityMultiplier - 1.0) * 0.5)
+        
+        physics.velocity += direction.velocity * GameConfig.playerSpeed * totalSpeedMultiplier * forceMultiplier * 0.15
         capsuleEntity.components[PhysicsMovementComponent.self] = physics
+        
+        // Handle character orientation based on movement direction
+        if length(direction.velocity) > GameConfig.minMovementForRotation { // Only rotate if there's significant movement
+            rotateCharacterToDirection(direction: direction.velocity)
+        }
     }
     
     private func stopApplyingForce() {
@@ -338,7 +415,12 @@ struct ContentView: View {
         if GameConfig.isGamePaused { return }
         
         guard var physics = capsuleEntity.components[PhysicsMovementComponent.self] else { return }
-        physics.velocity *= 0.9 // Better control when stopping
+        let progression = capsuleEntity.components[PlayerProgressionComponent.self]
+        let agilityMultiplier = progression?.agilityMultiplier ?? 1.0
+        
+        // Agility affects how quickly player can stop/change direction
+        let stopMultiplier = 0.9 + (agilityMultiplier - 1.0) * 0.05 // Better stopping with agility
+        physics.velocity *= stopMultiplier
         capsuleEntity.components[PhysicsMovementComponent.self] = physics
     }
     
@@ -346,17 +428,49 @@ struct ContentView: View {
         // Don't apply force if game is paused
         if GameConfig.isGamePaused { return }
         
+        // Check if player is immobilized (during shockwave)
+        if let animationComp = capsuleEntity.components[PlayerAnimationComponent.self],
+           animationComp.isImmobilized {
+            return // Player cannot move during shockwave animation
+        }
+        
         guard var physics = capsuleEntity.components[PhysicsMovementComponent.self] else { return }
         let progression = capsuleEntity.components[PlayerProgressionComponent.self]
         
         let speedMultiplier = progression?.speedMultiplier ?? 1.0
         let forceMultiplier = progression?.forceMultiplier ?? 1.0
+        let agilityMultiplier = progression?.agilityMultiplier ?? 1.0
+        
+        // Agility affects acceleration and responsiveness
+        let totalSpeedMultiplier = speedMultiplier * (1.0 + (agilityMultiplier - 1.0) * 0.5)
         
         let isoX = (analogVector.x - analogVector.y) * GameConfig.isometricDiagonal
         let isoZ = -(analogVector.x + analogVector.y) * GameConfig.isometricDiagonal
-        let force = SIMD3<Float>(isoX, 0, isoZ) * GameConfig.playerSpeed * speedMultiplier * forceMultiplier * 0.15
+        let force = SIMD3<Float>(isoX, 0, isoZ) * GameConfig.playerSpeed * totalSpeedMultiplier * forceMultiplier * 0.15
         physics.velocity += force
         capsuleEntity.components[PhysicsMovementComponent.self] = physics
+        
+        // Handle character orientation based on movement direction
+        if length(analogVector) > GameConfig.minMovementForRotation { // Only rotate if there's significant movement
+            let movementDirection = SIMD3<Float>(isoX, 0, isoZ)
+            rotateCharacterToDirection(direction: normalize(movementDirection))
+        }
+    }
+    
+    // Helper function to rotate character based on movement direction
+    private func rotateCharacterToDirection(direction: SIMD3<Float>) {
+        // Calculate the target rotation angle based on movement direction
+        let targetAngle = atan2(direction.x, direction.z)
+        
+        // Create rotation quaternion around Y-axis (up vector)
+        let targetRotation = simd_quatf(angle: targetAngle, axis: SIMD3<Float>(0, 1, 0))
+        
+        // Apply smooth rotation interpolation for natural character turning
+        let currentRotation = capsuleEntity.orientation
+        let smoothingFactor = GameConfig.characterRotationSmoothness
+        
+        let interpolatedRotation = simd_slerp(currentRotation, targetRotation, smoothingFactor)
+        capsuleEntity.orientation = interpolatedRotation
     }
 }
 

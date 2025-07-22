@@ -1,5 +1,6 @@
 import RealityKit
 import Foundation
+import Arena
 import QuartzCore
 
 struct LootBoxSystem: System {
@@ -111,6 +112,9 @@ struct LootBoxSystem: System {
     private func collectLootBox(player: Entity, lootBox: Entity, powerUpType: PowerUpType, context: SceneUpdateContext, currentTime: TimeInterval) {
         print("Player collected LootBox: \(powerUpType.name)")
         
+        // Play particle animation around player
+        playKeyApparitionEffect(at: player)
+        
         // Get or create PowerUpComponent
         var powerUpComp = player.components[PowerUpComponent.self] ?? PowerUpComponent()
         
@@ -149,6 +153,9 @@ struct LootBoxSystem: System {
     
     private func activateShockwave(player: Entity, context: SceneUpdateContext) {
         let enemies = context.scene.performQuery(Self.enemyQuery)
+        
+        // Trigger shockwave animation (index 4) on player
+        PlayerAnimationSystem.triggerShockwaveAnimation(for: player, currentTime: Date().timeIntervalSince1970)
         
         for enemy in enemies {
             let distance = simd_distance(player.position, enemy.position)
@@ -190,6 +197,43 @@ struct LootBoxSystem: System {
                 player.components[PowerUpComponent.self] = powerUpComp
                 
                 print("Time Slow effect ended - enemy speeds restored")
+            }
+        }
+    }
+    
+    // MARK: - Particle Effects
+    
+    private func playKeyApparitionEffect(at player: Entity) {
+        Task {
+            do {
+                // Load the key_apparition particle scene
+                if let particleScene = try? await Entity(named: "key_apparition", in: arenaBundle) {
+                    // Position the particle effect around the player's location
+                    // Place it slightly above the player to be more visible
+                    var effectPosition = player.position
+                    effectPosition.y += 0.2 // Slightly above player
+                    particleScene.position = effectPosition
+                    
+                    // Scale the effect if needed (adjust as needed for your particle system)
+                    particleScene.scale = SIMD3<Float>(1.0, 1.0, 1.0)
+                    
+                    // Add the particle effect to the player's parent (scene)
+                    if let playerParent = player.parent {
+                        playerParent.addChild(particleScene)
+                        
+                        // Auto-remove the particle effect after a delay
+                        // Adjust duration based on your particle animation length
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                            particleScene.removeFromParent()
+                        }
+                    }
+                    
+                    print("Key apparition particle effect played around player")
+                } else {
+                    print("Warning: Could not load key_apparition particle scene from Arena bundle")
+                }
+            } catch {
+                print("Error loading key_apparition particle scene: \(error)")
             }
         }
     }

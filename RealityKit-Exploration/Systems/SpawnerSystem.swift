@@ -86,6 +86,7 @@ class SpawnerSystem: System {
         var enemyComponent = EnemyCapsuleComponent()
         enemyComponent.speed = waveStats.currentWaveEnemySpeed
         enemyComponent.mass = waveStats.currentWaveEnemyMass
+        enemyComponent.pushForceMultiplier = waveStats.currentWaveEnemyForceMultiplier
         enemyComponent.scoreValue = GameConfig.enemyScoreValue + (waveStats.currentWave * 10) // More points for harder enemies
         enemy.components.set(enemyComponent)
         

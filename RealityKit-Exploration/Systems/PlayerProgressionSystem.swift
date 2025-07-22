@@ -11,14 +11,14 @@ struct PlayerProgressionSystem: System {
         // The actual progression logic is triggered by notifications
     }
     
-    static func applyPlayerUpgrade(to playerEntity: Entity) {
+    static func applyPlayerUpgrade(to playerEntity: Entity, upgradeType: PlayerUpgradeType) {
         guard var progression = playerEntity.components[PlayerProgressionComponent.self],
               var physics = playerEntity.components[PhysicsMovementComponent.self] else {
             return
         }
         
-        // Apply random upgrade
-        let upgradeType = progression.applyRandomUpgrade()
+        // Apply chosen upgrade
+        progression.applyChosenUpgrade(upgradeType)
         
         // Update physics component with new values
         physics.mass = progression.currentMass
