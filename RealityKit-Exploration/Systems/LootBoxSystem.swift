@@ -70,6 +70,10 @@ struct LootBoxSystem: System {
         let lootBoxComponent = LootBoxComponent()
         lootBox.components.set(lootBoxComponent)
         
+        // Add LootBox animation component
+        let animationComponent = LootBoxAnimationComponent()
+        lootBox.components.set(animationComponent)
+        
         // Add to container entity to prevent affecting arena bounds and camera
         if let container = container {
             container.addChild(lootBox)
@@ -81,6 +85,9 @@ struct LootBoxSystem: System {
                 surface.addChild(lootBox)
             }
         }
+        
+        // Start animation after adding to scene
+        LootBoxAnimationSystem.startAnimation(for: lootBox)
         
         print("Spawned LootBox with power-up: \(lootBoxComponent.powerUpType.name)")
     }
@@ -95,6 +102,7 @@ struct LootBoxSystem: System {
                 
                 // Check if loot box is expired
                 if lootBoxComp.isExpired(currentTime: currentTime) {
+                    LootBoxAnimationSystem.stopAnimation(for: lootBox)
                     lootBox.removeFromParent()
                     continue
                 }
@@ -103,6 +111,7 @@ struct LootBoxSystem: System {
                 let distance = simd_distance(player.position, lootBox.position)
                 if distance <= GameConfig.lootBoxCollectionRadius {
                     collectLootBox(player: player, lootBox: lootBox, powerUpType: lootBoxComp.powerUpType, context: context, currentTime: currentTime)
+                    LootBoxAnimationSystem.stopAnimation(for: lootBox)
                     lootBox.removeFromParent()
                 }
             }
