@@ -22,6 +22,10 @@ struct ContentView: View {
     @State private var showUpgradeChoice = false
     @State private var upgradeChoices: [PlayerUpgradeType] = []
     
+    // Progression tracking
+    @State private var showProgressionOverlay = false
+    @State private var playerProgression = PlayerProgressionComponent()
+    
     var body: some View {
         ZStack {
             // Main Menu
@@ -43,40 +47,93 @@ struct ContentView: View {
                     // Game UI Overlay (only visible when playing)
                     if gameState == .playing {
                         VStack {
+                            // Top HUD - Clean and minimal with fixed positioning
                             HStack {
-                                ScoreView(score: score, enemiesDefeated: enemiesDefeated, currentWave: currentWave)
+                                // Left side - Core game stats (fixed width)
+                                VStack(alignment: .leading, spacing: 4) {
+                                    ScoreView(score: score, enemiesDefeated: enemiesDefeated, currentWave: currentWave)
+                                    
+                                    // Compact progression tracker below score
+                                    PlayerProgressionView(progression: playerProgression, isCompact: true)
+                                }
+                                .frame(maxWidth: 180, alignment: .leading) // Fixed max width to prevent expansion
                                 
                                 Spacer()
                                 
-                                // Pause Button
-                                Button(action: pauseGame) {
-                                    Image(systemName: "pause.fill")
-                                        .font(.title2)
-                                        .foregroundColor(.white)
-                                        .padding(12)
-                                        .background(Color.black.opacity(0.6))
-                                        .cornerRadius(10)
+                                // Center - Upgrade notification (only when active)
+                                if let upgrade = playerUpgrade {
+                                    let upgradeType = PlayerUpgradeType.allCases.first { $0.name == upgrade }
+                                    let level = upgradeType.map { playerProgression.upgradesApplied[$0, default: 0] }
+                                    PlayerUpgradeIndicator(upgradeName: upgrade, level: level)
+                                        .frame(maxWidth: 120) // Fixed width for center notifications
                                 }
                                 
-                                if let powerUp = activePowerUp {
-                                    PowerUpIndicator(powerUpName: powerUp)
+                                Spacer()
+                                
+                                // Right side - Control buttons (fixed width)
+                                HStack(spacing: 8) {
+                                    // Progression button
+                                    Button(action: { 
+                                        showProgressionOverlay = true
+                                        if gameState == .playing {
+                                            GameConfig.isGamePaused = true
+                                        }
+                                    }) {
+                                        Image(systemName: "chart.line.uptrend.xyaxis")
+                                            .font(.title3)
+                                            .foregroundColor(.white)
+                                            .frame(width: 36, height: 36)
+                                            .background(Color.blue.opacity(0.7))
+                                            .cornerRadius(8)
+                                    }
+                                    
+                                    // Pause button
+                                    Button(action: pauseGame) {
+                                        Image(systemName: "pause.fill")
+                                            .font(.title3)
+                                            .foregroundColor(.white)
+                                            .frame(width: 36, height: 36)
+                                            .background(Color.black.opacity(0.7))
+                                            .cornerRadius(8)
+                                    }
                                 }
-                                if let upgrade = playerUpgrade {
-                                    PlayerUpgradeIndicator(upgradeName: upgrade)
-                                }
+                                .frame(width: 88, alignment: .trailing) // Fixed width for control buttons
+                            }
+                            .padding(.horizontal)
+                            .padding(.top, 8)
+                            
+                            // Power-up indicator (top center when active)
+                            if let powerUp = activePowerUp {
+                                PowerUpIndicator(powerUpName: powerUp)
+                                    .padding(.top, 4)
                             }
                             
                             Spacer()
                         }
-                        .padding()
+                        .background(
+                            // Safe area background for top HUD
+                            LinearGradient(
+                                gradient: Gradient(colors: [Color.black.opacity(0.3), Color.clear]),
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                            .frame(height: 120)
+                            .ignoresSafeArea(edges: .top),
+                            alignment: .top
+                        )
                         
-                        // Controls (only visible when playing)
-                        ControlsView { direction in
-                            startApplyingForce(direction: direction)
-                        } stopApplyingForce: {
-                            stopApplyingForce()
-                        } applyAnalogForce: { analogVector in
-                            applyAnalogForce(analogVector: analogVector)
+                        // Controls positioned at bottom for easy thumb access
+                        VStack {
+                            Spacer()
+                            
+                            ControlsView { direction in
+                                startApplyingForce(direction: direction)
+                            } stopApplyingForce: {
+                                stopApplyingForce()
+                            } applyAnalogForce: { analogVector in
+                                applyAnalogForce(analogVector: analogVector)
+                            }
+                            .padding(.bottom, 20) // Safe distance from screen edge
                         }
                     }
                 }
@@ -109,6 +166,20 @@ struct ContentView: View {
                     upgradeChoices: upgradeChoices,
                     currentWave: currentWave,
                     onChoiceMade: handleUpgradeChoice
+                )
+            }
+            
+            // Progression Overlay
+            if showProgressionOverlay {
+                ProgressionOverlayView(
+                    progression: playerProgression,
+                    currentWave: currentWave,
+                    onClose: { 
+                        showProgressionOverlay = false
+                        if gameState == .playing {
+                            GameConfig.isGamePaused = false
+                        }
+                    }
                 )
             }
         }
@@ -161,7 +232,24 @@ struct ContentView: View {
                 showUpgradeChoice = true
                 // Pause game while choosing upgrade
                 GameConfig.isGamePaused = true
+                
+                // Sync current progression state
+                if let progression = capsuleEntity.components[PlayerProgressionComponent.self] {
+                    playerProgression = progression
+                }
             }
+        }
+        .onKeyPress(.tab) {
+            if gameState == .playing && !showUpgradeChoice {
+                showProgressionOverlay.toggle()
+                if showProgressionOverlay {
+                    GameConfig.isGamePaused = true
+                } else {
+                    GameConfig.isGamePaused = false
+                }
+                return .handled
+            }
+            return .ignored
         }
     }
     
@@ -173,6 +261,7 @@ struct ContentView: View {
         currentWave = 1
         activePowerUp = nil
         playerUpgrade = nil
+        playerProgression = PlayerProgressionComponent() // Reset progression
         gameKey = UUID() // This will trigger a complete recreation of the RealityView
         GameConfig.isGamePaused = false
         gameState = .playing
@@ -197,12 +286,14 @@ struct ContentView: View {
         gameState = .mainMenu
         GameConfig.isGamePaused = false
         showUpgradeChoice = false // Clear any upgrade choice overlay
+        showProgressionOverlay = false // Clear progression overlay
         // Clear all game data
         score = 0
         enemiesDefeated = 0
         currentWave = 1
         activePowerUp = nil
         playerUpgrade = nil
+        playerProgression = PlayerProgressionComponent() // Reset progression
         // Generate new key to ensure clean state
         gameKey = UUID()
     }
@@ -215,6 +306,9 @@ struct ContentView: View {
         guard var progression = capsuleEntity.components[PlayerProgressionComponent.self] else { return }
         progression.applyChosenUpgrade(chosenUpgrade)
         capsuleEntity.components[PlayerProgressionComponent.self] = progression
+        
+        // Update local progression state for UI
+        playerProgression = progression
         
         // Show upgrade notification
         playerUpgrade = chosenUpgrade.name
@@ -322,6 +416,9 @@ struct ContentView: View {
         // Initialize player progression component
         let progressionComponent = PlayerProgressionComponent()
         entity.components.set(progressionComponent)
+        
+        // Sync local progression state
+        playerProgression = progressionComponent
         
         // Initialize player animation component
         let animationComponent = PlayerAnimationComponent()

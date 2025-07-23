@@ -6,56 +6,68 @@ struct ScoreView: View {
     let currentWave: Int
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text("Wave:")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                Text("\(currentWave)")
-                    .font(.title2)
-                    .fontWeight(.bold)
+        VStack(alignment: .leading, spacing: 4) {
+            // Wave info - most important
+            HStack(spacing: 6) {
+                Image(systemName: "flag.fill")
+                    .font(.caption)
                     .foregroundColor(.orange)
                 
-                // Difficulty indicator
+                Text("Wave \(currentWave)")
+                    .font(.headline)
+                    .fontWeight(.bold)
+                    .foregroundColor(.white)
+                
                 if currentWave > 4 {
-                    Text("⚡")
-                        .font(.caption)
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.caption2)
                         .foregroundColor(.red)
-                } else {
-                    Text("📈")
-                        .font(.caption)
-                        .foregroundColor(.green)
                 }
             }
             
-            HStack {
-                Text("Score:")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                Text("\(score)")
-                    .font(.title2)
-                    .fontWeight(.bold)
+            // Score - secondary info
+            HStack(spacing: 6) {
+                Image(systemName: "star.fill")
+                    .font(.caption2)
                     .foregroundColor(.yellow)
-            }
-            
-            HStack {
-                Text("Enemies:")
+                
+                Text("\(score)")
                     .font(.subheadline)
-                    .foregroundColor(.white)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.yellow)
+                
+                // Divider
+                Text("•")
+                    .font(.caption2)
+                    .foregroundColor(.gray)
+                
+                Image(systemName: "target")
+                    .font(.caption2)
+                    .foregroundColor(.red)
+                
                 Text("\(enemiesDefeated)")
-                    .font(.headline)
+                    .font(.subheadline)
                     .fontWeight(.semibold)
                     .foregroundColor(.red)
             }
         }
-        .padding()
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
         .background(
-            RoundedRectangle(cornerRadius: 10)
-                .fill(Color.black.opacity(0.6))
+            RoundedRectangle(cornerRadius: 8)
+                .fill(Color.black.opacity(0.7))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                )
         )
     }
 }
 
 #Preview {
-    ScoreView(score: 500, enemiesDefeated: 5, currentWave: 3)
+    VStack(spacing: 20) {
+        ScoreView(score: 500, enemiesDefeated: 5, currentWave: 3)
+        ScoreView(score: 1250, enemiesDefeated: 15, currentWave: 8)
+    }
+    .background(Color.black)
 }
