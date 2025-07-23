@@ -10,13 +10,13 @@ struct WaveComponent: Component {
     var waveClearDelay: TimeInterval = 2.0
     var lastWaveClearTime: Date = Date.distantPast
     var baseEnemyHealth: Int = 1
-    var baseEnemySpeed: Float = 1.2 // Increased from 1.0 for more challenge
-    var baseEnemyMass: Float = 1.2 // Increased from 0.8 for stronger pushes
+    var baseEnemySpeed: Float = 1.0 // Reduced from 1.2 for balanced hyper-casual gameplay
+    var baseEnemyMass: Float = 1.0 // Reduced from 1.2 for more manageable enemy strength
     
-    // Wave progression settings
+    // Wave progression settings (tuned for hyper-casual)
     var enemyHealthIncrease: Int = 1 // Health increase per wave
-    var enemySpeedIncrease: Float = 0.2 // Speed increase per wave
-    var enemyMassIncrease: Float = 0.1 // Mass increase per wave
+    var enemySpeedIncrease: Float = 0.15 // Reduced from 0.2 for gentler progression
+    var enemyMassIncrease: Float = 0.08 // Reduced from 0.1 for better balance
     var enemyCountIncrease: Int = 1 // Additional enemies per wave
     
     // Current wave stats

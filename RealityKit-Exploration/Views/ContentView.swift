@@ -593,10 +593,12 @@ struct ContentView: View {
         spawnerComponent.spawnSurface = surface
         spawnerComponent.enemyPrefabs = enemyPrefabs
         spawnerComponent.spawnInterval = GameConfig.enemySpawnInterval
+        spawnerComponent.baseSpawnInterval = GameConfig.enemySpawnInterval // Set base interval
         spawnerComponent.maxEnemies = GameConfig.enemyMaxCount // This will be dynamically calculated per wave
         spawnerEntity.components.set(spawnerComponent)
         
         print("Spawner setup with \(enemyPrefabs.count) enemy types: \(enemyPrefabs.keys.map { $0.name }.joined(separator: ", "))")
+        print("Dynamic spawning configured - Base interval: \(GameConfig.enemySpawnInterval)s, Min interval: \(GameConfig.enemyMinSpawnInterval)s")
     }
     private func setupLootBoxSpawner(surface: Entity, lootBoxPrefab: Entity, container: Entity) {
         lootBoxSpawnerEntity = Entity()
@@ -637,8 +639,10 @@ struct ContentView: View {
         let progression = capsuleEntity.components[PlayerProgressionComponent.self]
         
         let forceMultiplier = progression?.forceMultiplier ?? 1.0
+        let speedMultiplier = progression?.speedMultiplier ?? 1.0
+        let currentSpeed = GameConfig.playerSpeed * speedMultiplier
         
-        physics.velocity += direction.velocity * GameConfig.playerSpeed * forceMultiplier * 0.15
+        physics.velocity += direction.velocity * currentSpeed * forceMultiplier * 0.15
         capsuleEntity.components[PhysicsMovementComponent.self] = physics
         
         // Handle character orientation based on movement direction
@@ -672,10 +676,12 @@ struct ContentView: View {
         let progression = capsuleEntity.components[PlayerProgressionComponent.self]
         
         let forceMultiplier = progression?.forceMultiplier ?? 1.0
+        let speedMultiplier = progression?.speedMultiplier ?? 1.0
+        let currentSpeed = GameConfig.playerSpeed * speedMultiplier
         
         let isoX = (analogVector.x - analogVector.y) * GameConfig.isometricDiagonal
         let isoZ = -(analogVector.x + analogVector.y) * GameConfig.isometricDiagonal
-        let force = SIMD3<Float>(isoX, 0, isoZ) * GameConfig.playerSpeed * forceMultiplier * 0.15
+        let force = SIMD3<Float>(isoX, 0, isoZ) * currentSpeed * forceMultiplier * 0.15
         physics.velocity += force
         capsuleEntity.components[PhysicsMovementComponent.self] = physics
         

@@ -10,7 +10,7 @@ struct PlayerProgressionView: View {
     }
     
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 8) { // Consistent 8pt spacing
             ForEach(PlayerUpgradeType.allCases, id: \.self) { upgradeType in
                 UpgradeIconView(
                     upgradeType: upgradeType,
@@ -19,12 +19,14 @@ struct PlayerProgressionView: View {
                 )
             }
         }
-        .frame(width: 160, height: 32) // Fixed size to prevent expansion
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
-        .background(Color.black.opacity(0.6))
-        .cornerRadius(8)
+        .frame(width: 200, height: 40) // Larger fixed size for better visibility
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(Color.black.opacity(0.7)) // Slightly more opaque for better contrast
+        .cornerRadius(12) // Rounded corners following 8pt grid
         .clipped() // Ensure nothing overflows the fixed bounds
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Player upgrades")
     }
 }
 
@@ -37,14 +39,14 @@ struct UpgradeIconView: View {
         ZStack {
             Circle()
                 .fill(upgradeColor.opacity(0.3))
-                .frame(width: 28, height: 28) // Slightly smaller for better fit
+                .frame(width: 32, height: 32) // Slightly larger for better visibility
             
             Circle()
                 .stroke(upgradeColor, lineWidth: 1.5)
-                .frame(width: 28, height: 28)
+                .frame(width: 32, height: 32)
             
             Image(systemName: upgradeType.icon)
-                .font(.system(size: 11, weight: .bold))
+                .font(.system(size: 12, weight: .bold))
                 .foregroundColor(upgradeColor)
             
             if level > 0 {
@@ -53,9 +55,9 @@ struct UpgradeIconView: View {
                     HStack {
                         Spacer()
                         Text("\(level)")
-                            .font(.system(size: 7, weight: .bold))
+                            .font(.system(size: 8, weight: .bold))
                             .foregroundColor(.white)
-                            .frame(width: 12, height: 12)
+                            .frame(width: 14, height: 14) // Fixed size for consistency
                             .background(upgradeColor)
                             .clipShape(Circle())
                             .offset(x: 4, y: 4)
@@ -64,6 +66,7 @@ struct UpgradeIconView: View {
             }
         }
         .frame(width: 32, height: 32) // Fixed frame to prevent any expansion
+        .accessibilityLabel("\(upgradeType.name), level \(level)")
     }
     
     private var upgradeColor: Color {
@@ -72,6 +75,8 @@ struct UpgradeIconView: View {
             return level > 0 ? .blue : .gray
         case .force:
             return level > 0 ? .red : .gray
+        case .speed:
+            return level > 0 ? .green : .gray
         case .slowDuration:
             return level > 0 ? .purple : .gray
         case .shockwavePower:
