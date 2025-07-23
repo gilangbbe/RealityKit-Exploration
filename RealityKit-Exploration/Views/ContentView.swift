@@ -229,7 +229,17 @@ struct ContentView: View {
         guard let loadedScene = try? await Entity(named: GameConfig.EntityNames.scene, in: arenaBundle) else { return }
         guard let capsule = loadedScene.findEntity(named: GameConfig.EntityNames.capsule),
               let cube = loadedScene.findEntity(named: GameConfig.EntityNames.cube) else { return }
-        let redCapsule = loadedScene.findEntity(named: GameConfig.EntityNames.enemyCapsule)
+        
+        // Load all enemy prefabs
+        let enemyPrefabs: [EnemyType: Entity] = [
+            .phase1: loadedScene.findEntity(named: GameConfig.EntityNames.enemyPhase1),
+            .phase2: loadedScene.findEntity(named: GameConfig.EntityNames.enemyPhase2),
+            .phase3: loadedScene.findEntity(named: GameConfig.EntityNames.enemyPhase3),
+            .phase4: loadedScene.findEntity(named: GameConfig.EntityNames.enemyPhase4),
+            .phase5: loadedScene.findEntity(named: GameConfig.EntityNames.enemyPhase5)
+        ].compactMapValues { $0 }
+        
+        let redCapsule = enemyPrefabs[.phase1] // Legacy support
         let lootBox = loadedScene.findEntity(named: GameConfig.EntityNames.lootBox)
         
         capsuleEntity = capsule
@@ -239,10 +249,18 @@ struct ContentView: View {
         setupPlayerGameState(for: capsule)
         setupWaveSystem(for: capsule)
         
-        if let redCapsule = redCapsule {
-            redCapsuleEntity = redCapsule
-            redCapsule.removeFromParent()
-            setupSpawner(surface: cube, enemyPrefab: redCapsule)
+        if !enemyPrefabs.isEmpty {
+            if let redCapsule = redCapsule {
+                redCapsuleEntity = redCapsule
+                redCapsule.removeFromParent()
+            }
+            
+            // Remove all enemy prefabs from the scene
+            for (_, prefab) in enemyPrefabs {
+                prefab.removeFromParent()
+            }
+            
+            setupSpawner(surface: cube, enemyPrefabs: enemyPrefabs)
         }
         
         if let lootBox = lootBox {
@@ -271,6 +289,7 @@ struct ContentView: View {
         LootBoxSystem.registerSystem()
         PlayerProgressionSystem.registerSystem()
         PlayerAnimationSystem.registerSystem()
+        EnemyAnimationSystem.registerSystem()
         
         content.add(loadedScene)
         content.add(camera)
@@ -334,14 +353,16 @@ struct ContentView: View {
         let cubeTopY = cube.position.y + (cube.scale.y / 2.0)
         entity.position.y = cubeTopY + surfaceOffset
     }
-    private func setupSpawner(surface: Entity, enemyPrefab: Entity) {
+    private func setupSpawner(surface: Entity, enemyPrefabs: [EnemyType: Entity]) {
         spawnerEntity = Entity()
         var spawnerComponent = SpawnerComponent()
         spawnerComponent.spawnSurface = surface
-        spawnerComponent.enemyPrefab = enemyPrefab
+        spawnerComponent.enemyPrefabs = enemyPrefabs
         spawnerComponent.spawnInterval = GameConfig.enemySpawnInterval
         spawnerComponent.maxEnemies = GameConfig.enemyMaxCount // This will be dynamically calculated per wave
         spawnerEntity.components.set(spawnerComponent)
+        
+        print("Spawner setup with \(enemyPrefabs.count) enemy types: \(enemyPrefabs.keys.map { $0.name }.joined(separator: ", "))")
     }
     private func setupLootBoxSpawner(surface: Entity, lootBoxPrefab: Entity, container: Entity) {
         lootBoxSpawnerEntity = Entity()

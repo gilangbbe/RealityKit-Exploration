@@ -8,9 +8,15 @@ struct GameConfig {
     static let attackAnimationIndices: [Int] = [0, 1, 2, 3] // Attack animations at indices 1-4
     static let shockwaveAnimationIndex: Int = 4 // Shockwave animation at index 4
   static let attackAnimationDuration: TimeInterval = 0.5 // How long attack animation plays
-    static let shockwaveAnimationDuration: TimeInterval = 1.5 // How long shockwave animation plays
+    static let shockwaveAnimationDuration: TimeInterval = 1 // How long shockwave animation plays
     static let minMovementForWalkAnimation: Float = 0.02 // Minimum movement threshold to trigger walk animation
-    static let playerChildEntityName: String = "player" // Child entity containing animationsame State
+    static let playerChildEntityName: String = "player" // Child entity containing animations
+    
+    // Enemy animations
+    static let enemyWalkAnimationIndex: Int = 0 // Enemy walking animation at index 0
+    static let minEnemyMovementForWalkAnimation: Float = 0.01 // Enemy movement threshold for walk animation
+    
+    // Game State
     static var isGamePaused: Bool = false
     
     // Wave System
@@ -109,7 +115,14 @@ struct GameConfig {
         static let scene = "Scene"
         static let capsule = "player_root"
         static let cube = "Cube"
-        static let enemyCapsule = "enemy_chasing"
+        static let enemyCapsule = "enemyPhase1" // Legacy - primary enemy
         static let lootBox = "LootBox"
+        
+        // All enemy types
+        static let enemyPhase1 = "enemyPhase1"
+        static let enemyPhase2 = "enemyPhase2" 
+        static let enemyPhase3 = "enemyPhase3"
+        static let enemyPhase4 = "enemyPhase4"
+        static let enemyPhase5 = "enemyPhase5"
     }
 }

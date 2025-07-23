@@ -41,13 +41,20 @@ class SpawnerSystem: System {
                 print("Wave \(wave.currentWave): Max enemies = \(waveBasedMaxEnemies), Current = \(currentEnemyCount)")
                 
                 if currentEnemyCount < waveBasedMaxEnemies,
-                   let surface = spawner.spawnSurface,
-                   let prefab = spawner.enemyPrefab {
-                    spawnEnemy(on: surface, using: prefab, waveStats: wave, in: context)
-                    spawner.lastSpawnTime = currentTime
+                   let surface = spawner.spawnSurface {
+                    // Determine enemy type for this wave
+                    let enemyType = EnemyType.getRandomEnemyTypeForWave(wave.currentWave)
                     
-                    // Update wave component
-                    updateWaveSpawnCount(context: context)
+                    // Get the appropriate prefab for this enemy type
+                    if let prefab = spawner.enemyPrefabs[enemyType] {
+                        spawnEnemy(on: surface, using: prefab, enemyType: enemyType, waveStats: wave, in: context)
+                        spawner.lastSpawnTime = currentTime
+                        
+                        // Update wave component
+                        updateWaveSpawnCount(context: context)
+                    } else {
+                        print("Warning: No prefab found for enemy type \(enemyType.name)")
+                    }
                 }
             }
             entity.components[SpawnerComponent.self] = spawner
@@ -77,28 +84,41 @@ class SpawnerSystem: System {
         for _ in context.entities(matching: enemyQuery, updatingSystemWhen: .rendering) { count += 1 }
         return count
     }
-    private func spawnEnemy(on surface: Entity, using prefab: Entity, waveStats: WaveComponent, in context: SceneUpdateContext) {
+    private func spawnEnemy(on surface: Entity, using prefab: Entity, enemyType: EnemyType, waveStats: WaveComponent, in context: SceneUpdateContext) {
         let enemy = prefab.clone(recursive: true)
         let randomPosition = generateRandomPositionOnCubeSurface(cube: surface)
         enemy.position = randomPosition
         
-        // Apply wave-based enemy stats
-        var enemyComponent = EnemyCapsuleComponent()
-        enemyComponent.speed = waveStats.currentWaveEnemySpeed
-        enemyComponent.mass = waveStats.currentWaveEnemyMass
-        enemyComponent.pushForceMultiplier = waveStats.currentWaveEnemyForceMultiplier
-        enemyComponent.scoreValue = GameConfig.enemyScoreValue + (waveStats.currentWave * 10) // More points for harder enemies
+        // Create enemy component with type-specific stats
+        var enemyComponent = EnemyCapsuleComponent(enemyType: enemyType)
+        
+        // Apply wave scaling to the base stats using WaveComponent scaling
+        let speedScaling = waveStats.currentWaveEnemySpeed / waveStats.baseEnemySpeed
+        let massScaling = waveStats.currentWaveEnemyMass / waveStats.baseEnemyMass
+        let forceScaling = waveStats.currentWaveEnemyForceMultiplier / GameConfig.enemyPushForceMultiplier
+        
+        enemyComponent.speed = enemyComponent.speed * speedScaling
+        enemyComponent.mass = enemyComponent.mass * massScaling
+        enemyComponent.pushForceMultiplier = enemyComponent.pushForceMultiplier * forceScaling
+        enemyComponent.scoreValue = Int(Float(enemyComponent.scoreValue) * speedScaling) // Scale score with difficulty
+        
         enemy.components.set(enemyComponent)
+        
+        // Add enemy animation component
+        let animationComponent = enemyComponent.createAnimationComponent()
+        enemy.components.set(animationComponent)
         
         // Add physics movement component with wave-enhanced stats
         var physicsComponent = PhysicsMovementComponent()
-        physicsComponent.mass = waveStats.currentWaveEnemyMass
+        physicsComponent.mass = enemyComponent.mass
         physicsComponent.friction = GameConfig.frictionCoefficient
         physicsComponent.constrainedTo = surface
         physicsComponent.groundLevel = GameConfig.enemySpawnYOffset
         enemy.components.set(physicsComponent)
         
         surface.parent?.addChild(enemy)
+        
+        print("Spawned \(enemyType.name) enemy with speed: \(String(format: "%.2f", enemyComponent.speed)), mass: \(String(format: "%.2f", enemyComponent.mass)), score: \(enemyComponent.scoreValue)")
     }
     private func generateRandomPositionOnCubeSurface(cube: Entity) -> SIMD3<Float> {
         let cubePosition = cube.position

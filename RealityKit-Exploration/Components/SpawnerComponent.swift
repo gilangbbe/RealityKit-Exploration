@@ -6,5 +6,10 @@ struct SpawnerComponent: Component {
     var lastSpawnTime: Date = Date()
     var maxEnemies: Int = 5
     var spawnSurface: Entity? = nil // The surface to spawn on (cube)
-    var enemyPrefab: Entity? = nil // Reference to the enemy prefab
+    var enemyPrefabs: [EnemyType: Entity] = [:] // Dictionary of enemy prefabs by type
+    
+    // Legacy property for backward compatibility
+    var enemyPrefab: Entity? {
+        return enemyPrefabs[.phase1]
+    }
 }
