@@ -43,20 +43,15 @@ struct ContentView: View {
     
     var body: some View {
         ZStack {
-            // Main Menu
-            if gameState == .mainMenu && !showLeaderboard {
-                MainMenuView(
-                    onStartGame: { startNewGame() },
+            // Main Menu and Leaderboard
+            if gameState == .mainMenu {
+                MainMenuContainerView(
+                    showLeaderboard: showLeaderboard,
+                    scoreManager: scoreManager,
+                    onStartGame: startNewGame,
                     onShowLeaderboard: { showLeaderboard = true },
-                    scoreManager: scoreManager
+                    onHideLeaderboard: { showLeaderboard = false }
                 )
-            }
-            
-            // Leaderboard View (replaces main menu)
-            if gameState == .mainMenu && showLeaderboard {
-                LeaderboardView(scoreManager: scoreManager) {
-                    showLeaderboard = false
-                }
             }
             
             // Game View (only rendered when playing or paused)
@@ -81,148 +76,51 @@ struct ContentView: View {
                             }
                             
                             // UI overlays on top of controls
-                            VStack {
-                                // Top HUD - Clean and minimal with fixed positioning
-                                HStack {
-                                    // Left side - Core game stats (fixed width)
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        ScoreView(score: score, enemiesDefeated: enemiesDefeated, currentWave: currentWave)
-                                        
-                                        // Compact progression tracker below score
-                                        PlayerProgressionView(progression: playerProgression, isCompact: true)
-                                    }
-                                    .frame(maxWidth: 180, alignment: .leading) // Fixed max width to prevent expansion
-                                    
-                                    Spacer()
-                                    
-                                    // Center - Upgrade notification (only when active)
-                                    if let upgrade = playerUpgrade {
-                                        let upgradeType = PlayerUpgradeType.allCases.first { $0.name == upgrade }
-                                        let level = upgradeType.map { playerProgression.upgradesApplied[$0, default: 0] }
-                                        PlayerUpgradeIndicator(upgradeName: upgrade, level: level)
-                                            .frame(maxWidth: 120) // Fixed width for center notifications
-                                    }
-                                    
-                                    Spacer()
-                                    
-                                    // Right side - Control buttons (fixed width)
-                                    HStack(spacing: 8) {
-                                        // Progression button
-                                        Button(action: { 
-                                            showProgressionOverlay = true
-                                            if gameState == .playing {
-                                                GameConfig.isGamePaused = true
-                                            }
-                                        }) {
-                                            Image(systemName: "chart.line.uptrend.xyaxis")
-                                                .font(.title3)
-                                                .foregroundColor(.white)
-                                                .frame(width: 36, height: 36)
-                                                .background(Color.blue.opacity(0.7))
-                                                .cornerRadius(8)
-                                        }
-                                        
-                                        // Pause button
-                                        Button(action: pauseGame) {
-                                            Image(systemName: "pause.fill")
-                                                .font(.title3)
-                                                .foregroundColor(.white)
-                                                .frame(width: 36, height: 36)
-                                                .background(Color.black.opacity(0.7))
-                                                .cornerRadius(8)
-                                        }
-                                    }
-                                    .frame(width: 88, alignment: .trailing) // Fixed width for control buttons
-                                }
-                                .padding(.horizontal)
-                                .padding(.top, 8)
-                                
-                                // Power-up indicator (top center when active)
-                                if let powerUp = activePowerUp {
-                                    PowerUpIndicator(powerUpName: powerUp)
-                                        .padding(.top, 4)
-                                }
-                                
-                                // Time slow indicator (when active)
-                                if timeSlowEndTime > currentTime {
-                                    let remainingTime = max(0, timeSlowEndTime - currentTime)
-                                    TimeSlowIndicator(
-                                        remainingTime: remainingTime,
-                                        totalDuration: timeSlowDuration
-                                    )
-                                    .padding(.top, 4)
-                                    .onAppear {
-                                        print("DEBUG: TimeSlowIndicator appeared - remaining: \(remainingTime)")
-                                    }
-                                } else {
-                                    // Debug: Show why indicator is not visible
-                                    if timeSlowEndTime > 0 {
-                                        let _ = print("DEBUG: TimeSlowIndicator hidden - endTime: \(timeSlowEndTime), current: \(currentTime)")
+                            GameOverlayView(
+                                score: score,
+                                enemiesDefeated: enemiesDefeated,
+                                currentWave: currentWave,
+                                gameState: gameState,
+                                playerProgression: playerProgression,
+                                activePowerUp: activePowerUp,
+                                playerUpgrade: playerUpgrade,
+                                timeSlowEndTime: timeSlowEndTime,
+                                timeSlowDuration: timeSlowDuration,
+                                currentTime: currentTime,
+                                onPauseGame: pauseGame,
+                                onShowProgression: {
+                                    showProgressionOverlay = true
+                                    if gameState == .playing {
+                                        GameConfig.isGamePaused = true
                                     }
                                 }
-                                
-                                Spacer()
-                            }
-                            .background(
-                                // Safe area background for top HUD (non-interactive)
-                                LinearGradient(
-                                    gradient: Gradient(colors: [Color.black.opacity(0.3), Color.clear]),
-                                    startPoint: .top,
-                                    endPoint: .bottom
-                                )
-                                .frame(height: 120)
-                                .ignoresSafeArea(edges: .top)
-                                .allowsHitTesting(false), // Background doesn't intercept touches
-                                alignment: .top
                             )
                         }
                     }
                 }
             }
             
-            // Pause Menu Overlay
-            if gameState == .paused {
-                PauseMenuView(
-                    onResume: resumeGame,
-                    onMainMenu: returnToMainMenu,
-                    currentScore: score,
-                    currentWave: currentWave
-                )
-            }
-            
-            // Game Over Overlay
-            if gameState == .gameOver {
-                GameOverView(
-                    finalScore: score,
-                    enemiesDefeated: enemiesDefeated,
-                    wavesCompleted: max(1, currentWave - 1),
-                    onReplay: startNewGame,
-                    onMainMenu: returnToMainMenu
-                )
-            }
-            
-            // Upgrade Choice Overlay
-            if showUpgradeChoice {
-                UpgradeChoiceView(
-                    upgradeChoices: upgradeChoices,
-                    currentWave: currentWave,
-                    onChoiceMade: handleUpgradeChoice
-                )
-            }
-            
-            // Progression Overlay
-            if showProgressionOverlay {
-                ProgressionOverlayView(
-                    progression: playerProgression,
-                    currentWave: currentWave,
-                    onClose: { 
-                        showProgressionOverlay = false
-                        if gameState == .playing {
-                            GameConfig.isGamePaused = false
-                        }
+            // All Modal Overlays (pause, game over, upgrade choice, progression)
+            GameModalOverlaysView(
+                gameState: gameState,
+                showUpgradeChoice: showUpgradeChoice,
+                showProgressionOverlay: showProgressionOverlay,
+                score: score,
+                enemiesDefeated: enemiesDefeated,
+                currentWave: currentWave,
+                upgradeChoices: upgradeChoices,
+                playerProgression: playerProgression,
+                onResume: resumeGame,
+                onMainMenu: returnToMainMenu,
+                onReplay: startNewGame,
+                onUpgradeChoice: handleUpgradeChoice,
+                onCloseProgression: {
+                    showProgressionOverlay = false
+                    if gameState == .playing {
+                        GameConfig.isGamePaused = false
                     }
-                )
-            }
+                }
+            )
         }
         .onReceive(NotificationCenter.default.publisher(for: .playerFell)) { _ in
             if gameState == .playing {
