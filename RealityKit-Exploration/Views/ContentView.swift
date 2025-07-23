@@ -41,6 +41,10 @@ struct ContentView: View {
     // Leaderboard
     @State private var showLeaderboard = false
     
+    // GameOver
+    @State private var lastGameSnapshot: UIImage? = nil
+
+    
     var body: some View {
         ZStack {
             // Main Menu
@@ -198,7 +202,8 @@ struct ContentView: View {
                     enemiesDefeated: enemiesDefeated,
                     wavesCompleted: max(1, currentWave - 1),
                     onReplay: startNewGame,
-                    onMainMenu: returnToMainMenu
+                    onMainMenu: returnToMainMenu,
+                    backgroundImage: lastGameSnapshot
                 )
             }
             
@@ -386,20 +391,26 @@ struct ContentView: View {
     }
     
     private func gameOver() {
-        // Calculate game duration
-        let gameDuration = Date().timeIntervalSince(gameStartTime)
-        
-        // Save the score to persistent storage
-        scoreManager.addScore(
-            score: score,
-            enemiesDefeated: enemiesDefeated,
-            wavesCompleted: max(1, currentWave - 1),
-            duration: gameDuration
-        )
-        
-        gameState = .gameOver
-        // Game is now stopped, no systems are running in background
+        captureGameSnapshot()
+        // Delay snapshot by 1 second (to allow final animation or physics)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            
+            // Calculate game duration
+            let gameDuration = Date().timeIntervalSince(gameStartTime)
+            
+            // Save the score
+            scoreManager.addScore(
+                score: score,
+                enemiesDefeated: enemiesDefeated,
+                wavesCompleted: max(1, currentWave - 1),
+                duration: gameDuration
+            )
+
+            // Now transition to game over
+            gameState = .gameOver
+        }
     }
+
     
     private func returnToMainMenu() {
         // Save current score if game was in progress
@@ -701,6 +712,24 @@ struct ContentView: View {
         let interpolatedRotation = simd_slerp(currentRotation, targetRotation, smoothingFactor)
         capsuleEntity.orientation = interpolatedRotation
     }
+    
+    private func captureGameSnapshot() {
+        guard let window = UIApplication.shared.connectedScenes
+            .compactMap({ ($0 as? UIWindowScene)?.keyWindow })
+            .first else {
+            print("⚠️ Could not find key window")
+            return
+        }
+
+        let renderer = UIGraphicsImageRenderer(size: window.bounds.size)
+        let image = renderer.image { ctx in
+            window.drawHierarchy(in: window.bounds, afterScreenUpdates: false)
+        }
+
+        lastGameSnapshot = image
+    }
+
+
 }
 
 #Preview {

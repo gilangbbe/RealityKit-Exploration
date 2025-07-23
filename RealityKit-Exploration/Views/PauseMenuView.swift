@@ -23,23 +23,27 @@ struct PauseMenuView: View {
                 VStack(spacing: 15) {
                     HStack {
                         Text("Current Score:")
-                            .foregroundColor(.gray)
+                            .foregroundColor(.white)
+                            .font(.title2)
                         Spacer()
                         Text("\(currentScore)")
                             .fontWeight(.bold)
-                            .foregroundColor(.white)
+                            .foregroundColor(.yellow)
+                            .font(.title2)
                     }
                     
                     HStack {
                         Text("Current Wave:")
-                            .foregroundColor(.gray)
+                            .foregroundColor(.white)
+                            .font(.title2)
                         Spacer()
                         Text("\(currentWave)")
                             .fontWeight(.bold)
-                            .foregroundColor(.blue)
+                            .foregroundColor(.orange)
+                            .font(.title2)
                     }
                 }
-                .padding(.horizontal, 40)
+                //.padding(.horizontal, 40)
                 .padding(.vertical, 20)
                 .background(Color.black.opacity(0.3))
                 .cornerRadius(15)
@@ -55,18 +59,20 @@ struct PauseMenuView: View {
                                 .font(.title3)
                                 .fontWeight(.bold)
                         }
-                        .foregroundColor(.black)
-                        .padding(.horizontal, 50)
-                        .padding(.vertical, 12)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 40)
+                        .padding(.vertical, 15)
                         .background(
-                            LinearGradient(
-                                gradient: Gradient(colors: [Color.green, Color.green.opacity(0.8)]),
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color.black.opacity(0.8))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color.purple.opacity(0.6), lineWidth: 3)
+                                )
                         )
-                        .cornerRadius(20)
-                        .shadow(color: .green.opacity(0.3), radius: 8)
+                        .shadow(color: Color.purple.opacity(0.8), radius: 6, x: 0, y: 0)
+                        .shadow(color: Color.purple.opacity(0.8), radius: 12, x: 0, y: 0)
+                    
                     }
                     
                     // Main Menu Button
@@ -79,17 +85,19 @@ struct PauseMenuView: View {
                                 .fontWeight(.bold)
                         }
                         .foregroundColor(.white)
-                        .padding(.horizontal, 50)
-                        .padding(.vertical, 12)
+                        .padding(.horizontal, 40)
+                        .padding(.vertical, 15)
                         .background(
-                            LinearGradient(
-                                gradient: Gradient(colors: [Color.red, Color.red.opacity(0.8)]),
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color.black.opacity(0.8))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color.purple.opacity(0.6), lineWidth: 3)
+                                )
                         )
-                        .cornerRadius(20)
-                        .shadow(color: .red.opacity(0.3), radius: 8)
+                        .shadow(color: Color.yellow.opacity(0.8), radius: 6, x: 0, y: 0)
+                        .shadow(color: Color.yellow.opacity(0.8), radius: 12, x: 0, y: 0)
+                    
                     }
                 }
             }

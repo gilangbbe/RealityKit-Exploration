@@ -67,13 +67,15 @@ struct ProgressionOverlayView: View {
                         .frame(maxWidth: .infinity)
                         .padding()
                         .background(
-                            LinearGradient(
-                                gradient: Gradient(colors: [Color.blue, Color.blue.opacity(0.8)]),
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color.black.opacity(0.8))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color.purple.opacity(0.6), lineWidth: 3)
+                                )
                         )
-                        .cornerRadius(12)
+                        .shadow(color: Color.purple.opacity(0.8), radius: 6, x: 0, y: 0)
+                        .shadow(color: Color.purple.opacity(0.8), radius: 12, x: 0, y: 0)
                     }
                     
                     Text("Tap anywhere to close • Press Tab for quick access")

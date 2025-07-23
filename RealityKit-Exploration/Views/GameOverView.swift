@@ -6,17 +6,31 @@ struct GameOverView: View {
     let wavesCompleted: Int
     let onReplay: () -> Void
     let onMainMenu: () -> Void
-    
+    let backgroundImage: UIImage?
+
+
     var body: some View {
         ZStack {
-            Color.black.opacity(0.8)
-                .ignoresSafeArea()
+            if let bgImage = backgroundImage {
+                Image(uiImage: bgImage)
+                    .resizable()
+                    .scaledToFill()
+                    .blur(radius: 8)       // Add blur effect to simulate "background"
+                    .overlay(Color.black.opacity(0.5)) // Dark overlay for contrast
+                    .ignoresSafeArea()
+            } else {
+                Color.black.opacity(0.5)
+                    .ignoresSafeArea()
+            }
+
             
             VStack(spacing: 30) {
                 Text("GAME OVER")
                     .font(.largeTitle)
                     .fontWeight(.bold)
                     .foregroundColor(.red)
+                    .shadow(color: Color.black.opacity(0.8), radius: 6, x: 0, y: 0)
+                    .shadow(color: Color.black.opacity(0.8), radius: 12, x: 0, y: 0)
                 
                 Text("You fell out of the arena!")
                     .font(.title2)
@@ -29,7 +43,7 @@ struct GameOverView: View {
                             .font(.title2)
                             .foregroundColor(.white)
                         Text("\(wavesCompleted)")
-                            .font(.title)
+                            .font(.title2)
                             .fontWeight(.bold)
                             .foregroundColor(.orange)
                     }
@@ -39,14 +53,14 @@ struct GameOverView: View {
                             .font(.title2)
                             .foregroundColor(.white)
                         Text("\(finalScore)")
-                            .font(.title)
+                            .font(.title2)
                             .fontWeight(.bold)
                             .foregroundColor(.yellow)
                     }
                     
                     HStack {
                         Text("Enemies Defeated:")
-                            .font(.headline)
+                            .font(.title2)
                             .foregroundColor(.white)
                         Text("\(enemiesDefeated)")
                             .font(.title2)
@@ -55,10 +69,13 @@ struct GameOverView: View {
                     }
                 }
                 .padding()
+                .padding(.horizontal, 20)
+                //.padding(.vertical, 20)
                 .background(
                     RoundedRectangle(cornerRadius: 10)
-                        .fill(Color.gray.opacity(0.3))
+                        .fill(Color.black.opacity(0.6))
                 )
+                
                 
                 // Action Buttons
                 VStack(spacing: 15) {
@@ -74,14 +91,16 @@ struct GameOverView: View {
                         .padding(.horizontal, 40)
                         .padding(.vertical, 15)
                         .background(
-                            LinearGradient(
-                                gradient: Gradient(colors: [Color.blue, Color.blue.opacity(0.8)]),
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color.black.opacity(0.8))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color.purple.opacity(0.6), lineWidth: 3)
+                                )
                         )
-                        .cornerRadius(20)
-                        .shadow(color: .blue.opacity(0.3), radius: 8)
+                        .shadow(color: Color.purple.opacity(0.8), radius: 6, x: 0, y: 0)
+                        .shadow(color: Color.purple.opacity(0.8), radius: 12, x: 0, y: 0)
+                    
                     }
                     
                     Button(action: onMainMenu) {
@@ -96,19 +115,23 @@ struct GameOverView: View {
                         .padding(.horizontal, 40)
                         .padding(.vertical, 15)
                         .background(
-                            LinearGradient(
-                                gradient: Gradient(colors: [Color.gray, Color.gray.opacity(0.8)]),
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color.black.opacity(0.8))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color.purple.opacity(0.6), lineWidth: 3)
+                                )
                         )
-                        .cornerRadius(20)
-                        .shadow(color: .gray.opacity(0.3), radius: 8)
+                        .shadow(color: Color.yellow.opacity(0.8), radius: 6, x: 0, y: 0)
+                        .shadow(color: Color.yellow.opacity(0.8), radius: 12, x: 0, y: 0)
                     }
+
                 }
                 .buttonStyle(PlainButtonStyle())
             }
             .padding()
+            
+            
         }
     }
 }
@@ -119,6 +142,7 @@ struct GameOverView: View {
         enemiesDefeated: 7, 
         wavesCompleted: 3,
         onReplay: { print("Replay tapped") },
-        onMainMenu: { print("Main Menu tapped") }
+        onMainMenu: { print("Main Menu tapped")},
+        backgroundImage: nil
     )
 }

@@ -124,6 +124,7 @@ struct GameConfig {
         static let cube = "Cube"
         static let enemyCapsule = "enemyPhase1" // Legacy - primary enemy
         static let lootBox = "LootBox"
+        static let menuScene = "menuScene"
         
         // All enemy types
         static let enemyPhase1 = "enemyPhase1"
