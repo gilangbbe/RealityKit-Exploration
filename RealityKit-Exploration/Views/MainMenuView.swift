@@ -2,6 +2,8 @@ import SwiftUI
 
 struct MainMenuView: View {
     let onStartGame: () -> Void
+    let onShowLeaderboard: () -> Void
+    let scoreManager: ScoreManager
     
     var body: some View {
         ZStack {
@@ -32,12 +34,25 @@ struct MainMenuView: View {
                         .font(.system(size: 18, weight: .medium))
                         .foregroundColor(.gray)
                         .multilineTextAlignment(.center)
+                    
+                    // High Score Display
+                    if scoreManager.highScore > 0 {
+                        HStack {
+                            Image(systemName: "crown.fill")
+                                .foregroundColor(.yellow)
+                            Text("High Score: \(scoreManager.highScore)")
+                                .font(.headline)
+                                .foregroundColor(.yellow)
+                        }
+                        .padding(.top, 8)
+                    }
                 }
                 
                 Spacer()
                 
-                // Start Game Button
+                // Menu Buttons
                 VStack(spacing: 20) {
+                    // Start Game Button
                     Button(action: onStartGame) {
                         HStack {
                             Image(systemName: "play.fill")
@@ -62,6 +77,28 @@ struct MainMenuView: View {
                     .scaleEffect(1.0)
                     .animation(.easeInOut(duration: 0.1), value: false)
                     
+                    // Leaderboard Button
+                    Button(action: onShowLeaderboard) {
+                        HStack {
+                            Image(systemName: "chart.bar.fill")
+                                .font(.title3)
+                            Text("LEADERBOARD")
+                                .font(.title3)
+                                .fontWeight(.semibold)
+                        }
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 30)
+                        .padding(.vertical, 12)
+                        .background(
+                            RoundedRectangle(cornerRadius: 20)
+                                .fill(Color.blue.opacity(0.3))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 20)
+                                        .stroke(Color.blue, lineWidth: 2)
+                                )
+                        )
+                        .shadow(color: .blue.opacity(0.3), radius: 5)
+                    }
                 }
                 
                 Spacer()
@@ -72,7 +109,9 @@ struct MainMenuView: View {
 }
 
 #Preview {
-    MainMenuView {
-        print("Start game tapped")
-    }
+    MainMenuView(
+        onStartGame: { print("Start game tapped") },
+        onShowLeaderboard: { print("Show leaderboard tapped") },
+        scoreManager: ScoreManager()
+    )
 }

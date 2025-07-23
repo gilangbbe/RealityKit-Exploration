@@ -18,6 +18,10 @@ struct ContentView: View {
     @State private var playerUpgrade: String? = nil
     @State private var gameKey = UUID() // For restarting the game
     
+    // Game session tracking
+    @State private var gameStartTime: Date = Date()
+    @StateObject private var scoreManager = ScoreManager()
+    
     // Time slow tracking
     @State private var timeSlowEndTime: TimeInterval = 0
     @State private var timeSlowDuration: TimeInterval = 0
@@ -34,12 +38,24 @@ struct ContentView: View {
     @State private var showProgressionOverlay = false
     @State private var playerProgression = PlayerProgressionComponent()
     
+    // Leaderboard
+    @State private var showLeaderboard = false
+    
     var body: some View {
         ZStack {
             // Main Menu
-            if gameState == .mainMenu {
-                MainMenuView {
-                    startNewGame()
+            if gameState == .mainMenu && !showLeaderboard {
+                MainMenuView(
+                    onStartGame: { startNewGame() },
+                    onShowLeaderboard: { showLeaderboard = true },
+                    scoreManager: scoreManager
+                )
+            }
+            
+            // Leaderboard View (replaces main menu)
+            if gameState == .mainMenu && showLeaderboard {
+                LeaderboardView(scoreManager: scoreManager) {
+                    showLeaderboard = false
                 }
             }
             
@@ -351,6 +367,9 @@ struct ContentView: View {
         timeSlowDuration = 0
         currentTime = Date().timeIntervalSince1970
         
+        // Track game start time
+        gameStartTime = Date()
+        
         gameKey = UUID() // This will trigger a complete recreation of the RealityView
         GameConfig.isGamePaused = false
         gameState = .playing
@@ -367,11 +386,33 @@ struct ContentView: View {
     }
     
     private func gameOver() {
+        // Calculate game duration
+        let gameDuration = Date().timeIntervalSince(gameStartTime)
+        
+        // Save the score to persistent storage
+        scoreManager.addScore(
+            score: score,
+            enemiesDefeated: enemiesDefeated,
+            wavesCompleted: max(1, currentWave - 1),
+            duration: gameDuration
+        )
+        
         gameState = .gameOver
         // Game is now stopped, no systems are running in background
     }
     
     private func returnToMainMenu() {
+        // Save current score if game was in progress
+        if gameState == .playing {
+            let gameDuration = Date().timeIntervalSince(gameStartTime)
+            scoreManager.addScore(
+                score: score,
+                enemiesDefeated: enemiesDefeated,
+                wavesCompleted: max(1, currentWave - 1),
+                duration: gameDuration
+            )
+        }
+        
         gameState = .mainMenu
         GameConfig.isGamePaused = false
         showUpgradeChoice = false // Clear any upgrade choice overlay
