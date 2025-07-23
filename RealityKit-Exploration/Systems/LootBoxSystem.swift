@@ -60,11 +60,49 @@ struct LootBoxSystem: System {
         let arenaMinZ = cubeCenter.z + cubeBounds.min.z + safeMargin
         let arenaMaxZ = cubeCenter.z + cubeBounds.max.z - safeMargin
         
-        let randomX = Float.random(in: arenaMinX...arenaMaxX)
-        let randomZ = Float.random(in: arenaMinZ...arenaMaxZ)
-        let spawnY = cubeTopY + 0.1 // Slightly above surface
+        // Find a position that doesn't overlap with existing LootBoxes
+        var spawnPosition: SIMD3<Float>?
+        let maxAttempts = GameConfig.lootBoxSpawnAttempts
+        let minDistanceBetweenLootBoxes = GameConfig.lootBoxMinSpawnDistance
         
-        lootBox.position = SIMD3<Float>(randomX, spawnY, randomZ)
+        for _ in 0..<maxAttempts {
+            let randomX = Float.random(in: arenaMinX...arenaMaxX)
+            let randomZ = Float.random(in: arenaMinZ...arenaMaxZ)
+            let spawnY = cubeTopY + 0.1 // Slightly above surface
+            let candidatePosition = SIMD3<Float>(randomX, spawnY, randomZ)
+            
+            // Check if this position is clear of existing LootBoxes
+            if isPositionClearForLootBox(candidatePosition, minDistance: minDistanceBetweenLootBoxes) {
+                spawnPosition = candidatePosition
+                break
+            }
+        }
+        
+        // If we couldn't find a clear position, try with reduced minimum distance
+        if spawnPosition == nil {
+            let reducedMinDistance = minDistanceBetweenLootBoxes * 0.6 // Reduce distance requirement by 40%
+            for _ in 0..<maxAttempts {
+                let randomX = Float.random(in: arenaMinX...arenaMaxX)
+                let randomZ = Float.random(in: arenaMinZ...arenaMaxZ)
+                let spawnY = cubeTopY + 0.1
+                let candidatePosition = SIMD3<Float>(randomX, spawnY, randomZ)
+                
+                if isPositionClearForLootBox(candidatePosition, minDistance: reducedMinDistance) {
+                    spawnPosition = candidatePosition
+                    break
+                }
+            }
+        }
+        
+        // Final fallback: use any position if still no clear spot found
+        if spawnPosition == nil {
+            let fallbackX = Float.random(in: arenaMinX...arenaMaxX)
+            let fallbackZ = Float.random(in: arenaMinZ...arenaMaxZ)
+            spawnPosition = SIMD3<Float>(fallbackX, cubeTopY + 0.1, fallbackZ)
+            print("Warning: Could not find clear position for LootBox after \(maxAttempts * 2) attempts, using fallback position")
+        }
+        
+        lootBox.position = spawnPosition!
         
         // Add LootBox component with random power-up
         let lootBoxComponent = LootBoxComponent()
@@ -90,6 +128,32 @@ struct LootBoxSystem: System {
         LootBoxAnimationSystem.startAnimation(for: lootBox)
         
         print("Spawned LootBox with power-up: \(lootBoxComponent.powerUpType.name)")
+    }
+    
+    // Helper method to check if a position is clear for LootBox spawning
+    private func isPositionClearForLootBox(_ candidatePosition: SIMD3<Float>, minDistance: Float) -> Bool {
+        guard let scene = scene else { return true }
+        
+        // Check distance from existing LootBoxes
+        let existingLootBoxes = scene.performQuery(Self.lootBoxQuery)
+        for lootBox in existingLootBoxes {
+            let distance = simd_distance(candidatePosition, lootBox.position)
+            if distance < minDistance {
+                return false // Too close to existing LootBox
+            }
+        }
+        
+        // Check distance from player to avoid spawning too close
+        let players = scene.performQuery(Self.playerQuery)
+        let minPlayerDistance = GameConfig.lootBoxMinPlayerDistance
+        for player in players {
+            let distance = simd_distance(candidatePosition, player.position)
+            if distance < minPlayerDistance {
+                return false // Too close to player
+            }
+        }
+        
+        return true // Position is clear
     }
     
     private func handleLootBoxCollection(context: SceneUpdateContext, currentTime: TimeInterval) {
@@ -159,6 +223,15 @@ struct LootBoxSystem: System {
                 enemyComp.speed *= GameConfig.timeSlowMultiplier
                 enemy.components[EnemyCapsuleComponent.self] = enemyComp
             }
+        }
+        
+        // Notify UI about time slow activation
+        DispatchQueue.main.async {
+            let timeSlowInfo: [String: Any] = [
+                "endTime": currentTime + slowDuration,
+                "duration": slowDuration
+            ]
+            NotificationCenter.default.post(name: .timeSlowActivated, object: timeSlowInfo)
         }
         
         print("Time Slow activated for \(slowDuration) seconds (upgraded)")
@@ -259,4 +332,5 @@ struct LootBoxSystem: System {
 // Notification for UI updates
 extension Notification.Name {
     static let powerUpCollected = Notification.Name("PowerUpCollected")
+    static let timeSlowActivated = Notification.Name("TimeSlowActivated")
 }

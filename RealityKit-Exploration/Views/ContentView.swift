@@ -18,6 +18,14 @@ struct ContentView: View {
     @State private var playerUpgrade: String? = nil
     @State private var gameKey = UUID() // For restarting the game
     
+    // Time slow tracking
+    @State private var timeSlowEndTime: TimeInterval = 0
+    @State private var timeSlowDuration: TimeInterval = 0
+    @State private var currentTime: TimeInterval = 0
+    
+    // Timer for updating current time
+    private let timer = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
+    
     // New upgrade choice system
     @State private var showUpgradeChoice = false
     @State private var upgradeChoices: [PlayerUpgradeType] = []
@@ -106,6 +114,24 @@ struct ContentView: View {
                             if let powerUp = activePowerUp {
                                 PowerUpIndicator(powerUpName: powerUp)
                                     .padding(.top, 4)
+                            }
+                            
+                            // Time slow indicator (when active)
+                            if timeSlowEndTime > currentTime {
+                                let remainingTime = max(0, timeSlowEndTime - currentTime)
+                                TimeSlowIndicator(
+                                    remainingTime: remainingTime,
+                                    totalDuration: timeSlowDuration
+                                )
+                                .padding(.top, 4)
+                                .onAppear {
+                                    print("DEBUG: TimeSlowIndicator appeared - remaining: \(remainingTime)")
+                                }
+                            } else {
+                                // Debug: Show why indicator is not visible
+                                if timeSlowEndTime > 0 {
+                                    let _ = print("DEBUG: TimeSlowIndicator hidden - endTime: \(timeSlowEndTime), current: \(currentTime)")
+                                }
                             }
                             
                             Spacer()
@@ -211,6 +237,31 @@ struct ContentView: View {
         .onReceive(NotificationCenter.default.publisher(for: .powerUpCollected)) { notification in
             if let powerUpName = notification.object as? String {
                 activePowerUp = powerUpName
+                
+                // Debug: If it's time slow, set up fallback indicator if notification system doesn't work
+                if powerUpName == "Time Slow" {
+                    // Use a delay to allow the proper notification to arrive first
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        // Only set up manual indicator if the notification system didn't work
+                        if timeSlowEndTime <= Date().timeIntervalSince1970 {
+                            let progression = capsuleEntity.components[PlayerProgressionComponent.self]
+                            let actualDuration = progression?.currentSlowDuration ?? TimeInterval(GameConfig.timeSlowDuration)
+                            let baseDuration = GameConfig.timeSlowDuration
+                            
+                            timeSlowEndTime = Date().timeIntervalSince1970 + actualDuration
+                            timeSlowDuration = actualDuration
+                            
+                            print("DEBUG: Fallback time slow setup")
+                            print("  - Base duration: \(baseDuration)s")
+                            print("  - Upgraded duration: \(actualDuration)s") 
+                            print("  - Slow duration level: \(progression?.upgradesApplied[.slowDuration] ?? 0)")
+                            print("  - End time: \(timeSlowEndTime)")
+                        } else {
+                            print("DEBUG: Notification system worked, no fallback needed")
+                        }
+                    }
+                }
+                
                 // Clear power-up indicator after a delay
                 DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
                     activePowerUp = nil
@@ -239,6 +290,38 @@ struct ContentView: View {
                 }
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .timeSlowActivated)) { notification in
+            print("DEBUG: TimeSlowActivated notification received")
+            if let timeSlowInfo = notification.object as? [String: Any],
+               let endTime = timeSlowInfo["endTime"] as? TimeInterval,
+               let duration = timeSlowInfo["duration"] as? TimeInterval {
+                timeSlowEndTime = endTime
+                timeSlowDuration = duration
+                let currentTime = Date().timeIntervalSince1970
+                print("DEBUG: Time slow set via notification - duration: \(duration)s, endTime: \(endTime), current: \(currentTime), remaining: \(endTime - currentTime)")
+                
+                // Check if this is an upgraded duration
+                let baseDuration = GameConfig.timeSlowDuration
+                if duration > baseDuration {
+                    print("DEBUG: Upgraded time slow detected - base: \(baseDuration)s, upgraded: \(duration)s")
+                }
+            } else {
+                print("DEBUG: Failed to parse time slow notification data")
+            }
+        }
+        .onReceive(timer) { _ in
+            // Update current time for time slow indicator
+            if gameState == .playing {
+                currentTime = Date().timeIntervalSince1970
+                // Debug: Show when time slow should be visible (but not too frequently)
+                if timeSlowEndTime > currentTime {
+                    let remaining = timeSlowEndTime - currentTime
+                    if Int(remaining * 10) % 10 == 0 { // Log every second
+                        print("DEBUG: Time slow active - remaining: \(String(format: "%.1f", remaining))s")
+                    }
+                }
+            }
+        }
         .onKeyPress(.tab) {
             if gameState == .playing && !showUpgradeChoice {
                 showProgressionOverlay.toggle()
@@ -262,6 +345,12 @@ struct ContentView: View {
         activePowerUp = nil
         playerUpgrade = nil
         playerProgression = PlayerProgressionComponent() // Reset progression
+        
+        // Reset time slow state
+        timeSlowEndTime = 0
+        timeSlowDuration = 0
+        currentTime = Date().timeIntervalSince1970
+        
         gameKey = UUID() // This will trigger a complete recreation of the RealityView
         GameConfig.isGamePaused = false
         gameState = .playing
@@ -294,6 +383,12 @@ struct ContentView: View {
         activePowerUp = nil
         playerUpgrade = nil
         playerProgression = PlayerProgressionComponent() // Reset progression
+        
+        // Reset time slow state
+        timeSlowEndTime = 0
+        timeSlowDuration = 0
+        currentTime = 0
+        
         // Generate new key to ensure clean state
         gameKey = UUID()
     }

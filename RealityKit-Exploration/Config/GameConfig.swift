@@ -107,6 +107,9 @@ struct GameConfig {
     static let lootBoxSpawnInterval: TimeInterval = 5.0 // Spawn loot box every 8 seconds
     static let lootBoxCollectionRadius: Float = 0.1 // Distance to collect loot box
     static let lootBoxLifetime: TimeInterval = 15.0 // How long loot box stays before disappearing
+    static let lootBoxMinSpawnDistance: Float = 1.0 // Minimum distance between LootBoxes to prevent overlap
+    static let lootBoxMinPlayerDistance: Float = 0.8 // Minimum distance from player when spawning
+    static let lootBoxSpawnAttempts: Int = 10 // Maximum attempts to find clear spawn position
     
     // Power-ups
     static let timeSlowDuration: TimeInterval = 3.0 // Time slow effect duration

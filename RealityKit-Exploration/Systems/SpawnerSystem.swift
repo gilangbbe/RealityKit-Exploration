@@ -102,6 +102,20 @@ class SpawnerSystem: System {
         enemyComponent.pushForceMultiplier = enemyComponent.pushForceMultiplier * forceScaling
         enemyComponent.scoreValue = Int(Float(enemyComponent.scoreValue) * speedScaling) // Scale score with difficulty
         
+        // Check if time slow is currently active and apply it to new enemy
+        let playerQuery = EntityQuery(where: .has(PowerUpComponent.self))
+        let currentTime = Date().timeIntervalSince1970
+        
+        for player in context.entities(matching: playerQuery, updatingSystemWhen: .rendering) {
+            if let powerUpComp = player.components[PowerUpComponent.self],
+               powerUpComp.isTimeSlowActive(currentTime: currentTime) {
+                // Apply time slow effect to newly spawned enemy
+                enemyComponent.speed *= GameConfig.timeSlowMultiplier
+                print("Applied time slow effect to newly spawned \(enemyType.name) enemy")
+                break
+            }
+        }
+        
         enemy.components.set(enemyComponent)
         
         // Add enemy animation component
