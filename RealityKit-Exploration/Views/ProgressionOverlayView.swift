@@ -14,80 +14,97 @@ struct ProgressionOverlayView: View {
                     onClose()
                 }
             
-            VStack(spacing: 20) {
-                // Header with game context
-                VStack(spacing: 8) {
-                    Text("Player Progression")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .foregroundColor(.white)
-                    
-                    HStack {
-                        Image(systemName: "flag.fill")
-                            .foregroundColor(.orange)
-                        Text("Wave \(currentWave)")
-                            .font(.headline)
-                            .foregroundColor(.orange)
+            ScrollView {
+                VStack(spacing: 24) {
+                    // Header with game context
+                    VStack(spacing: 12) {
+                        Text("Player Progression")
+                            .font(.title2)
+                            .fontWeight(.bold)
+                            .foregroundColor(.white)
+                            .accessibilityAddTraits(.isHeader)
                         
-                        Text("•")
-                            .foregroundColor(.gray)
-                        
-                        Image(systemName: "arrow.up.circle.fill")
-                            .foregroundColor(.green)
-                        Text("\(totalUpgrades) Upgrades")
-                            .font(.headline)
-                            .foregroundColor(.green)
-                    }
-                }
-                
-                // Upgrade grid - mobile optimized
-                LazyVGrid(columns: [
-                    GridItem(.flexible(), spacing: 12),
-                    GridItem(.flexible(), spacing: 12)
-                ], spacing: 12) {
-                    ForEach(PlayerUpgradeType.allCases, id: \.self) { upgradeType in
-                        GameUpgradeCard(
-                            upgradeType: upgradeType,
-                            level: progression.upgradesApplied[upgradeType, default: 0]
-                        )
-                    }
-                }
-                .padding(.horizontal, 16)
-                
-                // Action buttons
-                VStack(spacing: 12) {
-                    Button(action: onClose) {
-                        HStack {
-                            Image(systemName: "play.fill")
-                            Text("Resume Game")
+                        HStack(spacing: 16) {
+                            HStack(spacing: 8) {
+                                Image(systemName: "flag.fill")
+                                    .foregroundColor(.orange)
+                                    .font(.headline)
+                                Text("Wave \(currentWave)")
+                                    .font(.headline)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(.orange)
+                            }
+                            
+                            HStack(spacing: 8) {
+                                Image(systemName: "arrow.up.circle.fill")
+                                    .foregroundColor(.green)
+                                    .font(.headline)
+                                Text("\(totalUpgrades) Upgrades")
+                                    .font(.headline)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(.green)
+                            }
                         }
-                        .font(.headline)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(Color.black.opacity(0.8))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .stroke(Color.purple.opacity(0.6), lineWidth: 3)
-                                )
-                        )
-                        .shadow(color: Color.purple.opacity(0.8), radius: 6, x: 0, y: 0)
-                        .shadow(color: Color.purple.opacity(0.8), radius: 12, x: 0, y: 0)
                     }
+                    .padding(.horizontal, 24)
                     
-                    Text("Tap anywhere to close • Press Tab for quick access")
-                        .font(.caption)
-                        .foregroundColor(.gray)
-                        .multilineTextAlignment(.center)
+                    // Upgrade grid - mobile optimized with fixed sizing
+                    LazyVGrid(columns: [
+                        GridItem(.fixed(160), spacing: 16),
+                        GridItem(.fixed(160), spacing: 16)
+                    ], spacing: 16) {
+                        ForEach(PlayerUpgradeType.allCases, id: \.self) { upgradeType in
+                            GameUpgradeCard(
+                                upgradeType: upgradeType,
+                                level: progression.upgradesApplied[upgradeType, default: 0]
+                            )
+                        }
+                    }
+                    .padding(.horizontal, 24)
+                    
+                    // Action buttons
+                    VStack(spacing: 16) {
+                        Button(action: onClose) {
+                            HStack(spacing: 12) {
+                                Image(systemName: "play.fill")
+                                    .font(.headline)
+                                Text("Resume Game")
+                                    .font(.headline)
+                                    .fontWeight(.semibold)
+                            }
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 56) // Minimum 44pt + padding for accessibility
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(Color.black.opacity(0.8))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .stroke(Color.purple.opacity(0.6), lineWidth: 3)
+                                    )
+                            )
+                            .shadow(color: Color.purple.opacity(0.8), radius: 6, x: 0, y: 0)
+                            .shadow(color: Color.purple.opacity(0.8), radius: 12, x: 0, y: 0)
+                            .cornerRadius(16)
+                        }
+                        .accessibilityLabel("Resume game")
+                        .accessibilityHint("Returns to the game")
+                        
+                        Text("Tap anywhere to close • Press Tab for quick access")
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 8)
+                    }
+                    .padding(.horizontal, 24)
                 }
-                .padding(.horizontal, 20)
+                .padding(.vertical, 32)
             }
-            .padding(.vertical, 20)
-            .frame(maxWidth: 400)
+            .frame(maxWidth: 400) // Maximum width for better readability
+            .frame(maxHeight: .infinity)
         }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Player progression overlay")
     }
     
     private var totalUpgrades: Int {
@@ -100,19 +117,19 @@ struct GameUpgradeCard: View {
     let level: Int
     
     var body: some View {
-        VStack(spacing: 8) {
-            // Icon with level
+        VStack(spacing: 12) {
+            // Icon with level - Fixed sizing
             ZStack {
                 Circle()
                     .fill(upgradeColor.opacity(0.15))
-                    .frame(width: 50, height: 50)
+                    .frame(width: 56, height: 56) // Larger touch target
                 
                 Circle()
                     .stroke(upgradeColor, lineWidth: 2)
-                    .frame(width: 50, height: 50)
+                    .frame(width: 56, height: 56)
                 
                 Image(systemName: upgradeType.icon)
-                    .font(.system(size: 20, weight: .bold))
+                    .font(.system(size: 24, weight: .bold))
                     .foregroundColor(upgradeColor)
                 
                 if level > 0 {
@@ -121,49 +138,56 @@ struct GameUpgradeCard: View {
                         HStack {
                             Spacer()
                             Text("\(level)")
-                                .font(.system(size: 10, weight: .bold))
+                                .font(.system(size: 12, weight: .bold))
                                 .foregroundColor(.white)
-                                .frame(width: 16, height: 16)
+                                .frame(width: 20, height: 20) // Fixed size
                                 .background(upgradeColor)
                                 .clipShape(Circle())
-                                .offset(x: 6, y: 6)
+                                .offset(x: 8, y: 8)
                         }
                     }
                 }
             }
+            .frame(width: 56, height: 56) // Ensure consistent sizing
             
-            // Title
+            // Title with fixed height
             Text(upgradeType.name)
                 .font(.caption)
                 .fontWeight(.semibold)
                 .foregroundColor(.white)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
+                .frame(height: 32) // Fixed height for alignment
             
-            // Level indicator
-            HStack(spacing: 3) {
+            // Level indicator with consistent spacing
+            HStack(spacing: 4) {
                 ForEach(1...5, id: \.self) { dotLevel in
                     Circle()
                         .fill(dotLevel <= level ? upgradeColor : Color.gray.opacity(0.3))
-                        .frame(width: 6, height: 6)
+                        .frame(width: 8, height: 8) // Slightly larger for better visibility
                 }
             }
+            .frame(height: 16) // Fixed height
             
-            // Status
+            // Status with fixed height
             Text(level > 0 ? "Level \(level)" : "Not Upgraded")
                 .font(.caption2)
                 .foregroundColor(level > 0 ? upgradeColor : .gray)
+                .frame(height: 16) // Fixed height
         }
-        .padding(12)
-        .frame(height: 140)
+        .padding(16) // Consistent padding using 8pt grid
+        .frame(width: 160, height: 180) // Fixed card dimensions
         .background(
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: 16) // Rounded corners following 8pt grid
                 .fill(Color.black.opacity(0.6))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 12)
+                    RoundedRectangle(cornerRadius: 16)
                         .stroke(level > 0 ? upgradeColor.opacity(0.5) : Color.gray.opacity(0.3), lineWidth: 1)
                 )
         )
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(upgradeType.name), level \(level)")
+        .accessibilityValue(upgradeType.description)
     }
     
     private var upgradeColor: Color {
@@ -172,6 +196,8 @@ struct GameUpgradeCard: View {
             return .blue
         case .force:
             return .red
+        case .speed:
+            return .green
         case .slowDuration:
             return .purple
         case .shockwavePower:

@@ -109,6 +109,8 @@ struct PauseMenuView: View {
             )
             .padding(.horizontal, 40)
         }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Game paused")
     }
 }
 

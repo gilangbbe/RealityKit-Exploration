@@ -11,20 +11,22 @@ struct UpgradeChoiceView: View {
             Color.black.opacity(0.8)
                 .ignoresSafeArea()
             
-            VStack(spacing: 30) {
-                // Wave complete title
-                VStack(spacing: 10) {
+            VStack(spacing: 32) {
+                // Wave complete title with consistent spacing
+                VStack(spacing: 16) {
                     Text("WAVE \(currentWave - 1) COMPLETE!")
                         .font(.system(size: 28, weight: .bold, design: .rounded))
                         .foregroundColor(.green)
+                        .accessibilityAddTraits(.isHeader)
                     
                     Text("Choose your upgrade:")
                         .font(.system(size: 18, weight: .medium))
                         .foregroundColor(.white)
                 }
+                .padding(.horizontal, 24)
                 
-                // Upgrade choices
-                VStack(spacing: 15) {
+                // Upgrade choices with fixed sizing
+                VStack(spacing: 16) { // Consistent 16pt spacing
                     ForEach(Array(upgradeChoices.enumerated()), id: \.offset) { index, upgradeType in
                         UpgradeOptionButton(
                             upgradeType: upgradeType,
@@ -32,16 +34,20 @@ struct UpgradeChoiceView: View {
                         )
                     }
                 }
-                .padding(.horizontal, 20)
+                .padding(.horizontal, 24)
                 
-                // Instruction
+                // Instruction with proper spacing
                 Text("Choose wisely - each upgrade gets weaker with repetition")
                     .font(.caption)
                     .foregroundColor(.gray)
                     .multilineTextAlignment(.center)
+                    .padding(.horizontal, 24)
             }
-            .padding(40)
+            .padding(.vertical, 40)
+            .frame(maxWidth: 500) // Maximum width for better readability
         }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Upgrade selection")
     }
 }
 
@@ -51,43 +57,48 @@ struct UpgradeOptionButton: View {
     
     var body: some View {
         Button(action: onTap) {
-            HStack(spacing: 15) {
-                // Icon
+            HStack(spacing: 16) {
+                // Icon with fixed sizing
                 Image(systemName: upgradeType.icon)
                     .font(.title2)
                     .foregroundColor(.white)
-                    .frame(width: 30)
+                    .frame(width: 32, height: 32) // Fixed icon area
                 
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: 8) {
                     Text(upgradeType.name)
                         .font(.title3)
                         .fontWeight(.semibold)
                         .foregroundColor(.white)
+                        .multilineTextAlignment(.leading)
                     
                     Text(upgradeType.description)
                         .font(.subheadline)
                         .foregroundColor(.gray)
                         .multilineTextAlignment(.leading)
+                        .lineLimit(2)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
                 
-                Spacer()
-                
-                // Arrow indicator
+                // Arrow indicator with fixed sizing
                 Image(systemName: "chevron.right")
                     .font(.title3)
                     .foregroundColor(.blue)
+                    .frame(width: 24, height: 24) // Fixed arrow area
             }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 15)
+            .padding(.horizontal, 24)
+            .padding(.vertical, 20) // Minimum 44pt touch target
+            .frame(maxWidth: .infinity)
+            .frame(minHeight: 64) // Ensure minimum touch target size
             .background(
-                RoundedRectangle(cornerRadius: 15)
+                RoundedRectangle(cornerRadius: 16) // Consistent with 8pt grid
                     .fill(Color.black.opacity(0.4))
                     .stroke(Color.blue.opacity(0.5), lineWidth: 1)
             )
         }
         .buttonStyle(PlainButtonStyle())
-        .scaleEffect(1.0)
-        .animation(.easeInOut(duration: 0.1), value: false)
+        .accessibilityLabel(upgradeType.name)
+        .accessibilityValue(upgradeType.description)
+        .accessibilityHint("Tap to select this upgrade")
     }
 }
 

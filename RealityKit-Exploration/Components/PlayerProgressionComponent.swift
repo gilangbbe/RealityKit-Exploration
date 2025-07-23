@@ -5,6 +5,7 @@ import Foundation
 enum PlayerUpgradeType: String, CaseIterable, Codable {
     case resilience = "resilience"     // Resist enemy pushes better
     case force = "force"              // Push enemies with more power
+    case speed = "speed"              // Move faster to keep up with enemies
     case slowDuration = "slowDuration" // Time slow effects last longer
     case shockwavePower = "shockwavePower" // Stronger shockwave effects
     
@@ -14,6 +15,8 @@ enum PlayerUpgradeType: String, CaseIterable, Codable {
             return "Iron Will"
         case .force:
             return "Crushing Force"
+        case .speed:
+            return "Swift Movement"
         case .slowDuration:
             return "Extended Slow"
         case .shockwavePower:
@@ -24,13 +27,15 @@ enum PlayerUpgradeType: String, CaseIterable, Codable {
     var description: String {
         switch self {
         case .resilience:
-            return "Become harder to push around"
+            return "Become harder to push around (+25%)"
         case .force:
-            return "Push enemies with devastating power"
+            return "Push enemies with greater power (+15%)"
+        case .speed:
+            return "Move faster to outmaneuver enemies (+18%)"
         case .slowDuration:
-            return "Time slow effects last much longer"
+            return "Time slow effects last longer (+35%)"
         case .shockwavePower:
-            return "Shockwave pushes enemies harder and further"
+            return "Shockwave pushes enemies harder (+20%)"
         }
     }
     
@@ -40,6 +45,8 @@ enum PlayerUpgradeType: String, CaseIterable, Codable {
             return "shield.fill"
         case .force:
             return "hand.raised.fill"
+        case .speed:
+            return "bolt.fill"
         case .slowDuration:
             return "clock.arrow.circlepath"
         case .shockwavePower:
@@ -52,6 +59,7 @@ enum PlayerUpgradeType: String, CaseIterable, Codable {
 struct PlayerProgressionComponent: Component, Codable {
     var resilienceMultiplier: Float = 1.0   // Resist being pushed
     var forceMultiplier: Float = 1.0        // Push enemies harder
+    var speedMultiplier: Float = 1.0        // Move faster
     var slowDurationMultiplier: Float = 1.0  // Time slow lasts longer
     var shockwavePowerMultiplier: Float = 1.0 // Shockwave is stronger
     var wavesCompleted: Int = 0
@@ -62,6 +70,7 @@ struct PlayerProgressionComponent: Component, Codable {
     // Base values for calculating current stats
     var baseResistance: Float = GameConfig.playerResistance
     var baseForce: Float = GameConfig.playerPushForceMultiplier
+    var baseSpeed: Float = GameConfig.playerSpeed
     var baseSlowDuration: Float = Float(GameConfig.timeSlowDuration)
     var baseShockwaveForce: Float = GameConfig.shockwaveForce
     
@@ -76,6 +85,10 @@ struct PlayerProgressionComponent: Component, Codable {
     
     var currentForce: Float {
         return baseForce * forceMultiplier
+    }
+    
+    var currentSpeed: Float {
+        return baseSpeed * speedMultiplier
     }
     
     var currentSlowDuration: TimeInterval {
@@ -98,16 +111,19 @@ struct PlayerProgressionComponent: Component, Codable {
         
         switch upgradeType {
         case .resilience:
-            let upgradeAmount = 0.4 * diminishingMultiplier // Significant resistance boost
+            let upgradeAmount = 0.25 * diminishingMultiplier // Reduced from 0.4 to 0.25 (25% instead of 40%)
             resilienceMultiplier += upgradeAmount
         case .force:
-            let upgradeAmount = GameConfig.playerForceIncrease * diminishingMultiplier
+            let upgradeAmount = 0.15 * diminishingMultiplier // Reduced from GameConfig.playerForceIncrease (0.2) to 0.15
             forceMultiplier += upgradeAmount
+        case .speed:
+            let upgradeAmount = GameConfig.playerSpeedUpgradeValue * diminishingMultiplier // 18% speed increase per upgrade - balanced for enemy progression
+            speedMultiplier += upgradeAmount
         case .slowDuration:
-            let upgradeAmount = 0.5 * diminishingMultiplier // +50% slow duration each upgrade
+            let upgradeAmount = 0.35 * diminishingMultiplier // Reduced from 0.5 to 0.35 (+35% instead of +50%)
             slowDurationMultiplier += upgradeAmount
         case .shockwavePower:
-            let upgradeAmount = 0.25 * diminishingMultiplier // +25% shockwave power each upgrade (more balanced for small arena)
+            let upgradeAmount = 0.20 * diminishingMultiplier // Reduced from 0.25 to 0.20 for small arena balance
             shockwavePowerMultiplier += upgradeAmount
         }
     }
@@ -117,11 +133,13 @@ struct PlayerProgressionComponent: Component, Codable {
         var choices: [PlayerUpgradeType] = []
         var availableUpgrades = PlayerUpgradeType.allCases
         
-        // Reduce probability of already heavily upgraded options
+        // Reduce probability of already heavily upgraded options (more aggressive for balance)
         availableUpgrades = availableUpgrades.filter { upgradeType in
             let upgradeCount = upgradesApplied[upgradeType, default: 0]
-            if upgradeCount >= 3 { // Avoid if already upgraded 3+ times
-                return Float.random(in: 0...1) < 0.3 // Only 30% chance
+            if upgradeCount >= 4 { // Increased threshold from 3 to 4
+                return Float.random(in: 0...1) < 0.2 // Reduced from 30% to 20% chance
+            } else if upgradeCount >= 2 { // Add intermediate threshold
+                return Float.random(in: 0...1) < 0.7 // 70% chance for moderately upgraded
             }
             return true
         }
@@ -134,10 +152,12 @@ struct PlayerProgressionComponent: Component, Codable {
             }
         }
         
-        // Fill remaining slots if needed
+        // Fill remaining slots if needed (ensure we always have 3 choices)
         while choices.count < 3 {
             if let randomUpgrade = PlayerUpgradeType.allCases.randomElement() {
-                choices.append(randomUpgrade)
+                if !choices.contains(randomUpgrade) {
+                    choices.append(randomUpgrade)
+                }
             }
         }
         
@@ -147,9 +167,9 @@ struct PlayerProgressionComponent: Component, Codable {
     // MARK: - Codable Implementation
     
     enum CodingKeys: String, CodingKey {
-        case resilienceMultiplier, forceMultiplier, slowDurationMultiplier, shockwavePowerMultiplier
+        case resilienceMultiplier, forceMultiplier, speedMultiplier, slowDurationMultiplier, shockwavePowerMultiplier
         case wavesCompleted, upgradesApplied
-        case baseResistance, baseForce, baseSlowDuration, baseShockwaveForce
+        case baseResistance, baseForce, baseSpeed, baseSlowDuration, baseShockwaveForce
     }
     
     init(from decoder: Decoder) throws {
@@ -157,6 +177,7 @@ struct PlayerProgressionComponent: Component, Codable {
         
         resilienceMultiplier = try container.decodeIfPresent(Float.self, forKey: .resilienceMultiplier) ?? 1.0
         forceMultiplier = try container.decodeIfPresent(Float.self, forKey: .forceMultiplier) ?? 1.0
+        speedMultiplier = try container.decodeIfPresent(Float.self, forKey: .speedMultiplier) ?? 1.0
         slowDurationMultiplier = try container.decodeIfPresent(Float.self, forKey: .slowDurationMultiplier) ?? 1.0
         shockwavePowerMultiplier = try container.decodeIfPresent(Float.self, forKey: .shockwavePowerMultiplier) ?? 1.0
         wavesCompleted = try container.decodeIfPresent(Int.self, forKey: .wavesCompleted) ?? 0
@@ -172,6 +193,7 @@ struct PlayerProgressionComponent: Component, Codable {
         
         baseResistance = try container.decodeIfPresent(Float.self, forKey: .baseResistance) ?? GameConfig.playerResistance
         baseForce = try container.decodeIfPresent(Float.self, forKey: .baseForce) ?? GameConfig.playerPushForceMultiplier
+        baseSpeed = try container.decodeIfPresent(Float.self, forKey: .baseSpeed) ?? GameConfig.playerSpeed
         baseSlowDuration = try container.decodeIfPresent(Float.self, forKey: .baseSlowDuration) ?? Float(GameConfig.timeSlowDuration)
         baseShockwaveForce = try container.decodeIfPresent(Float.self, forKey: .baseShockwaveForce) ?? GameConfig.shockwaveForce
     }
@@ -181,6 +203,7 @@ struct PlayerProgressionComponent: Component, Codable {
         
         try container.encode(resilienceMultiplier, forKey: .resilienceMultiplier)
         try container.encode(forceMultiplier, forKey: .forceMultiplier)
+        try container.encode(speedMultiplier, forKey: .speedMultiplier)
         try container.encode(slowDurationMultiplier, forKey: .slowDurationMultiplier)
         try container.encode(shockwavePowerMultiplier, forKey: .shockwavePowerMultiplier)
         try container.encode(wavesCompleted, forKey: .wavesCompleted)
@@ -191,6 +214,7 @@ struct PlayerProgressionComponent: Component, Codable {
         
         try container.encode(baseResistance, forKey: .baseResistance)
         try container.encode(baseForce, forKey: .baseForce)
+        try container.encode(baseSpeed, forKey: .baseSpeed)
         try container.encode(baseSlowDuration, forKey: .baseSlowDuration)
         try container.encode(baseShockwaveForce, forKey: .baseShockwaveForce)
     }

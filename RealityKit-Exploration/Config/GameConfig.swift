@@ -23,38 +23,39 @@ struct GameConfig {
     // Game State
     static var isGamePaused: Bool = false
     
-    // Wave System
-    static let baseEnemiesPerWave: Int = 5
+    // Wave System (rebalanced for hyper-casual 5-minute sessions)
+    static let baseEnemiesPerWave: Int = 4 // Reduced from 5 to 4 for quicker waves
     static let enemyHealthIncreasePerWave: Int = 1
-    static let enemySpeedIncreasePerWave: Float = 0.1
-    static let enemyMassIncreasePerWave: Float = 0.1
+    static let enemySpeedIncreasePerWave: Float = 0.08 // Reduced from 0.1 for gentler progression
+    static let enemyMassIncreasePerWave: Float = 0.08 // Reduced from 0.1 for balance
     static let enemyCountIncreasePerWave: Int = 1
-    static let waveClearDelay: TimeInterval = 3.0
-    static let waveScoreMultiplier: Int = 50 // Bonus points per wave completed
+    static let waveClearDelay: TimeInterval = 2.5 // Reduced from 3.0 for faster pacing
+    static let waveScoreMultiplier: Int = 60 // Increased from 50 for better reward feedback
     
     // Wave progression limits
     static let maxWaveForSpeedIncrease: Int = 5 // After wave 4, no more speed/mass increases
     static let maxWaveForMassIncrease: Int = 5 // After wave 4, no more speed/mass increases
     
-    // Balanced progression system
+    // Balanced progression system (tuned for 5-minute hyper-casual gameplay)
     static let playerUpgradeChoicesPerWave: Int = 3 // Player chooses from 3 options
-    static let playerUpgradeBaseValue: Float = 0.15 // Smaller, more balanced upgrades
-    static let playerUpgradeDiminishingFactor: Float = 0.95 // Slower diminishing than before
+    static let playerUpgradeBaseValue: Float = 0.12 // Reduced from 0.15 for gentler progression
+    static let playerUpgradeDiminishingFactor: Float = 0.85 // Stronger diminishing from 0.95 to 0.85
     
-    // Enemy scaling to match player progression
-    static let enemyScalingPerWave: Float = 0.15 // Enemies get 15% stronger each wave (was 0.1)
-    static let enemyMaxScalingWaves: Int = 15 // After wave 15, enemies cap out (was 10)
-    static let enemyForceScalingPerWave: Float = 0.2 // Enemy push force scales 20% per wave
+    // Enemy scaling to match player progression (tuned for hyper-casual)
+    static let enemyScalingPerWave: Float = 0.12 // Reduced from 0.15 to 0.12 (12% per wave)
+    static let enemyMaxScalingWaves: Int = 12 // Reduced from 15 to 12 for 5-minute sessions
+    static let enemyForceScalingPerWave: Float = 0.15 // Reduced from 0.2 to 0.15 (15% per wave)
     
-    // Diminishing returns for other systems
-    static let enemyCountDiminishingFactor: Float = 0.8 // Each wave enemy count increase gets 20% smaller
-    static let waveScoreDiminishingFactor: Float = 0.9 // Each wave score bonus gets 10% smaller
-    static let maxEnemiesDiminishingFactor: Float = 0.85 // Each wave max enemies increase gets 15% smaller
+    // Diminishing returns for other systems (tuned for hyper-casual gameplay)
+    static let enemyCountDiminishingFactor: Float = 0.75 // Stronger diminishing from 0.8 to 0.75
+    static let waveScoreDiminishingFactor: Float = 0.88 // Slightly stronger from 0.9 to 0.88
+    static let maxEnemiesDiminishingFactor: Float = 0.8 // Slightly stronger from 0.85 to 0.8
     
-    // Player progression per wave (balanced values)
-    static let playerSpeedIncrease: Float = 0.15 // Moderate speed boost
-    static let playerMassIncrease: Float = 0.25 // Reasonable mass boost (was 0.5)
-    static let playerForceIncrease: Float = 0.2 // Balanced force boost
+    // Player progression per wave (rebalanced for hyper-casual)
+    static let playerSpeedIncrease: Float = 0.12 // Reduced from 0.15 for gentler scaling
+    static let playerSpeedUpgradeValue: Float = 0.18 // Speed upgrade gives 18% per level (balanced with enemy progression)
+    static let playerMassIncrease: Float = 0.20 // Reduced from 0.25 for balance
+    static let playerForceIncrease: Float = 0.15 // Reduced from 0.2 for better balance
   
     // Player movement
     static let playerSpeed: Float = 0.3
@@ -89,33 +90,42 @@ struct GameConfig {
     static let arenaEdgeBuffer: Float = 0.05 // Very tight threshold for edge detection
     static let arenaFallHeightThreshold: Float = 0.1 // Height below arena surface before considering fallen
     
-    // Spawner
-    static let enemySpawnInterval: TimeInterval = 1.5
-    static let enemyMaxCount: Int = 10 // Base max enemies for wave 1
-    static let enemyMaxCountIncreasePerWave: Int = 2 // How many more enemies can spawn each wave
+    // Spawner (dynamic wave-based spawning for hyper-casual gameplay)
+    // Wave-based spawn intervals: Wave 1: 1.3s, Wave 2: 1.19s, Wave 3: 1.10s, Wave 4: 1.02s, Wave 5+: 0.6s min
+    static let enemySpawnInterval: TimeInterval = 1.3 // Base spawn interval for wave 1
+    static let enemySpawnIntervalReduction: Float = 0.08 // Reduce interval by 8% per wave (aggressive for hyper-casual)
+    static let enemyMinSpawnInterval: TimeInterval = 0.6 // Minimum spawn interval (fastest spawning)
+    static let enemyMaxCount: Int = 8 // Base max enemies for wave 1
+    static let enemyMaxCountIncreasePerWave: Int = 1 // Reduced from 2 for gentler scaling
     static let enemySpawnYOffset: Float = 0.1
+    
+    // Burst spawning system (spawn multiple enemies at once in later waves)
+    // Waves 1-3: Single spawns, Wave 4+: 40% chance for 2-3 enemy bursts
+    static let burstSpawningStartWave: Int = 4 // Start burst spawning from wave 4
+    static let maxEnemiesPerBurst: Int = 3 // Maximum enemies to spawn in one burst
+    static let burstSpawningChance: Float = 0.4 // 40% chance for burst spawn in later waves
     
     // Camera
     static let cameraFOV: Float = 35.0
-  static let cameraIsometricOffset: SIMD3<Float> = [1, 2.5, 1]
+  static let cameraIsometricOffset: SIMD3<Float> = [1.5, 2.5, 1.5]
     static let cameraSmoothing: Float = 0.05
     
     // Isometric movement mapping
     static let isometricDiagonal: Float = 0.707
     
-    // LootBox System
-    static let lootBoxSpawnInterval: TimeInterval = 5.0 // Spawn loot box every 8 seconds
+    // LootBox System (adjusted for faster hyper-casual pacing)
+    static let lootBoxSpawnInterval: TimeInterval = 4.0 // Reduced from 5.0 for more frequent power-ups
     static let lootBoxCollectionRadius: Float = 0.1 // Distance to collect loot box
-    static let lootBoxLifetime: TimeInterval = 15.0 // How long loot box stays before disappearing
-    static let lootBoxMinSpawnDistance: Float = 1.0 // Minimum distance between LootBoxes to prevent overlap
-    static let lootBoxMinPlayerDistance: Float = 0.8 // Minimum distance from player when spawning
-    static let lootBoxSpawnAttempts: Int = 10 // Maximum attempts to find clear spawn position
+    static let lootBoxLifetime: TimeInterval = 12.0 // Reduced from 15.0 for faster turnover
+    static let lootBoxMinSpawnDistance: Float = 0.8 // Reduced from 1.0 for 150cm arena
+    static let lootBoxMinPlayerDistance: Float = 0.6 // Reduced from 0.8 for 150cm arena
+    static let lootBoxSpawnAttempts: Int = 8 // Reduced from 10 for faster processing
     
-    // Power-ups
-    static let timeSlowDuration: TimeInterval = 3.0 // Time slow effect duration
-    static let timeSlowMultiplier: Float = 0.3 // Enemy speed multiplier during time slow
-    static let shockwaveForce: Float = 4.0 // Force applied to enemies during shockwave (balanced for 150cm arena)
-    static let shockwaveRadius: Float = 0.8 // Radius of shockwave effect (80cm radius for 150cm arena)
+    // Power-ups (optimized for 150cm arena and hyper-casual gameplay)
+    static let timeSlowDuration: TimeInterval = 2.5 // Reduced from 3.0 for faster pacing
+    static let timeSlowMultiplier: Float = 0.35 // Slightly less effective (was 0.3) for balance
+    static let shockwaveForce: Float = 3.5 // Reduced from 4.0 for 150cm arena balance
+    static let shockwaveRadius: Float = 0.7 // Reduced from 0.8 (70cm radius for 150cm arena)
 
     // Entity names (for easy adjustment)
     struct EntityNames {

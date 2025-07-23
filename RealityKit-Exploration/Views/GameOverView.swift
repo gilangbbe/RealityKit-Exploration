@@ -138,8 +138,8 @@ struct GameOverView: View {
 
 #Preview {
     GameOverView(
-        finalScore: 750, 
-        enemiesDefeated: 7, 
+        finalScore: 750,
+        enemiesDefeated: 7,
         wavesCompleted: 3,
         onReplay: { print("Replay tapped") },
         onMainMenu: { print("Main Menu tapped")},
