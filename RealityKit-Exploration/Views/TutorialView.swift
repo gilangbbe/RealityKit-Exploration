@@ -57,14 +57,14 @@ struct TutorialView: View {
         TutorialPage(
             title: "Loot Box Mechanics",
             subtitle: "Interactive Elements",
-            content: "• Loot boxes spawn every 4 seconds\n• They rise when enemies approach\n• Collect them for power-ups\n• Watch for the phasing animation\n• Strategic positioning matters!",
+            content: "• Collect them for power-ups\n• Strategic positioning matters!",
             icon: "cube.fill",
             color: .cyan
         ),
         TutorialPage(
             title: "Survival Tips",
             subtitle: "Master the Arena",
-            content: "• Stay near the center of the arena\n• Use enemy momentum against them\n• Time your power-ups strategically\n• Balance speed vs force upgrades\n• Watch for falling enemies!",
+            content: "• Stay near the center of the arena\n• Use enemy momentum against them\n• Time your power-ups strategically\n• Balance speed vs force upgrades",
             icon: "lightbulb.fill",
             color: .mint
         )
