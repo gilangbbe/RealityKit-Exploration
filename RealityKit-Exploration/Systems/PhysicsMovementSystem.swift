@@ -94,49 +94,20 @@ class PhysicsMovementSystem: System {
     private func handleEntityFall(_ entity: Entity, context: SceneUpdateContext) {
         // Check if it's an enemy
         if let enemyComponent = entity.components[EnemyCapsuleComponent.self] {
-            // Award points to player
-            updatePlayerScore(points: enemyComponent.scoreValue, context: context)
-            // Update wave progress
-            updateWaveProgress(context: context)
-            // Remove the fallen enemy
-            entity.removeFromParent()
-            // Post notification for UI update
-            NotificationCenter.default.post(name: .enemyDefeated, object: enemyComponent.scoreValue)
+            // Check if enemy is already falling
+            if let fallingComp = entity.components[EnemyFallingComponent.self], fallingComp.isFalling {
+                return // Already falling, let the falling system handle it
+            }
+            
+            // Start falling animation instead of immediate removal
+            EnemyFallingSystem.startFalling(for: entity)
+            return
         }
         
         // Check if it's the player
         if entity.components[GameStateComponent.self] != nil {
             // Player fell - game over
             NotificationCenter.default.post(name: .playerFell, object: nil)
-        }
-    }
-    
-    private func updateWaveProgress(context: SceneUpdateContext) {
-        let waveQuery = EntityQuery(where: .has(WaveComponent.self))
-        for entity in context.entities(matching: waveQuery, updatingSystemWhen: .rendering) {
-            guard var wave = entity.components[WaveComponent.self] else { continue }
-            wave.enemyDefeated()
-            entity.components[WaveComponent.self] = wave
-            
-            // Check if wave is complete
-            if !wave.isWaveActive {
-                NotificationCenter.default.post(name: .waveCompleted, object: wave.currentWave)
-            }
-            break
-        }
-    }
-    
-    private func updatePlayerScore(points: Int, context: SceneUpdateContext) {
-        let playerQuery = EntityQuery(where: .has(GameStateComponent.self))
-        for playerEntity in context.entities(matching: playerQuery, updatingSystemWhen: .rendering) {
-            guard var gameState = playerEntity.components[GameStateComponent.self] else { continue }
-            gameState.score += points
-            gameState.enemiesDefeated += 1
-            playerEntity.components[GameStateComponent.self] = gameState
-            
-            // Notify UI about score change
-            NotificationCenter.default.post(name: .scoreChanged, object: gameState.score)
-            break
         }
     }
 }
