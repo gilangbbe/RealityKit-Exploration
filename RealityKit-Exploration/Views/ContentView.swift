@@ -41,6 +41,9 @@ struct ContentView: View {
     // Leaderboard
     @State private var showLeaderboard = false
     
+    // Tutorial
+    @State private var showTutorial = false
+    
     // GameOver
     @State private var lastGameSnapshot: UIImage? = nil
     
@@ -51,10 +54,13 @@ struct ContentView: View {
             if gameState == .mainMenu {
                 MainMenuContainerView(
                     showLeaderboard: showLeaderboard,
+                    showTutorial: showTutorial,
                     scoreManager: scoreManager,
                     onStartGame: startNewGame,
                     onShowLeaderboard: { showLeaderboard = true },
-                    onHideLeaderboard: { showLeaderboard = false }
+                    onHideLeaderboard: { showLeaderboard = false },
+                    onShowTutorial: { showTutorial = true },
+                    onHideTutorial: { showTutorial = false }
                 )
             }
             
@@ -320,6 +326,8 @@ struct ContentView: View {
         GameConfig.isGamePaused = false
         showUpgradeChoice = false // Clear any upgrade choice overlay
         showProgressionOverlay = false // Clear progression overlay
+        showLeaderboard = false // Clear leaderboard
+        showTutorial = false // Clear tutorial
         // Clear all game data
         score = 0
         enemiesDefeated = 0
