@@ -106,8 +106,13 @@ class PhysicsMovementSystem: System {
         
         // Check if it's the player
         if entity.components[GameStateComponent.self] != nil {
-            // Player fell - game over
-            NotificationCenter.default.post(name: .playerFell, object: nil)
+            // Check if player is already falling
+            if let fallingComp = entity.components[PlayerFallingComponent.self], fallingComp.isFalling {
+                return // Already falling, let the falling system handle it
+            }
+            
+            // Start player falling animation instead of immediate game over
+            PlayerFallingSystem.startFalling(for: entity)
         }
     }
 }

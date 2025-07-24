@@ -17,6 +17,11 @@ class EnemyCapsuleSystem: System {
         for entity in allEnemies {
             guard var enemyComponent = entity.components[EnemyCapsuleComponent.self] else { continue }
             
+            // Skip movement if enemy is falling
+            if let fallingComp = entity.components[EnemyFallingComponent.self], fallingComp.isFalling {
+                continue // Don't move falling enemies
+            }
+            
             // Find the player (entity with GameStateComponent)
             if enemyComponent.target == nil {
                 enemyComponent.target = findPlayer(in: context)

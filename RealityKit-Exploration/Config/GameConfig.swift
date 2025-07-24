@@ -22,6 +22,11 @@ struct GameConfig {
     static let enemyFallRotationSpeed: Float = 3.0 // Rotation speed during fall (radians per second)
     static let enemyFallDuration: Float = 2.0 // How long the falling animation lasts
     
+    // Player falling animations
+    static let playerFallSpeed: Float = 2.5 // How fast player falls when out of bounds
+    static let playerFallRotationSpeed: Float = 2.0 // Player rotation speed during fall (radians per second)
+    static let playerFallDuration: Float = 0.5 // How long player falling animation lasts before game over
+    
     // LootBox animations
     static let lootBoxAnimationIndex: Int = 0 // LootBox default animation at index 0
     static let lootBoxUpAnimationIndex: Int = 1 // LootBox up animation at index 1 

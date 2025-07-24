@@ -115,6 +115,12 @@ struct EnemyFallingSystem: System {
             entity.components[EnemyFallingComponent.self] = newFallingComp
         }
         
+        // Stop all horizontal movement by zeroing out physics velocity
+        if var physics = entity.components[PhysicsMovementComponent.self] {
+            physics.velocity = SIMD3<Float>(0, 0, 0) // Stop all movement
+            entity.components[PhysicsMovementComponent.self] = physics
+        }
+        
         // Stop any walking animations
         if let animationComp = entity.components[EnemyAnimationComponent.self] {
             if let animationEntity = entity.findEntity(named: animationComp.animationChildEntityName) {
@@ -122,6 +128,6 @@ struct EnemyFallingSystem: System {
             }
         }
         
-        print("Started falling animation for enemy")
+        print("Started falling animation for enemy - stopped all movement and animations")
     }
 }

@@ -424,6 +424,7 @@ struct ContentView: View {
         PlayerAnimationSystem.registerSystem()
         EnemyAnimationSystem.registerSystem()
         EnemyFallingSystem.registerSystem()
+        PlayerFallingSystem.registerSystem()
         LootBoxAnimationSystem.registerSystem()
         
         content.add(loadedScene)
@@ -463,6 +464,10 @@ struct ContentView: View {
         // Initialize player animation component
         let animationComponent = PlayerAnimationComponent()
         entity.components.set(animationComponent)
+        
+        // Initialize player falling component
+        let fallingComponent = PlayerFallingComponent()
+        entity.components.set(fallingComponent)
         
         // Debug: List available animations in the entity hierarchy
         print("Player root entity name: \(entity.name ?? "unnamed")")
