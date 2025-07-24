@@ -12,74 +12,72 @@ struct PauseMenuView: View {
             Color.black.opacity(0.7)
                 .ignoresSafeArea()
             
-            VStack(spacing: 32) {
+            VStack(spacing: 30) {
                 // Pause Title
                 Text("GAME PAUSED")
                     .font(.system(size: 32, weight: .bold, design: .rounded))
                     .foregroundColor(.white)
                     .shadow(color: .blue, radius: 5)
-                    .accessibilityAddTraits(.isHeader)
                 
-                // Current Stats with fixed sizing
-                VStack(spacing: 16) {
+                // Current Stats
+                VStack(spacing: 15) {
                     HStack {
                         Text("Current Score:")
-                            .font(.headline)
-                            .foregroundColor(.gray)
+                            .foregroundColor(.white)
+                            .font(.title2)
                         Spacer()
                         Text("\(currentScore)")
-                            .font(.headline)
                             .fontWeight(.bold)
-                            .foregroundColor(.white)
+                            .foregroundColor(.yellow)
+                            .font(.title2)
                     }
                     
                     HStack {
                         Text("Current Wave:")
-                            .font(.headline)
-                            .foregroundColor(.gray)
+                            .foregroundColor(.white)
+                            .font(.title2)
                         Spacer()
                         Text("\(currentWave)")
-                            .font(.headline)
                             .fontWeight(.bold)
-                            .foregroundColor(.blue)
+                            .foregroundColor(.orange)
+                            .font(.title2)
                     }
                 }
-                .padding(.horizontal, 32)
-                .padding(.vertical, 24)
-                .frame(maxWidth: 320) // Fixed maximum width
+                //.padding(.horizontal, 40)
+                .padding(.vertical, 20)
                 .background(Color.black.opacity(0.3))
-                .cornerRadius(16)
+                .cornerRadius(15)
                 
-                // Menu Buttons with consistent sizing
-                VStack(spacing: 16) {
+                // Menu Buttons
+                VStack(spacing: 15) {
                     // Resume Button
                     Button(action: onResume) {
-                        HStack(spacing: 12) {
+                        HStack {
                             Image(systemName: "play.fill")
                                 .font(.title3)
                             Text("RESUME")
                                 .font(.title3)
                                 .fontWeight(.bold)
                         }
-                        .foregroundColor(.black)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 56) // Minimum 44pt + padding for accessibility
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 40)
+                        .padding(.vertical, 15)
                         .background(
-                            LinearGradient(
-                                gradient: Gradient(colors: [Color.green, Color.green.opacity(0.8)]),
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color.black.opacity(0.8))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color.purple.opacity(0.6), lineWidth: 3)
+                                )
                         )
-                        .cornerRadius(16)
-                        .shadow(color: .green.opacity(0.3), radius: 8)
+                        .shadow(color: Color.purple.opacity(0.8), radius: 6, x: 0, y: 0)
+                        .shadow(color: Color.purple.opacity(0.8), radius: 12, x: 0, y: 0)
+                    
                     }
-                    .accessibilityLabel("Resume game")
-                    .accessibilityHint("Returns to the game")
                     
                     // Main Menu Button
                     Button(action: onMainMenu) {
-                        HStack(spacing: 12) {
+                        HStack {
                             Image(systemName: "house.fill")
                                 .font(.title3)
                             Text("MAIN MENU")
@@ -87,32 +85,29 @@ struct PauseMenuView: View {
                                 .fontWeight(.bold)
                         }
                         .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 56) // Minimum 44pt + padding for accessibility
+                        .padding(.horizontal, 40)
+                        .padding(.vertical, 15)
                         .background(
-                            LinearGradient(
-                                gradient: Gradient(colors: [Color.red, Color.red.opacity(0.8)]),
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color.black.opacity(0.8))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color.purple.opacity(0.6), lineWidth: 3)
+                                )
                         )
-                        .cornerRadius(16)
-                        .shadow(color: .red.opacity(0.3), radius: 8)
+                        .shadow(color: Color.yellow.opacity(0.8), radius: 6, x: 0, y: 0)
+                        .shadow(color: Color.yellow.opacity(0.8), radius: 12, x: 0, y: 0)
+                    
                     }
-                    .accessibilityLabel("Main menu")
-                    .accessibilityHint("Returns to the main menu")
                 }
-                .frame(maxWidth: 280) // Fixed button container width
             }
-            .padding(.horizontal, 24)
-            .padding(.vertical, 40)
-            .frame(maxWidth: 400) // Maximum overlay width
+            .padding(40)
             .background(
-                RoundedRectangle(cornerRadius: 24)
+                RoundedRectangle(cornerRadius: 25)
                     .fill(Color.black.opacity(0.8))
                     .stroke(Color.white.opacity(0.2), lineWidth: 1)
             )
-            .padding(.horizontal, 32)
+            .padding(.horizontal, 40)
         }
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Game paused")

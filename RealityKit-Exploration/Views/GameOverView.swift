@@ -6,155 +6,143 @@ struct GameOverView: View {
     let wavesCompleted: Int
     let onReplay: () -> Void
     let onMainMenu: () -> Void
-    
+    let backgroundImage: UIImage?
+
+
     var body: some View {
         ZStack {
-            Color.black.opacity(0.8)
-                .ignoresSafeArea()
+            if let bgImage = backgroundImage {
+                Image(uiImage: bgImage)
+                    .resizable()
+                    .scaledToFill()
+                    .blur(radius: 8)       // Add blur effect to simulate "background"
+                    .overlay(Color.black.opacity(0.5)) // Dark overlay for contrast
+                    .ignoresSafeArea()
+            } else {
+                Color.black.opacity(0.5)
+                    .ignoresSafeArea()
+            }
+
             
-            ScrollView {
-                VStack(spacing: 32) {
-                    // Title section
-                    VStack(spacing: 16) {
-                        Text("GAME OVER")
-                            .font(.largeTitle)
-                            .fontWeight(.bold)
-                            .foregroundColor(.red)
-                            .accessibilityAddTraits(.isHeader)
-                        
-                        Text("You fell out of the arena!")
+            VStack(spacing: 30) {
+                Text("GAME OVER")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .foregroundColor(.red)
+                    .shadow(color: Color.black.opacity(0.8), radius: 6, x: 0, y: 0)
+                    .shadow(color: Color.black.opacity(0.8), radius: 12, x: 0, y: 0)
+                
+                Text("You fell out of the arena!")
+                    .font(.title2)
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
+                
+                VStack(spacing: 15) {
+                    HStack {
+                        Text("Waves Completed:")
                             .font(.title2)
                             .foregroundColor(.white)
-                            .multilineTextAlignment(.center)
+                        Text("\(wavesCompleted)")
+                            .font(.title2)
+                            .fontWeight(.bold)
+                            .foregroundColor(.orange)
                     }
-                    .padding(.horizontal, 24)
                     
-                    // Stats section with fixed sizing
-                    VStack(spacing: 20) {
-                        StatRow(
-                            title: "Waves Completed:",
-                            value: "\(wavesCompleted)",
-                            valueColor: .orange,
-                            titleFont: .title2,
-                            valueFont: .title
-                        )
-                        
-                        StatRow(
-                            title: "Final Score:",
-                            value: "\(finalScore)",
-                            valueColor: .yellow,
-                            titleFont: .title2,
-                            valueFont: .title
-                        )
-                        
-                        StatRow(
-                            title: "Enemies Defeated:",
-                            value: "\(enemiesDefeated)",
-                            valueColor: .red,
-                            titleFont: .headline,
-                            valueFont: .title2
-                        )
+                    HStack {
+                        Text("Final Score:")
+                            .font(.title2)
+                            .foregroundColor(.white)
+                        Text("\(finalScore)")
+                            .font(.title2)
+                            .fontWeight(.bold)
+                            .foregroundColor(.yellow)
                     }
-                    .padding(.horizontal, 32)
-                    .padding(.vertical, 24)
-                    .frame(maxWidth: 360) // Fixed maximum width
-                    .background(
-                        RoundedRectangle(cornerRadius: 16)
-                            .fill(Color.gray.opacity(0.3))
-                    )
                     
-                    // Action Buttons with consistent sizing
-                    VStack(spacing: 16) {
-                        Button(action: onReplay) {
-                            HStack(spacing: 12) {
-                                Image(systemName: "arrow.clockwise")
-                                    .font(.title3)
-                                Text("PLAY AGAIN")
-                                    .font(.title2)
-                                    .fontWeight(.semibold)
-                            }
+                    HStack {
+                        Text("Enemies Defeated:")
+                            .font(.title2)
                             .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 64) // Larger touch target for primary action
-                            .background(
-                                LinearGradient(
-                                    gradient: Gradient(colors: [Color.blue, Color.blue.opacity(0.8)]),
-                                    startPoint: .top,
-                                    endPoint: .bottom
-                                )
-                            )
-                            .cornerRadius(16)
-                            .shadow(color: .blue.opacity(0.3), radius: 8)
-                        }
-                        .accessibilityLabel("Play again")
-                        .accessibilityHint("Starts a new game")
-                        
-                        Button(action: onMainMenu) {
-                            HStack(spacing: 12) {
-                                Image(systemName: "house.fill")
-                                    .font(.title3)
-                                Text("MAIN MENU")
-                                    .font(.title2)
-                                    .fontWeight(.semibold)
-                            }
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 56) // Standard button height
-                            .background(
-                                LinearGradient(
-                                    gradient: Gradient(colors: [Color.gray, Color.gray.opacity(0.8)]),
-                                    startPoint: .top,
-                                    endPoint: .bottom
-                                )
-                            )
-                            .cornerRadius(16)
-                            .shadow(color: .gray.opacity(0.3), radius: 8)
-                        }
-                        .accessibilityLabel("Main menu")
-                        .accessibilityHint("Returns to the main menu")
+                        Text("\(enemiesDefeated)")
+                            .font(.title2)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.red)
                     }
-                    .frame(maxWidth: 320) // Fixed button container width
-                    .buttonStyle(PlainButtonStyle())
                 }
-                .padding(.horizontal, 24)
-                .padding(.vertical, 40)
-            }
-            .frame(maxWidth: 480) // Maximum overlay width
-        }
-        .accessibilityElement(children: .contain)
-        .accessibilityLabel("Game over screen")
-    }
-}
+                .padding()
+                .padding(.horizontal, 20)
+                //.padding(.vertical, 20)
+                .background(
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(Color.black.opacity(0.6))
+                )
+                
+                
+                // Action Buttons
+                VStack(spacing: 15) {
+                    Button(action: onReplay) {
+                        HStack {
+                            Image(systemName: "arrow.clockwise")
+                                .font(.title3)
+                            Text("PLAY AGAIN")
+                                .font(.title2)
+                                .fontWeight(.semibold)
+                        }
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 40)
+                        .padding(.vertical, 15)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color.black.opacity(0.8))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color.purple.opacity(0.6), lineWidth: 3)
+                                )
+                        )
+                        .shadow(color: Color.purple.opacity(0.8), radius: 6, x: 0, y: 0)
+                        .shadow(color: Color.purple.opacity(0.8), radius: 12, x: 0, y: 0)
+                    
+                    }
+                    
+                    Button(action: onMainMenu) {
+                        HStack {
+                            Image(systemName: "house.fill")
+                                .font(.title3)
+                            Text("MAIN MENU")
+                                .font(.title2)
+                                .fontWeight(.semibold)
+                        }
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 40)
+                        .padding(.vertical, 15)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color.black.opacity(0.8))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color.purple.opacity(0.6), lineWidth: 3)
+                                )
+                        )
+                        .shadow(color: Color.yellow.opacity(0.8), radius: 6, x: 0, y: 0)
+                        .shadow(color: Color.yellow.opacity(0.8), radius: 12, x: 0, y: 0)
+                    }
 
-// Helper view for consistent stat display
-struct StatRow: View {
-    let title: String
-    let value: String
-    let valueColor: Color
-    let titleFont: Font
-    let valueFont: Font
-    
-    var body: some View {
-        HStack {
-            Text(title)
-                .font(titleFont)
-                .foregroundColor(.white)
-            Spacer()
-            Text(value)
-                .font(valueFont)
-                .fontWeight(.bold)
-                .foregroundColor(valueColor)
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
+            .padding()
+            
+            
         }
-        .frame(height: 32) // Fixed height for alignment
     }
 }
 
 #Preview {
     GameOverView(
-        finalScore: 750, 
-        enemiesDefeated: 7, 
+        finalScore: 750,
+        enemiesDefeated: 7,
         wavesCompleted: 3,
         onReplay: { print("Replay tapped") },
-        onMainMenu: { print("Main Menu tapped") }
+        onMainMenu: { print("Main Menu tapped")},
+        backgroundImage: nil
     )
 }

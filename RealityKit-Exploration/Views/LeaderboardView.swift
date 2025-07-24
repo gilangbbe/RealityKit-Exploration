@@ -112,8 +112,14 @@ struct LeaderboardView: View {
                             .foregroundColor(.red)
                             .padding()
                             .frame(maxWidth: .infinity)
-                            .background(Color.red.opacity(0.2))
-                            .cornerRadius(12)
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(Color.red.opacity(0.2))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .stroke(Color.red.opacity(0.6), lineWidth: 3)
+                                    )
+                            )
                             .overlay(
                                 RoundedRectangle(cornerRadius: 12)
                                     .stroke(Color.red, lineWidth: 1)
@@ -130,11 +136,20 @@ struct LeaderboardView: View {
                             Text("Back to Menu")
                         }
                         .font(.headline)
-                        .foregroundColor(.white)
-                        .padding()
                         .frame(maxWidth: .infinity)
-                        .background(Color.blue)
-                        .cornerRadius(12)
+                        .foregroundColor(.white)
+                        //.padding(.horizontal, 20)
+                        .padding(.vertical, 15)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color.black.opacity(0.8))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color.purple.opacity(0.6), lineWidth: 3)
+                                )
+                        )
+                        .shadow(color: Color.purple.opacity(0.8), radius: 6, x: 0, y: 0)
+                        .shadow(color: Color.purple.opacity(0.8), radius: 12, x: 0, y: 0)
                     }
                 }
                 .padding(.horizontal)
