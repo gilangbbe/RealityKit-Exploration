@@ -3,6 +3,7 @@ import Foundation
 
 struct PlayerAnimationComponent: Component {
     var isWalking: Bool = false
+    var isIdle: Bool = true // Default to idle when player spawns
     var isAttacking: Bool = false
     var isUsingShockwave: Bool = false
     var currentAnimationController: AnimationPlaybackController?

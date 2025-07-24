@@ -5,6 +5,7 @@ struct GameConfig {
      // Character animations
     static let walkAnimationName: String = "player_walk"
     static let walkAnimationIndex: Int = 5 // Row 6 in animation library (0-based index)
+    static let idleAnimationIndex: Int = 6 // Row 7 in animation library (0-based index)
     static let attackAnimationIndices: [Int] = [0, 1, 2, 3] // Attack animations at indices 1-4
     static let shockwaveAnimationIndex: Int = 4 // Shockwave animation at index 4
   static let attackAnimationDuration: TimeInterval = 0.5 // How long attack animation plays
@@ -22,8 +23,14 @@ struct GameConfig {
     static let enemyFallDuration: Float = 2.0 // How long the falling animation lasts
     
     // LootBox animations
-    static let lootBoxAnimationIndex: Int = 0 // LootBox animation at index 0
+    static let lootBoxAnimationIndex: Int = 0 // LootBox default animation at index 0
+    static let lootBoxUpAnimationIndex: Int = 1 // LootBox up animation at index 1 
+    static let lootBoxDownAnimationIndex: Int = 2 // LootBox down animation at index 2
     static let lootBoxChildEntityName: String = "LootBox" // Child entity containing LootBox animations
+    
+    // LootBox height adjustments for phasing effect
+    static let lootBoxPhasingHeightOffset: Float = 0.15 // How high lootbox goes up when enemy phases through
+    static let lootBoxPhasingAnimationDuration: Float = 0.15 // Duration of up/down movement animation (increased for smoother animation)
     
     // Game State
     static var isGamePaused: Bool = false
@@ -138,7 +145,7 @@ struct GameConfig {
         static let capsule = "player_root"
         static let cube = "Cube"
         static let enemyCapsule = "enemyPhase1" // Legacy - primary enemy
-        static let lootBox = "LootBox"
+        static let lootBox = "LootBox_root"
         static let menuScene = "menuScene"
         
         // All enemy types

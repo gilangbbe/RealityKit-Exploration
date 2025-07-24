@@ -26,19 +26,23 @@ class PlayerAnimationSystem: System {
                 stopShockwaveAnimation(entity: entity, animationComp: &animationComp)
             }
             
-            // Only handle walking animation if not currently attacking or using shockwave
+            // Only handle walking/idle animation if not currently attacking or using shockwave
             if !animationComp.isAttacking && !animationComp.isUsingShockwave {
                 // Calculate current movement magnitude
                 let currentMovement = length(physicsComp.velocity)
                 let isMovingNow = currentMovement > GameConfig.minMovementForWalkAnimation
                 
-                // Only change animation state if movement state actually changed
-                if isMovingNow != animationComp.isWalking {
-                    if isMovingNow {
-                        startWalkingAnimation(entity: entity, animationComp: &animationComp)
-                    } else {
-                        stopWalkingAnimation(entity: entity, animationComp: &animationComp)
-                    }
+                // Handle animation state changes
+                if isMovingNow && !animationComp.isWalking {
+                    // Start walking, stop idle
+                    startWalkingAnimation(entity: entity, animationComp: &animationComp)
+                } else if !isMovingNow && animationComp.isWalking {
+                    // Stop walking, start idle
+                    stopWalkingAnimation(entity: entity, animationComp: &animationComp)
+                    startIdleAnimation(entity: entity, animationComp: &animationComp)
+                } else if !isMovingNow && !animationComp.isWalking && !animationComp.isIdle {
+                    // Ensure idle animation is playing when not moving and not walking
+                    startIdleAnimation(entity: entity, animationComp: &animationComp)
                 }
                 
                 // Update the component
@@ -88,6 +92,7 @@ class PlayerAnimationSystem: System {
             let controller = playerChild.playAnimation(walkAnimation.repeat())
             animationComp.currentAnimationController = controller
             animationComp.isWalking = true
+            animationComp.isIdle = false
             
             print("Started walking animation at index \(walkAnimationIndex) ('\(walkAnimation.name ?? "unnamed")') on player child entity")
             
@@ -105,6 +110,50 @@ class PlayerAnimationSystem: System {
         animationComp.isWalking = false
         
         print("Stopped walking animation for player")
+    }
+    
+    private func startIdleAnimation(entity: Entity, animationComp: inout PlayerAnimationComponent) {
+        guard !animationComp.isIdle else { return } // Already idle
+        
+        // Find the child entity that contains the animations (named 'player')
+        guard let playerChild = entity.findEntity(named: GameConfig.playerChildEntityName) else {
+            print("Warning: Could not find child entity named '\(GameConfig.playerChildEntityName)' for idle animation")
+            return
+        }
+        
+        let idleAnimationIndex = GameConfig.idleAnimationIndex
+        let availableAnimations = playerChild.availableAnimations
+        
+        // Check if the idle animation index is valid
+        guard idleAnimationIndex < availableAnimations.count else {
+            print("Warning: Idle animation index \(idleAnimationIndex) is out of range. Available animations count: \(availableAnimations.count)")
+            return
+        }
+        
+        // Get the idle animation by index
+        let idleAnimation = availableAnimations[idleAnimationIndex]
+        
+        // Stop any existing animation
+        animationComp.currentAnimationController?.stop()
+        
+        // Play the idle animation with repeat on the child entity
+        let controller = playerChild.playAnimation(idleAnimation.repeat())
+        animationComp.currentAnimationController = controller
+        animationComp.isIdle = true
+        animationComp.isWalking = false
+        
+        print("Started idle animation at index \(idleAnimationIndex) ('\(idleAnimation.name ?? "unnamed")') on player child entity")
+    }
+    
+    private func stopIdleAnimation(entity: Entity, animationComp: inout PlayerAnimationComponent) {
+        guard animationComp.isIdle else { return } // Already not idle
+        
+        // Stop the current animation
+        animationComp.currentAnimationController?.stop()
+        animationComp.currentAnimationController = nil
+        animationComp.isIdle = false
+        
+        print("Stopped idle animation for player")
     }
     
     // Public function to trigger attack animation from collision system
