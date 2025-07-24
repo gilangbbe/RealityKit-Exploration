@@ -65,7 +65,15 @@ struct GameOverlayView: View {
                     let level = upgradeType.map { playerProgression.upgradesApplied[$0, default: 0] }
                     PlayerUpgradeIndicator(upgradeName: upgrade, level: level)
                         .frame(maxWidth: .infinity) // Fixed width for center notifications
+                } else if timeSlowEndTime > currentTime {
+                    let remainingTime = max(0, timeSlowEndTime - currentTime)
+                    TimeSlowIndicator(
+                        remainingTime: remainingTime,
+                        totalDuration: timeSlowDuration
+                    )
+                    .padding(.top, 4)
                 }
+                
             }
             .padding(.horizontal)
             
@@ -74,16 +82,6 @@ struct GameOverlayView: View {
             if let powerUp = activePowerUp {
                 PowerUpIndicator(powerUpName: powerUp)
                     .padding(.top, 4)
-            }
-            
-            // Time slow indicator (when active)
-            if timeSlowEndTime > currentTime {
-                let remainingTime = max(0, timeSlowEndTime - currentTime)
-                TimeSlowIndicator(
-                    remainingTime: remainingTime,
-                    totalDuration: timeSlowDuration
-                )
-                .padding(.top, 4)
             }
             
             Spacer()

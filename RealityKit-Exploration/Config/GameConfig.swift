@@ -16,6 +16,11 @@ struct GameConfig {
     static let enemyWalkAnimationIndex: Int = 0 // Enemy walking animation at index 0
     static let minEnemyMovementForWalkAnimation: Float = 0.01 // Enemy movement threshold for walk animation
     
+    // Enemy falling animations
+    static let enemyFallSpeed: Float = 2.0 // How fast enemies fall when out of bounds
+    static let enemyFallRotationSpeed: Float = 3.0 // Rotation speed during fall (radians per second)
+    static let enemyFallDuration: Float = 2.0 // How long the falling animation lasts
+    
     // LootBox animations
     static let lootBoxAnimationIndex: Int = 0 // LootBox animation at index 0
     static let lootBoxChildEntityName: String = "powerupBlock" // Child entity containing LootBox animations

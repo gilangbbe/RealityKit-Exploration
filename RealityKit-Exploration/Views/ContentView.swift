@@ -417,6 +417,7 @@ struct ContentView: View {
         PlayerProgressionSystem.registerSystem()
         PlayerAnimationSystem.registerSystem()
         EnemyAnimationSystem.registerSystem()
+        EnemyFallingSystem.registerSystem()
         LootBoxAnimationSystem.registerSystem()
         
         content.add(loadedScene)

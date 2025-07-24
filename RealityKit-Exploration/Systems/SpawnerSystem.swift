@@ -179,6 +179,10 @@ class SpawnerSystem: System {
         let animationComponent = enemyComponent.createAnimationComponent()
         enemy.components.set(animationComponent)
         
+        // Add enemy falling component for out-of-bounds animations
+        let fallingComponent = EnemyFallingComponent()
+        enemy.components.set(fallingComponent)
+        
         // Add physics movement component with wave-enhanced stats
         var physicsComponent = PhysicsMovementComponent()
         physicsComponent.mass = enemyComponent.mass
@@ -232,6 +236,10 @@ class SpawnerSystem: System {
         // Add enemy animation component
         let animationComponent = enemyComponent.createAnimationComponent()
         enemy.components.set(animationComponent)
+        
+        // Add enemy falling component for out-of-bounds animations
+        let fallingComponent = EnemyFallingComponent()
+        enemy.components.set(fallingComponent)
         
         // Add physics movement component with wave-enhanced stats
         var physicsComponent = PhysicsMovementComponent()

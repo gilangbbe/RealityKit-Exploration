@@ -24,33 +24,20 @@ class GameManagementSystem: System {
             enemyComponent.hasFallen = true
             entity.components[EnemyCapsuleComponent.self] = enemyComponent
             
-            // Award points to player
-            updatePlayerScore(points: enemyComponent.scoreValue, in: context)
+            // Check if enemy is already falling
+            if let fallingComp = entity.components[EnemyFallingComponent.self], fallingComp.isFalling {
+                return // Already falling, let the falling system handle it
+            }
             
-            // Remove the fallen enemy
-            entity.removeFromParent()
-            
-            // Post notification for UI update
-            NotificationCenter.default.post(name: .enemyDefeated, object: enemyComponent.scoreValue)
+            // Start falling animation instead of immediate removal
+            EnemyFallingSystem.startFalling(for: entity)
+            return
         }
         
         // Check if it's the player
         if entity.components[GameStateComponent.self] != nil {
             // Player fell - game over
             NotificationCenter.default.post(name: .playerFell, object: nil)
-        }
-    }
-    
-    private func updatePlayerScore(points: Int, in context: SceneUpdateContext) {
-        for entity in context.entities(matching: Self.query, updatingSystemWhen: .rendering) {
-            guard var gameState = entity.components[GameStateComponent.self] else { continue }
-            gameState.score += points
-            gameState.enemiesDefeated += 1
-            entity.components[GameStateComponent.self] = gameState
-            
-            // Notify UI about score change
-            NotificationCenter.default.post(name: .scoreChanged, object: gameState.score)
-            break
         }
     }
 }
