@@ -24,29 +24,11 @@ struct GameOverlayView: View {
     var body: some View {
         VStack {
             // Top HUD - Clean and minimal with fixed positioning
-            HStack {
-                // Left side - Core game stats (fixed width)
-                VStack(alignment: .leading, spacing: 4) {
-                    ScoreView(score: score, enemiesDefeated: enemiesDefeated, currentWave: currentWave)
-                    
-                    // Compact progression tracker below score
-                    PlayerProgressionView(progression: playerProgression, isCompact: true)
-                }
-                .frame(maxWidth: 180, alignment: .leading) // Fixed max width to prevent expansion
+            HStack(alignment: .top) {
+                ScoreView(score: score, enemiesDefeated: enemiesDefeated, currentWave: currentWave)
                 
                 Spacer()
                 
-                // Center - Upgrade notification (only when active)
-                if let upgrade = playerUpgrade {
-                    let upgradeType = PlayerUpgradeType.allCases.first { $0.name == upgrade }
-                    let level = upgradeType.map { playerProgression.upgradesApplied[$0, default: 0] }
-                    PlayerUpgradeIndicator(upgradeName: upgrade, level: level)
-                        .frame(maxWidth: 120) // Fixed width for center notifications
-                }
-                
-                Spacer()
-                
-                // Right side - Control buttons (fixed width)
                 HStack(spacing: 8) {
                     // Progression button
                     Button(action: onShowProgression) {
@@ -73,6 +55,21 @@ struct GameOverlayView: View {
             .padding(.horizontal)
             .padding(.top, 8)
             
+            HStack {
+                PlayerProgressionView(progression: playerProgression, isCompact: true)
+                
+                Spacer()
+                
+                if let upgrade = playerUpgrade {
+                    let upgradeType = PlayerUpgradeType.allCases.first { $0.name == upgrade }
+                    let level = upgradeType.map { playerProgression.upgradesApplied[$0, default: 0] }
+                    PlayerUpgradeIndicator(upgradeName: upgrade, level: level)
+                        .frame(maxWidth: .infinity) // Fixed width for center notifications
+                }
+            }
+            .padding(.horizontal)
+            
+            
             // Power-up indicator (top center when active)
             if let powerUp = activePowerUp {
                 PowerUpIndicator(powerUpName: powerUp)
@@ -87,14 +84,6 @@ struct GameOverlayView: View {
                     totalDuration: timeSlowDuration
                 )
                 .padding(.top, 4)
-                .onAppear {
-                    print("DEBUG: TimeSlowIndicator appeared - remaining: \(remainingTime)")
-                }
-            } else {
-                // Debug: Show why indicator is not visible
-                if timeSlowEndTime > 0 {
-                    let _ = print("DEBUG: TimeSlowIndicator hidden - endTime: \(timeSlowEndTime), current: \(currentTime)")
-                }
             }
             
             Spacer()
@@ -122,7 +111,7 @@ struct GameOverlayView: View {
         gameState: .playing,
         playerProgression: PlayerProgressionComponent(),
         activePowerUp: "Shield",
-        playerUpgrade: "Speed Boost",
+        playerUpgrade: "Devastating Shockwave",
         timeSlowEndTime: Date().timeIntervalSince1970 + 3.0,
         timeSlowDuration: 5.0,
         currentTime: Date().timeIntervalSince1970,
