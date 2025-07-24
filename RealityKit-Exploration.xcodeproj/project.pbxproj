@@ -33,9 +33,22 @@
 		4E5EF31A2E1F51BE00319E79 /* RealityKit-ExplorationUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "RealityKit-ExplorationUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		4EEB98ED2E323D9400F3032C /* Exceptions for "RealityKit-Exploration" folder in "RealityKit-Exploration" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 4E5EF3022E1F51BE00319E79 /* RealityKit-Exploration */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		4E5EF3052E1F51BE00319E79 /* RealityKit-Exploration */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				4EEB98ED2E323D9400F3032C /* Exceptions for "RealityKit-Exploration" folder in "RealityKit-Exploration" target */,
+			);
 			path = "RealityKit-Exploration";
 			sourceTree = "<group>";
 		};
@@ -202,7 +215,7 @@
 			mainGroup = 4E5EF2FA2E1F51BE00319E79;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				92BAE2DE2E30732C00C5C536 /* XCLocalSwiftPackageReference "../../../Downloads/Arena" */,
+				4E3FA9FD2E3243E600DBCFDA /* XCLocalSwiftPackageReference "../../Arena" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 4E5EF3042E1F51BE00319E79 /* Products */;
@@ -409,6 +422,7 @@
 				DEVELOPMENT_TEAM = S3AP74B5TH;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "RealityKit-Exploration/Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -437,6 +451,7 @@
 				DEVELOPMENT_TEAM = S3AP74B5TH;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "RealityKit-Exploration/Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -569,9 +584,9 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		92BAE2DE2E30732C00C5C536 /* XCLocalSwiftPackageReference "../../../Downloads/Arena" */ = {
+		4E3FA9FD2E3243E600DBCFDA /* XCLocalSwiftPackageReference "../../Arena" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = ../../../Downloads/Arena;
+			relativePath = ../../Arena;
 		};
 /* End XCLocalSwiftPackageReference section */
 

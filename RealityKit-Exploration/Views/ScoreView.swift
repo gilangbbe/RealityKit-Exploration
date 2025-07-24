@@ -32,6 +32,8 @@ struct ScoreView: View {
                     .foregroundColor(.yellow)
                 
                 Text("\(score)")
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.5)
                     .font(.subheadline)
                     .fontWeight(.semibold)
                     .foregroundColor(.yellow)
