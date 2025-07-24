@@ -30,7 +30,7 @@ struct GameConfig {
     
     // LootBox height adjustments for phasing effect
     static let lootBoxPhasingHeightOffset: Float = 0.15 // How high lootbox goes up when enemy phases through
-    static let lootBoxPhasingAnimationDuration: Float = 0.15 // Duration of up/down movement animation (increased for smoother animation)
+    static let lootBoxPhasingAnimationDuration: Float = 0.2 // Duration of up/down movement animation (increased for smoother animation)
     
     // Game State
     static var isGamePaused: Bool = false

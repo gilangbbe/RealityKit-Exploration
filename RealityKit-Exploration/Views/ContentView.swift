@@ -43,7 +43,7 @@ struct ContentView: View {
     
     // GameOver
     @State private var lastGameSnapshot: UIImage? = nil
-
+    
     
     var body: some View {
         ZStack {
@@ -64,8 +64,8 @@ struct ContentView: View {
                     RealityView { content in
                         await setupGame(content: content)
                     } update: { content in }
-                    .id(gameKey) // This will recreate the RealityView when gameKey changes
-                    .ignoresSafeArea(.all)
+                        .id(gameKey) // This will recreate the RealityView when gameKey changes
+                        .ignoresSafeArea(.all)
                     
                     // Game UI Overlay (only visible when playing)
                     if gameState == .playing {
@@ -171,7 +171,7 @@ struct ContentView: View {
                             
                             print("DEBUG: Fallback time slow setup")
                             print("  - Base duration: \(baseDuration)s")
-                            print("  - Upgraded duration: \(actualDuration)s") 
+                            print("  - Upgraded duration: \(actualDuration)s")
                             print("  - Slow duration level: \(progression?.upgradesApplied[.slowDuration] ?? 0)")
                             print("  - End time: \(timeSlowEndTime)")
                         } else {
@@ -289,28 +289,23 @@ struct ContentView: View {
     
     private func gameOver() {
         captureGameSnapshot()
-        // Delay snapshot by 1 second (to allow final animation or physics)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+        // Calculate game duration
+        let gameDuration = Date().timeIntervalSince(gameStartTime)
+        
+        // Save the score
+        scoreManager.addScore(
+            score: self.score,
+            enemiesDefeated: self.enemiesDefeated,
+            wavesCompleted: max(1, self.currentWave - 1),
+            duration: gameDuration
+        )
             
-            // Calculate game duration
-            let gameDuration = Date().timeIntervalSince(gameStartTime)
-            
-            // Save the score
-            scoreManager.addScore(
-                score: score,
-                enemiesDefeated: enemiesDefeated,
-                wavesCompleted: max(1, currentWave - 1),
-                duration: gameDuration
-            )
-
-            // Now transition to game over
-            gameState = .gameOver
-        }
+        gameState = .gameOver
     }
-
+    
     
     private func returnToMainMenu() {
-        // Save current score if game was in progress
+        // Save current score only if game was in progress (not if coming from game over)
         if gameState == .playing {
             let gameDuration = Date().timeIntervalSince(gameStartTime)
             scoreManager.addScore(
@@ -624,16 +619,16 @@ struct ContentView: View {
             print("⚠️ Could not find key window")
             return
         }
-
+        
         let renderer = UIGraphicsImageRenderer(size: window.bounds.size)
         let image = renderer.image { ctx in
             window.drawHierarchy(in: window.bounds, afterScreenUpdates: false)
         }
-
+        
         lastGameSnapshot = image
     }
-
-
+    
+    
 }
 
 #Preview {

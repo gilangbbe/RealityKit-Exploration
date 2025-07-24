@@ -19,7 +19,7 @@ struct PlayerProgressionView: View {
                 )
             }
         }
-        .frame(width: 200, height: 40) // Larger fixed size for better visibility
+        .frame(width: 150, height: 40) // Larger fixed size for better visibility
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
         .background(Color.black.opacity(0.7)) // Slightly more opaque for better contrast
@@ -39,11 +39,11 @@ struct UpgradeIconView: View {
         ZStack {
             Circle()
                 .fill(upgradeColor.opacity(0.3))
-                .frame(width: 32, height: 32) // Slightly larger for better visibility
+                .frame(width: 24, height: 24) // Slightly larger for better visibility
             
             Circle()
                 .stroke(upgradeColor, lineWidth: 1.5)
-                .frame(width: 32, height: 32)
+                .frame(width: 24, height: 24)
             
             Image(systemName: upgradeType.icon)
                 .font(.system(size: 12, weight: .bold))
@@ -65,7 +65,7 @@ struct UpgradeIconView: View {
                 }
             }
         }
-        .frame(width: 32, height: 32) // Fixed frame to prevent any expansion
+        .frame(width: 24, height: 24) // Fixed frame to prevent any expansion
         .accessibilityLabel("\(upgradeType.name), level \(level)")
     }
     
