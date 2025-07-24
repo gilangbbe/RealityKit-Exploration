@@ -23,7 +23,7 @@ struct GameConfig {
     
     // LootBox animations
     static let lootBoxAnimationIndex: Int = 0 // LootBox animation at index 0
-    static let lootBoxChildEntityName: String = "powerupBlock" // Child entity containing LootBox animations
+    static let lootBoxChildEntityName: String = "LootBox" // Child entity containing LootBox animations
     
     // Game State
     static var isGamePaused: Bool = false

@@ -12,6 +12,7 @@ struct GameModalOverlaysView: View {
     let currentWave: Int
     let upgradeChoices: [PlayerUpgradeType]
     let playerProgression: PlayerProgressionComponent
+    let lastSnapShot: UIImage?
     
     // Actions
     let onResume: () -> Void
@@ -39,7 +40,8 @@ struct GameModalOverlaysView: View {
                     enemiesDefeated: enemiesDefeated,
                     wavesCompleted: max(1, currentWave - 1),
                     onReplay: onReplay,
-                    onMainMenu: onMainMenu
+                    onMainMenu: onMainMenu,
+                    backgroundImage: lastSnapShot
                 )
             }
             
@@ -74,6 +76,7 @@ struct GameModalOverlaysView: View {
         currentWave: 8,
         upgradeChoices: [.resilience, .force, .speed],
         playerProgression: PlayerProgressionComponent(),
+        lastSnapShot: nil,
         onResume: {},
         onMainMenu: {},
         onReplay: {},

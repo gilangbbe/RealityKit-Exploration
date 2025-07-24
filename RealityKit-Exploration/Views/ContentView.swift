@@ -114,6 +114,7 @@ struct ContentView: View {
                 currentWave: currentWave,
                 upgradeChoices: upgradeChoices,
                 playerProgression: playerProgression,
+                lastSnapShot: lastGameSnapshot,
                 onResume: resumeGame,
                 onMainMenu: returnToMainMenu,
                 onReplay: startNewGame,

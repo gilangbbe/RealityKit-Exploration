@@ -4,7 +4,7 @@ import Foundation
 // Component for tracking LootBox animation state
 struct LootBoxAnimationComponent: Component, Codable {
     var isAnimating: Bool = false
-    var animationChildEntityName: String = "powerupBlock"
+    var animationChildEntityName: String = "LootBox"
     var animationController: AnimationPlaybackController? = nil
     
     // Default initializer
@@ -27,7 +27,7 @@ struct LootBoxAnimationComponent: Component, Codable {
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         isAnimating = try container.decodeIfPresent(Bool.self, forKey: .isAnimating) ?? false
-        animationChildEntityName = try container.decodeIfPresent(String.self, forKey: .animationChildEntityName) ?? "powerupBlock"
+        animationChildEntityName = try container.decodeIfPresent(String.self, forKey: .animationChildEntityName) ?? "LootBox"
         animationController = nil // Will be set at runtime
     }
 }
