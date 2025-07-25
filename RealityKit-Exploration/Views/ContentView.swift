@@ -325,7 +325,7 @@ struct ContentView: View {
         stopAllSounds()
         
         gameState = .mainMenu
-        GameConfig.isGamePaused = false
+        GameConfig.isGamePaused = true // Keep game paused when returning to main menu to stop all systems
         showUpgradeChoice = false // Clear any upgrade choice overlay
         showProgressionOverlay = false // Clear progression overlay
         // Clear all game data
