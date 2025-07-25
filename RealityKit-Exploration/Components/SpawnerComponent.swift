@@ -25,11 +25,6 @@ struct SpawnerComponent: Component {
         let reductionFactor = 1.0 - (Float(wave - 1) * GameConfig.enemySpawnIntervalReduction)
         let dynamicInterval = baseSpawnInterval * TimeInterval(max(reductionFactor, Float(GameConfig.enemyMinSpawnInterval / baseSpawnInterval)))
         spawnInterval = max(dynamicInterval, GameConfig.enemyMinSpawnInterval)
-        
-        // Debug info for spawn interval progression
-        if wave <= 5 || wave % 5 == 0 {
-            print("📊 Wave \(wave) spawn interval: \(String(format: "%.2f", spawnInterval))s (reduction: \(String(format: "%.1f", (1.0 - reductionFactor) * 100))%)")
-        }
     }
     
     // Determine if should attempt burst spawning

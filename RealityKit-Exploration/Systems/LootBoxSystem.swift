@@ -126,8 +126,6 @@ struct LootBoxSystem: System {
         
         // Start animation after adding to scene
         LootBoxAnimationSystem.startAnimation(for: lootBox)
-        
-        print("Spawned LootBox with power-up: \(lootBoxComponent.powerUpType.name)")
     }
     
     // Helper method to check if a position is clear for LootBox spawning
@@ -183,7 +181,6 @@ struct LootBoxSystem: System {
     }
     
     private func collectLootBox(player: Entity, lootBox: Entity, powerUpType: PowerUpType, context: SceneUpdateContext, currentTime: TimeInterval) {
-        print("Player collected LootBox: \(powerUpType.name)")
         
         // Play appropriate particle animation based on power-up type
         switch powerUpType {
@@ -239,7 +236,6 @@ struct LootBoxSystem: System {
             NotificationCenter.default.post(name: .timeSlowActivated, object: timeSlowInfo)
         }
         
-        print("Time Slow activated for \(slowDuration) seconds (upgraded)")
     }
     
     private func activateShockwave(player: Entity, context: SceneUpdateContext) {
@@ -266,8 +262,6 @@ struct LootBoxSystem: System {
                 }
             }
         }
-        
-        print("Shockwave activated with force \(shockwaveForce) - pushed enemies within \(GameConfig.shockwaveRadius) radius")
     }
     
     private func handlePowerUpEffects(context: SceneUpdateContext, currentTime: TimeInterval) {
@@ -290,8 +284,7 @@ struct LootBoxSystem: System {
                 // Reset the multiplier
                 powerUpComp.originalEnemySpeedMultiplier = 1.0
                 player.components[PowerUpComponent.self] = powerUpComp
-                
-                print("Time Slow effect ended - enemy speeds restored")
+                                
             }
         }
     }
@@ -321,7 +314,6 @@ struct LootBoxSystem: System {
                         }
                     }
                     
-                    print("Time slow particle effect played around player")
                 } else {
                     print("Warning: Could not load timeslowParticle scene from Arena bundle")
                 }
@@ -354,7 +346,6 @@ struct LootBoxSystem: System {
                         }
                     }
                     
-                    print("Shockwave particle effect played around player")
                 } else {
                     print("Warning: Could not load shockwaveParticle scene from Arena bundle")
                 }

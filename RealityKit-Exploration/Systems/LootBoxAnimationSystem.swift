@@ -43,7 +43,6 @@ struct LootBoxAnimationSystem: System {
             if horizontalDistance <= phasingRadius {
                 let enemyId = enemy.id.description
                 currentlyPhasingEnemies.insert(enemyId)
-                print("🎯 Enemy \(enemyId) detected within phasing radius (horizontal distance: \(horizontalDistance))")
             }
         }
         
@@ -78,7 +77,6 @@ struct LootBoxAnimationSystem: System {
     }
     
     private func onEnemyStartPhasing(lootBox: Entity, animationComp: inout LootBoxAnimationComponent, currentTime: TimeInterval) {
-        print("🔺 Enemy started phasing through lootbox - elevating smoothly")
         animationComp.phasingStartTime = currentTime
         
         // Store original position if not already stored
@@ -91,11 +89,6 @@ struct LootBoxAnimationSystem: System {
     }
     
     private func onEnemyStopPhasing(lootBox: Entity, animationComp: inout LootBoxAnimationComponent, currentTime: TimeInterval) {
-        print("🔻 All enemies stopped phasing through lootbox - lowering smoothly")
-        print("   - isElevated: \(animationComp.isElevated)")
-        print("   - isAnimatingPosition: \(animationComp.isAnimatingPosition)")
-        print("   - originalPosition: \(animationComp.originalPosition)")
-        
         // Lower the lootbox back to original position (smooth position animation only)
         lowerLootBox(lootBox: lootBox, animationComp: animationComp)
     }
@@ -125,32 +118,20 @@ struct LootBoxAnimationSystem: System {
                 lootBox.components[LootBoxAnimationComponent.self] = updatedAnimationComp
             }
         }
-        
-        print("Elevating lootbox by \(GameConfig.lootBoxPhasingHeightOffset) units")
     }
     
     private func lowerLootBox(lootBox: Entity, animationComp: LootBoxAnimationComponent) {
-        print("🔽 lowerLootBox called")
-        print("   - originalPosition: \(animationComp.originalPosition)")
-        print("   - isElevated: \(animationComp.isElevated)")
-        print("   - isAnimatingPosition: \(animationComp.isAnimatingPosition)")
-        
         guard let originalPos = animationComp.originalPosition else {
-            print("❌ Cannot lower: originalPosition is nil")
             return
         }
         
         guard animationComp.isElevated else {
-            print("❌ Cannot lower: not elevated")
             return
         }
         
         guard !animationComp.isAnimatingPosition else {
-            print("❌ Cannot lower: already animating position")
             return
         }
-        
-        print("✅ Starting lower animation to position: \(originalPos)")
         
         // Update the component directly on the entity
         var updatedComp = animationComp
@@ -166,8 +147,6 @@ struct LootBoxAnimationSystem: System {
                 lootBox.components[LootBoxAnimationComponent.self] = updatedAnimationComp
             }
         }
-        
-        print("Lowering lootbox back to original position")
     }
     
     private func animateLootBoxPosition(lootBox: Entity, to targetPosition: SIMD3<Float>, completion: @escaping () -> Void) {
@@ -200,9 +179,6 @@ struct LootBoxAnimationSystem: System {
                 completion()
             }
         }
-        
-        // Store timer reference (simplified - in production you'd want better timer management)
-        print("Started smooth position animation to y: \(targetPosition.y)")
     }
     
     private static func startLootBoxAnimation(for lootBox: Entity, animationComponent: inout LootBoxAnimationComponent) {
@@ -234,8 +210,6 @@ struct LootBoxAnimationSystem: System {
         // Store the controller and mark as animating
         animationComponent.animationController = animationController
         animationComponent.isAnimating = true
-        
-        print("Started LootBox default animation on entity: \(animationComponent.animationChildEntityName)")
     }
     
     private static func startLootBoxUpAnimation(for lootBox: Entity, animationComponent: inout LootBoxAnimationComponent) {
@@ -268,8 +242,6 @@ struct LootBoxAnimationSystem: System {
         // Store the controller and mark as animating
         animationComponent.animationController = animationController
         animationComponent.isAnimating = true
-        
-        print("Started LootBox UP animation at index \(GameConfig.lootBoxUpAnimationIndex)")
     }
     
     private static func startLootBoxDownAnimation(for lootBox: Entity, animationComponent: inout LootBoxAnimationComponent) {
@@ -302,8 +274,6 @@ struct LootBoxAnimationSystem: System {
         // Store the controller and mark as animating
         animationComponent.animationController = animationController
         animationComponent.isAnimating = true
-        
-        print("Started LootBox DOWN animation at index \(GameConfig.lootBoxDownAnimationIndex)")
     }
     
     // Static method to start animation when LootBox is spawned
@@ -338,7 +308,5 @@ struct LootBoxAnimationSystem: System {
         animationComp.isAnimating = false
         animationComp.animationController = nil
         lootBox.components[LootBoxAnimationComponent.self] = animationComp
-        
-        print("Stopped LootBox animation")
     }
 }

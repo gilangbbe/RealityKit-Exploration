@@ -167,8 +167,6 @@ class EnemyCapsuleSystem: System {
             let interpolatedRotation = simd_slerp(currentRotation, targetRotation, smoothingFactor)
             player.orientation = interpolatedRotation
         }
-        
-        print("Player oriented to face enemy at angle: \(targetAngle * 180 / .pi) degrees")
     }
     
     private func preventPhasing(enemy1: Entity, enemy2: Entity) {

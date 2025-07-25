@@ -70,8 +70,6 @@ struct EnemyFallingSystem: System {
         
         // Post notification for UI update
         NotificationCenter.default.post(name: .enemyDefeated, object: enemyComponent.scoreValue)
-        
-        print("Enemy \(enemyComponent.enemyType.name) finished falling and was removed")
     }
     
     private func updateWaveProgress(context: SceneUpdateContext) {
@@ -127,7 +125,5 @@ struct EnemyFallingSystem: System {
                 animationEntity.stopAllAnimations()
             }
         }
-        
-        print("Started falling animation for enemy - stopped all movement and animations")
     }
 }

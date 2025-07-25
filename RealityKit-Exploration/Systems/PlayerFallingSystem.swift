@@ -24,7 +24,6 @@ struct PlayerFallingSystem: System {
                     
                     // Trigger game over after fall animation completes
                     NotificationCenter.default.post(name: .playerFell, object: nil)
-                    print("Player fall animation completed - triggering game over")
                 } else {
                     entity.components[PlayerFallingComponent.self] = fallingComp
                 }
@@ -57,7 +56,6 @@ struct PlayerFallingSystem: System {
             if let animationEntity = entity.findEntity(named: GameConfig.playerChildEntityName) {
                 if progress < 0.1 { // Only stop animations once at the beginning
                     animationEntity.stopAllAnimations()
-                    print("Stopped player animations during fall")
                 }
             }
         }
@@ -80,7 +78,5 @@ struct PlayerFallingSystem: System {
             physics.velocity = SIMD3<Float>(0, 0, 0) // Stop all movement
             entity.components[PhysicsMovementComponent.self] = physics
         }
-        
-        print("Started player falling animation - stopped all movement")
     }
 }

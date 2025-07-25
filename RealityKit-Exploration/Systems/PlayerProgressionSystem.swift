@@ -26,10 +26,6 @@ struct PlayerProgressionSystem: System {
         DispatchQueue.main.async {
             NotificationCenter.default.post(name: .playerUpgraded, object: upgradeType)
         }
-        
-        print("Player upgraded: \(upgradeType.name)")
-        print("Wave \(progression.wavesCompleted) - Diminishing multiplier: \(String(format: "%.3f", pow(GameConfig.playerUpgradeDiminishingFactor, Float(progression.wavesCompleted - 1))))")
-        print("New stats - Resilience: \(String(format: "%.2f", progression.currentResistance)), Force: \(String(format: "%.2f", progression.currentForce)), Speed: \(String(format: "%.2f", progression.currentSpeed)), Slow Duration: \(String(format: "%.2f", progression.currentSlowDuration))s, Shockwave Power: \(String(format: "%.2f", progression.currentShockwaveForce))")
     }
 }
 

@@ -14,8 +14,6 @@ struct PlayerFallingComponent: Component, Codable {
         fallProgress = 0
         shouldTriggerGameOver = false
         hasTriggeredGameOver = false
-        
-        print("Player started falling animation")
     }
     
     mutating func updateProgress(deltaTime: Float) {

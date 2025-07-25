@@ -126,12 +126,10 @@ struct MainMenuView: View {
 }
 
 func setupMenuBackground(content: RealityViewCameraContent) async {
-    print("Starting to load menuScene entity...")
     guard let loadedScene = try? await Entity(named: GameConfig.EntityNames.menuScene, in: arenaBundle) else {
         print("Failed to load menuScene entity")
         return
     }
-    print("Loaded menuScene entity successfully")
     
     guard let capsule = await loadedScene.findEntity(named: GameConfig.EntityNames.capsule) else {
         print("Failed to find capsule entity in menuScene")
@@ -149,14 +147,12 @@ func setupMenuBackground(content: RealityViewCameraContent) async {
         if GameConfig.idleAnimationIndex < availableAnimations.count {
             let idleAnimation = availableAnimations[GameConfig.idleAnimationIndex]
             playerAnimationEntity.playAnimation(idleAnimation.repeat(), transitionDuration: 0.25, startsPaused: false)
-            print("Playing player idle animation on child entity at index \(GameConfig.idleAnimationIndex)")
         } else {
             print("Player idle animation not found at index \(GameConfig.idleAnimationIndex)")
         }
     } else if let animation = capsule.availableAnimations.first {
         // No child entity, but capsule itself has animation
         capsule.playAnimation(animation.repeat(), transitionDuration: 0.25, startsPaused: false)
-        print("Playing player animation on capsule entity")
     } else {
         print("No animations found on player or its child entity")
     }
@@ -168,29 +164,22 @@ func setupMenuBackground(content: RealityViewCameraContent) async {
         if GameConfig.lootBoxAnimationIndex < availableAnimations.count {
             let lootBoxAnimation = availableAnimations[GameConfig.lootBoxAnimationIndex]
             animationEntity.playAnimation(lootBoxAnimation.repeat(), transitionDuration: 0.25, startsPaused: false)
-            print("Playing loot box animation on child entity at index \(GameConfig.lootBoxAnimationIndex)")
+
         } else if let firstAnimation = availableAnimations.first {
             animationEntity.playAnimation(firstAnimation.repeat(), transitionDuration: 0.25, startsPaused: false)
-            print("Playing first available loot box animation on child entity")
         }
     } else if let animation = lootBox.availableAnimations.first {
         // No child entity, but lootBox itself has animation
         lootBox.playAnimation(animation.repeat(), transitionDuration: 0.25, startsPaused: false)
-        print("Playing loot box animation on lootBox entity")
     } else {
         print("No animations found on lootBox or its child entity")
     }
     
-    print("Found capsule entity: \(capsule)")
-    
     let camera = setupStaticMenuCamera(target: capsule)
-    print("Created camera entity: \(camera)")
     
     content.add(loadedScene)
-    print("Added loadedScene to RealityView content")
     
     content.add(camera)
-    print("Added camera entity to RealityView content")
 }
 
 

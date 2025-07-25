@@ -172,7 +172,7 @@ struct ContentView: View {
                     playShockwaveSound()
                 }
                 
-                // Debug: If it's time slow, set up fallback indicator if notification system doesn't work
+                // If it's time slow, set up fallback indicator if notification system doesn't work
                 if powerUpName == "Time Slow" {
                     // Use a delay to allow the proper notification to arrive first
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -180,18 +180,9 @@ struct ContentView: View {
                         if timeSlowEndTime <= Date().timeIntervalSince1970 {
                             let progression = capsuleEntity.components[PlayerProgressionComponent.self]
                             let actualDuration = progression?.currentSlowDuration ?? TimeInterval(GameConfig.timeSlowDuration)
-                            let baseDuration = GameConfig.timeSlowDuration
                             
                             timeSlowEndTime = Date().timeIntervalSince1970 + actualDuration
                             timeSlowDuration = actualDuration
-                            
-                            print("DEBUG: Fallback time slow setup")
-                            print("  - Base duration: \(baseDuration)s")
-                            print("  - Upgraded duration: \(actualDuration)s")
-                            print("  - Slow duration level: \(progression?.upgradesApplied[.slowDuration] ?? 0)")
-                            print("  - End time: \(timeSlowEndTime)")
-                        } else {
-                            print("DEBUG: Notification system worked, no fallback needed")
                         }
                     }
                 }
@@ -225,25 +216,14 @@ struct ContentView: View {
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: .timeSlowActivated)) { notification in
-            print("DEBUG: TimeSlowActivated notification received")
             if let timeSlowInfo = notification.object as? [String: Any],
                let endTime = timeSlowInfo["endTime"] as? TimeInterval,
                let duration = timeSlowInfo["duration"] as? TimeInterval {
                 timeSlowEndTime = endTime
                 timeSlowDuration = duration
-                let currentTime = Date().timeIntervalSince1970
-                print("DEBUG: Time slow set via notification - duration: \(duration)s, endTime: \(endTime), current: \(currentTime), remaining: \(endTime - currentTime)")
                 
                 // Play time slow sound with appropriate duration
                 playTimeSlowSound(duration: duration)
-                
-                // Check if this is an upgraded duration
-                let baseDuration = GameConfig.timeSlowDuration
-                if duration > baseDuration {
-                    print("DEBUG: Upgraded time slow detected - base: \(baseDuration)s, upgraded: \(duration)s")
-                }
-            } else {
-                print("DEBUG: Failed to parse time slow notification data")
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: .playerEnemyCollision)) { _ in
@@ -253,13 +233,6 @@ struct ContentView: View {
             // Update current time for time slow indicator
             if gameState == .playing {
                 currentTime = Date().timeIntervalSince1970
-                // Debug: Show when time slow should be visible (but not too frequently)
-                if timeSlowEndTime > currentTime {
-                    let remaining = timeSlowEndTime - currentTime
-                    if Int(remaining * 10) % 10 == 0 { // Log every second
-                        print("DEBUG: Time slow active - remaining: \(String(format: "%.1f", remaining))s")
-                    }
-                }
             }
         }
         .onKeyPress(.tab) {
@@ -392,8 +365,6 @@ struct ContentView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
             playerUpgrade = nil
         }
-        
-        print("Player upgraded: \(chosenUpgrade.name)")
     }
     
     private func setupGame(content: RealityViewCameraContent) async {
@@ -506,17 +477,6 @@ struct ContentView: View {
         // Initialize player falling component
         let fallingComponent = PlayerFallingComponent()
         entity.components.set(fallingComponent)
-        
-        // Debug: List available animations in the entity hierarchy
-        print("Player root entity name: \(entity.name ?? "unnamed")")
-        let rootAnimations = entity.availableAnimations.map { $0.name ?? "unnamed" }
-        print("Player root available animations: \(rootAnimations)")
-        
-        // Check child entities for animations
-        for child in entity.children {
-            let childAnimations = child.availableAnimations.map { $0.name ?? "unnamed" }
-            print("Child entity '\(child.name ?? "unnamed")' available animations: \(childAnimations)")
-        }
     }
     
     private func setupPlayerPhysics(for entity: Entity, constrainedTo cube: Entity) {
@@ -543,9 +503,6 @@ struct ContentView: View {
         spawnerComponent.baseSpawnInterval = GameConfig.enemySpawnInterval // Set base interval
         spawnerComponent.maxEnemies = GameConfig.enemyMaxCount // This will be dynamically calculated per wave
         spawnerEntity.components.set(spawnerComponent)
-        
-        print("Spawner setup with \(enemyPrefabs.count) enemy types: \(enemyPrefabs.keys.map { $0.name }.joined(separator: ", "))")
-        print("Dynamic spawning configured - Base interval: \(GameConfig.enemySpawnInterval)s, Min interval: \(GameConfig.enemyMinSpawnInterval)s")
     }
     private func setupLootBoxSpawner(surface: Entity, lootBoxPrefab: Entity, container: Entity) {
         lootBoxSpawnerEntity = Entity()
@@ -659,7 +616,6 @@ struct ContentView: View {
         guard let window = UIApplication.shared.connectedScenes
             .compactMap({ ($0 as? UIWindowScene)?.keyWindow })
             .first else {
-            print("⚠️ Could not find key window")
             return
         }
         
@@ -675,7 +631,6 @@ struct ContentView: View {
     
     private func setupTimeSlowAudio() {
         guard let path = Bundle.main.path(forResource: GameConfig.timeSlowSoundFileName, ofType: "mp3") else {
-            print("Warning: Could not find \(GameConfig.timeSlowSoundFileName).mp3 in bundle")
             return
         }
         
@@ -684,15 +639,13 @@ struct ContentView: View {
         do {
             timeSlowAudioPlayer = try AVAudioPlayer(contentsOf: url)
             timeSlowAudioPlayer?.prepareToPlay()
-            print("Time slow audio setup successfully")
         } catch {
-            print("Error setting up time slow audio: \(error)")
+            // Audio setup failed silently
         }
     }
     
     private func setupShockwaveAudio() {
         guard let path = Bundle.main.path(forResource: GameConfig.shockwaveSoundFileName, ofType: "mp3") else {
-            print("Warning: Could not find \(GameConfig.shockwaveSoundFileName).mp3 in bundle")
             return
         }
         
@@ -701,9 +654,8 @@ struct ContentView: View {
         do {
             shockwaveAudioPlayer = try AVAudioPlayer(contentsOf: url)
             shockwaveAudioPlayer?.prepareToPlay()
-            print("Shockwave audio setup successfully")
         } catch {
-            print("Error setting up shockwave audio: \(error)")
+            // Audio setup failed silently
         }
     }
     
@@ -712,7 +664,6 @@ struct ContentView: View {
         
         for soundName in GameConfig.punchSoundFileNames {
             guard let path = Bundle.main.path(forResource: soundName, ofType: "mp3") else {
-                print("Warning: Could not find \(soundName).mp3 in bundle")
                 continue
             }
             
@@ -722,13 +673,10 @@ struct ContentView: View {
                 let player = try AVAudioPlayer(contentsOf: url)
                 player.prepareToPlay()
                 punchAudioPlayers.append(player)
-                print("Punch audio '\(soundName)' setup successfully")
             } catch {
-                print("Error setting up punch audio '\(soundName)': \(error)")
+                // Audio setup failed silently
             }
         }
-        
-        print("Setup \(punchAudioPlayers.count) punch sound players")
     }
     
     private func setupAudio() {
@@ -739,7 +687,6 @@ struct ContentView: View {
     
     private func playTimeSlowSound(duration: TimeInterval) {
         guard let player = timeSlowAudioPlayer else {
-            print("Warning: Time slow audio player not available")
             return
         }
         
@@ -758,8 +705,6 @@ struct ContentView: View {
         player.currentTime = 0
         player.play()
         
-        print("Playing time slow sound - Duration: \(duration)s, Rate: \(clampedRate)")
-        
         // Create new stop task for when time slow ends
         timeSlowStopTask = DispatchWorkItem {
             self.timeSlowAudioPlayer?.stop()
@@ -774,19 +719,15 @@ struct ContentView: View {
     
     private func playShockwaveSound() {
         guard let player = shockwaveAudioPlayer else {
-            print("Warning: Shockwave audio player not available")
             return
         }
         
         player.currentTime = 0
         player.play()
-        
-        print("Playing shockwave sound")
     }
     
     private func playRandomPunchSound() {
         guard !punchAudioPlayers.isEmpty else {
-            print("Warning: No punch audio players available")
             return
         }
         
@@ -811,12 +752,6 @@ struct ContentView: View {
         
         player.currentTime = 0
         player.play()
-        
-        // Find the index to get the sound name for logging
-        if let index = punchAudioPlayers.firstIndex(of: player) {
-            let soundName = GameConfig.punchSoundFileNames[index]
-            print("Playing punch sound: \(soundName)")
-        }
     }
     
     private func playRandomPunchSoundWithCooldown() {
@@ -824,7 +759,6 @@ struct ContentView: View {
         
         // Check if enough time has passed since the last punch sound
         if currentTime - lastPunchSoundTime < punchSoundCooldown {
-            print("Punch sound on cooldown, skipping...")
             return
         }
         

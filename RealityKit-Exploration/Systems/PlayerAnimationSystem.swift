@@ -59,9 +59,7 @@ class PlayerAnimationSystem: System {
                 // Find the child entity that contains the animations (named 'player')
         guard let playerChild = entity.findEntity(named: GameConfig.playerChildEntityName) else {
             print("Warning: Could not find child entity named '\(GameConfig.playerChildEntityName)' in player_root")
-            // List available child entities for debugging
-            let childNames = entity.children.compactMap { $0.name }
-            print("Available child entities: \(childNames)")
+            
             return
         }
         
@@ -69,12 +67,6 @@ class PlayerAnimationSystem: System {
             // Access the walk animation by index (row 6 = index 5, since arrays are 0-based)
             let walkAnimationIndex = GameConfig.walkAnimationIndex
             let availableAnimations = playerChild.availableAnimations
-            
-            // Debug: List all animations with their indices
-            print("Available animations in player child:")
-            for (index, animation) in availableAnimations.enumerated() {
-                print("  Index \(index): '\(animation.name ?? "unnamed")'")
-            }
             
             // Check if the walk animation index is valid
             guard walkAnimationIndex < availableAnimations.count else {
@@ -94,8 +86,6 @@ class PlayerAnimationSystem: System {
             animationComp.isWalking = true
             animationComp.isIdle = false
             
-            print("Started walking animation at index \(walkAnimationIndex) ('\(walkAnimation.name ?? "unnamed")') on player child entity")
-            
         } catch {
             print("Error starting walking animation: \(error)")
         }
@@ -108,8 +98,6 @@ class PlayerAnimationSystem: System {
         animationComp.currentAnimationController?.stop()
         animationComp.currentAnimationController = nil
         animationComp.isWalking = false
-        
-        print("Stopped walking animation for player")
     }
     
     private func startIdleAnimation(entity: Entity, animationComp: inout PlayerAnimationComponent) {
@@ -142,7 +130,6 @@ class PlayerAnimationSystem: System {
         animationComp.isIdle = true
         animationComp.isWalking = false
         
-        print("Started idle animation at index \(idleAnimationIndex) ('\(idleAnimation.name ?? "unnamed")') on player child entity")
     }
     
     private func stopIdleAnimation(entity: Entity, animationComp: inout PlayerAnimationComponent) {
@@ -152,8 +139,6 @@ class PlayerAnimationSystem: System {
         animationComp.currentAnimationController?.stop()
         animationComp.currentAnimationController = nil
         animationComp.isIdle = false
-        
-        print("Stopped idle animation for player")
     }
     
     // Public function to trigger attack animation from collision system
@@ -199,8 +184,6 @@ class PlayerAnimationSystem: System {
             animationComp.currentAnimationController = controller
             animationComp.isAttacking = true
             animationComp.attackAnimationEndTime = currentTime + GameConfig.attackAnimationDuration
-            
-            print("Started attack animation at index \(randomAttackIndex) ('\(attackAnimation.name ?? "unnamed")') on player")
             
             // Update the component
             entity.components[PlayerAnimationComponent.self] = animationComp
@@ -285,7 +268,6 @@ class PlayerAnimationSystem: System {
         animationComp.currentAnimationController = nil
         animationComp.isUsingShockwave = false
         animationComp.shockwaveAnimationEndTime = 0.0
-        
-        print("Shockwave animation finished - player can move again")
+    
     }
 }

@@ -24,7 +24,6 @@ struct EnemyAnimationSystem: System {
                 .first?
                 .isTimeSlowActive(currentTime: currentTime) ?? false
             
-            print(isTimeSlowActive ? "Time slow is active" : "Time slow is not active")
             // Handle time slow animation state changes
             if isTimeSlowActive && !animationComp.isSlowed {
                 // Start slow animation
@@ -65,9 +64,8 @@ struct EnemyAnimationSystem: System {
     }
     
     private func startWalkingAnimation(for enemy: Entity, animationComponent: EnemyAnimationComponent) {
-        // Find the child entity containing animations
+                // Find animation entity for this enemy
         guard let animationEntity = enemy.findEntity(named: animationComponent.animationChildEntityName) else {
-            print("Warning: Animation child entity '\(animationComponent.animationChildEntityName)' not found for enemy")
             return
         }
         
@@ -76,7 +74,6 @@ struct EnemyAnimationSystem: System {
         
         // Check if walking animation exists at index 0
         guard GameConfig.enemyWalkAnimationIndex < availableAnimations.count else {
-            print("Warning: Enemy walking animation not found at index \(GameConfig.enemyWalkAnimationIndex)")
             return
         }
         
@@ -91,7 +88,6 @@ struct EnemyAnimationSystem: System {
         )
         
         // Store the controller for potential future use
-        print("Started walking animation for enemy type: \(animationComponent.animationChildEntityName)")
     }
     
     private func stopWalkingAnimation(for enemy: Entity, animationComponent: EnemyAnimationComponent) {
@@ -102,8 +98,6 @@ struct EnemyAnimationSystem: System {
         
         // Stop all animations on the animation entity
         animationEntity.stopAllAnimations()
-        
-        print("Stopped walking animation for enemy type: \(animationComponent.animationChildEntityName)")
     }
     
     private func startSlowAnimation(for enemy: Entity, animationComponent: EnemyAnimationComponent) {
@@ -130,8 +124,6 @@ struct EnemyAnimationSystem: System {
             transitionDuration: 0.3,
             startsPaused: false
         )
-        
-        print("Started slow animation for enemy type: \(animationComponent.animationChildEntityName)")
     }
     
     private func stopSlowAnimation(for enemy: Entity, animationComponent: EnemyAnimationComponent) {
@@ -164,12 +156,8 @@ struct EnemyAnimationSystem: System {
                     transitionDuration: 0.3,
                     startsPaused: false
                 )
-                print("Transitioned from slow to walking animation for enemy type: \(animationComponent.animationChildEntityName)")
-            } else {
-                print("Transitioned from slow to idle state for enemy type: \(animationComponent.animationChildEntityName)")
+                
             }
         }
-        
-        print("Stopped slow animation for enemy type: \(animationComponent.animationChildEntityName)")
     }
 }

@@ -57,8 +57,6 @@ class SpawnerSystem: System {
             remainingWaveEnemies
         )
         
-        print("🚀 Burst spawning \(burstSize) enemies for wave \(wave.currentWave)")
-        
         // Spawn multiple enemies with slight delay between each
         for i in 0..<burstSize {
             let enemyType = EnemyType.getRandomEnemyTypeForWave(wave.currentWave)
@@ -168,7 +166,6 @@ class SpawnerSystem: System {
                powerUpComp.isTimeSlowActive(currentTime: currentTime) {
                 // Apply time slow effect to newly spawned enemy
                 enemyComponent.speed *= GameConfig.timeSlowMultiplier
-                print("Applied time slow effect to newly spawned \(enemyType.name) enemy")
                 break
             }
         }
@@ -193,7 +190,6 @@ class SpawnerSystem: System {
         
         surface.parent?.addChild(enemy)
         
-        print("Spawned \(enemyType.name) enemy with speed: \(String(format: "%.2f", enemyComponent.speed)), mass: \(String(format: "%.2f", enemyComponent.mass)), score: \(enemyComponent.scoreValue)")
     }
     
     private func spawnEnemyWithVariation(on surface: Entity, using prefab: Entity, enemyType: EnemyType, waveStats: WaveComponent, variation: Float, in context: SceneUpdateContext) {

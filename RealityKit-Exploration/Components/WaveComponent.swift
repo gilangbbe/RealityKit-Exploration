@@ -65,13 +65,6 @@ struct WaveComponent: Component {
         enemiesDefeatedThisWave = 0
         isWaveActive = true
         lastWaveClearTime = Date()
-        
-        // Debug: Show diminishing returns progression
-        print("Wave \(currentWave) started:")
-        print("- Enemies this wave: \(currentWaveEnemyCount)")
-        print("- Enemy speed: \(String(format: "%.2f", currentWaveEnemySpeed))")
-        print("- Enemy mass: \(String(format: "%.2f", currentWaveEnemyMass))")
-        print("- Enemy push force: \(String(format: "%.2f", currentWaveEnemyForceMultiplier))")
     }
     
     mutating func enemyDefeated() {

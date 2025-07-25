@@ -57,16 +57,6 @@ class PhysicsMovementSystem: System {
                 let isFarBelowArena = entity.position.y < cubeTopY - 1.0
                 
                 if isBeyondHorizontalEdge || isBelowArenaHeight || isFarBelowArena {
-                    // Debug: Log why entity is falling
-                    if isBeyondHorizontalEdge {
-                        print("Entity fell: Beyond horizontal edge (x: \(entity.position.x), z: \(entity.position.z), arena bounds: x[\(arenaMinX)-\(arenaMaxX)], z[\(arenaMinZ)-\(arenaMaxZ)])")
-                    }
-                    if isBelowArenaHeight {
-                        print("Entity fell: Below arena height (height below: \(heightBelowArena), limit: \(GameConfig.arenaFallHeightThreshold))")
-                    }
-                    if isFarBelowArena {
-                        print("Entity fell: Far below arena (y: \(entity.position.y), arena top: \(cubeTopY))")
-                    }
                     
                     handleEntityFall(entity, context: context)
                     continue
