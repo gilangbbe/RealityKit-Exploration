@@ -143,6 +143,13 @@ struct GameConfig {
     static let timeSlowMultiplier: Float = 0.35 // Slightly less effective (was 0.3) for balance
     static let shockwaveForce: Float = 3.5 // Reduced from 4.0 for 150cm arena balance
     static let shockwaveRadius: Float = 0.7 // Reduced from 0.8 (70cm radius for 150cm arena)
+    
+    // Sound effects
+    static let timeSlowSoundFileName = "time_slow_sound"
+    static let baseTimeSlowSoundDuration: TimeInterval = 2.5 // Base duration of the sound file
+    static let shockwaveSoundFileName = "shockwave_sound"
+    static let punchSoundFileNames = ["punch_1", "punch_2", "punch_3"]
+    static let punchSoundCooldown: TimeInterval = 0.2 // Cooldown between punch sounds to prevent spam
 
     // Entity names (for easy adjustment)
     struct EntityNames {

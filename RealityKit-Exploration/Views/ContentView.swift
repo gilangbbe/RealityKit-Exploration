@@ -1,6 +1,7 @@
 import SwiftUI
 import RealityKit
 import Arena
+import AVFoundation
 
 struct ContentView: View {
     @State private var gameState: GameState = .mainMenu
@@ -43,6 +44,16 @@ struct ContentView: View {
     
     // GameOver
     @State private var lastGameSnapshot: UIImage? = nil
+    
+    // Audio players
+    @State private var timeSlowAudioPlayer: AVAudioPlayer?
+    @State private var shockwaveAudioPlayer: AVAudioPlayer?
+    @State private var punchAudioPlayers: [AVAudioPlayer] = []
+    @State private var timeSlowStopTask: DispatchWorkItem?
+    
+    // Collision sound management
+    @State private var lastPunchSoundTime: TimeInterval = 0
+    private let punchSoundCooldown: TimeInterval = GameConfig.punchSoundCooldown
     
     
     var body: some View {
@@ -156,6 +167,11 @@ struct ContentView: View {
             if let powerUpName = notification.object as? String {
                 activePowerUp = powerUpName
                 
+                // Play appropriate sound for the power-up
+                if powerUpName == "Shockwave" {
+                    playShockwaveSound()
+                }
+                
                 // Debug: If it's time slow, set up fallback indicator if notification system doesn't work
                 if powerUpName == "Time Slow" {
                     // Use a delay to allow the proper notification to arrive first
@@ -218,6 +234,9 @@ struct ContentView: View {
                 let currentTime = Date().timeIntervalSince1970
                 print("DEBUG: Time slow set via notification - duration: \(duration)s, endTime: \(endTime), current: \(currentTime), remaining: \(endTime - currentTime)")
                 
+                // Play time slow sound with appropriate duration
+                playTimeSlowSound(duration: duration)
+                
                 // Check if this is an upgraded duration
                 let baseDuration = GameConfig.timeSlowDuration
                 if duration > baseDuration {
@@ -226,6 +245,9 @@ struct ContentView: View {
             } else {
                 print("DEBUG: Failed to parse time slow notification data")
             }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .playerEnemyCollision)) { _ in
+            playRandomPunchSoundWithCooldown()
         }
         .onReceive(timer) { _ in
             // Update current time for time slow indicator
@@ -269,6 +291,12 @@ struct ContentView: View {
         timeSlowDuration = 0
         currentTime = Date().timeIntervalSince1970
         
+        // Reset collision sound cooldown
+        lastPunchSoundTime = 0
+        
+        // Setup audio
+        setupAudio()
+        
         // Track game start time
         gameStartTime = Date()
         
@@ -289,6 +317,10 @@ struct ContentView: View {
     
     private func gameOver() {
         captureGameSnapshot()
+        
+        // Stop any playing audio
+        stopAllSounds()
+        
         // Calculate game duration
         let gameDuration = Date().timeIntervalSince(gameStartTime)
         
@@ -316,6 +348,9 @@ struct ContentView: View {
             )
         }
         
+        // Stop any playing audio
+        stopAllSounds()
+        
         gameState = .mainMenu
         GameConfig.isGamePaused = false
         showUpgradeChoice = false // Clear any upgrade choice overlay
@@ -332,6 +367,9 @@ struct ContentView: View {
         timeSlowEndTime = 0
         timeSlowDuration = 0
         currentTime = 0
+        
+        // Reset collision sound cooldown
+        lastPunchSoundTime = 0
         
         // Generate new key to ensure clean state
         gameKey = UUID()
@@ -631,6 +669,186 @@ struct ContentView: View {
         }
         
         lastGameSnapshot = image
+    }
+    
+    // MARK: - Audio Management
+    
+    private func setupTimeSlowAudio() {
+        guard let path = Bundle.main.path(forResource: GameConfig.timeSlowSoundFileName, ofType: "mp3") else {
+            print("Warning: Could not find \(GameConfig.timeSlowSoundFileName).mp3 in bundle")
+            return
+        }
+        
+        let url = URL(fileURLWithPath: path)
+        
+        do {
+            timeSlowAudioPlayer = try AVAudioPlayer(contentsOf: url)
+            timeSlowAudioPlayer?.prepareToPlay()
+            print("Time slow audio setup successfully")
+        } catch {
+            print("Error setting up time slow audio: \(error)")
+        }
+    }
+    
+    private func setupShockwaveAudio() {
+        guard let path = Bundle.main.path(forResource: GameConfig.shockwaveSoundFileName, ofType: "mp3") else {
+            print("Warning: Could not find \(GameConfig.shockwaveSoundFileName).mp3 in bundle")
+            return
+        }
+        
+        let url = URL(fileURLWithPath: path)
+        
+        do {
+            shockwaveAudioPlayer = try AVAudioPlayer(contentsOf: url)
+            shockwaveAudioPlayer?.prepareToPlay()
+            print("Shockwave audio setup successfully")
+        } catch {
+            print("Error setting up shockwave audio: \(error)")
+        }
+    }
+    
+    private func setupPunchAudio() {
+        punchAudioPlayers.removeAll()
+        
+        for soundName in GameConfig.punchSoundFileNames {
+            guard let path = Bundle.main.path(forResource: soundName, ofType: "mp3") else {
+                print("Warning: Could not find \(soundName).mp3 in bundle")
+                continue
+            }
+            
+            let url = URL(fileURLWithPath: path)
+            
+            do {
+                let player = try AVAudioPlayer(contentsOf: url)
+                player.prepareToPlay()
+                punchAudioPlayers.append(player)
+                print("Punch audio '\(soundName)' setup successfully")
+            } catch {
+                print("Error setting up punch audio '\(soundName)': \(error)")
+            }
+        }
+        
+        print("Setup \(punchAudioPlayers.count) punch sound players")
+    }
+    
+    private func setupAudio() {
+        setupTimeSlowAudio()
+        setupShockwaveAudio()
+        setupPunchAudio()
+    }
+    
+    private func playTimeSlowSound(duration: TimeInterval) {
+        guard let player = timeSlowAudioPlayer else {
+            print("Warning: Time slow audio player not available")
+            return
+        }
+        
+        // Cancel any existing stop task
+        timeSlowStopTask?.cancel()
+        
+        // Calculate playback rate to stretch the sound to match the duration
+        let baseDuration = GameConfig.baseTimeSlowSoundDuration
+        let playbackRate = Float(baseDuration / duration)
+        
+        // Clamp playback rate to reasonable bounds (0.5 to 2.0)
+        let clampedRate = max(0.5, min(2.0, playbackRate))
+        
+        player.enableRate = true
+        player.rate = clampedRate
+        player.currentTime = 0
+        player.play()
+        
+        print("Playing time slow sound - Duration: \(duration)s, Rate: \(clampedRate)")
+        
+        // Create new stop task for when time slow ends
+        timeSlowStopTask = DispatchWorkItem {
+            self.timeSlowAudioPlayer?.stop()
+            self.timeSlowStopTask = nil
+        }
+        
+        // Schedule the stop task
+        if let stopTask = timeSlowStopTask {
+            DispatchQueue.main.asyncAfter(deadline: .now() + duration, execute: stopTask)
+        }
+    }
+    
+    private func playShockwaveSound() {
+        guard let player = shockwaveAudioPlayer else {
+            print("Warning: Shockwave audio player not available")
+            return
+        }
+        
+        player.currentTime = 0
+        player.play()
+        
+        print("Playing shockwave sound")
+    }
+    
+    private func playRandomPunchSound() {
+        guard !punchAudioPlayers.isEmpty else {
+            print("Warning: No punch audio players available")
+            return
+        }
+        
+        // Find a player that's not currently playing, or use a random one if all are playing
+        var availablePlayer: AVAudioPlayer?
+        
+        // First, try to find a non-playing player
+        for player in punchAudioPlayers {
+            if !player.isPlaying {
+                availablePlayer = player
+                break
+            }
+        }
+        
+        // If all players are busy, pick a random one (this will interrupt the current sound)
+        if availablePlayer == nil {
+            let randomIndex = Int.random(in: 0..<punchAudioPlayers.count)
+            availablePlayer = punchAudioPlayers[randomIndex]
+        }
+        
+        guard let player = availablePlayer else { return }
+        
+        player.currentTime = 0
+        player.play()
+        
+        // Find the index to get the sound name for logging
+        if let index = punchAudioPlayers.firstIndex(of: player) {
+            let soundName = GameConfig.punchSoundFileNames[index]
+            print("Playing punch sound: \(soundName)")
+        }
+    }
+    
+    private func playRandomPunchSoundWithCooldown() {
+        let currentTime = Date().timeIntervalSince1970
+        
+        // Check if enough time has passed since the last punch sound
+        if currentTime - lastPunchSoundTime < punchSoundCooldown {
+            print("Punch sound on cooldown, skipping...")
+            return
+        }
+        
+        // Update the last punch sound time
+        lastPunchSoundTime = currentTime
+        
+        // Play the sound
+        playRandomPunchSound()
+    }
+    
+    private func stopTimeSlowSound() {
+        timeSlowStopTask?.cancel()
+        timeSlowStopTask = nil
+        timeSlowAudioPlayer?.stop()
+    }
+    
+    private func stopAllSounds() {
+        stopTimeSlowSound()
+        shockwaveAudioPlayer?.stop()
+        
+        // Stop all punch sounds
+        for player in punchAudioPlayers {
+            player.stop()
+        }
     }
     
     

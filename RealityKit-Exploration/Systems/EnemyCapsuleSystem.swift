@@ -135,6 +135,9 @@ class EnemyCapsuleSystem: System {
         
         // Trigger attack animation on player collision
         PlayerAnimationSystem.triggerAttackAnimation(for: player, currentTime: Date().timeIntervalSince1970)
+        
+        // Post collision notification for sound effects
+        NotificationCenter.default.post(name: .playerEnemyCollision, object: nil)
     }
     
     private func orientPlayerTowardEnemy(player: Entity, enemy: Entity) {
@@ -183,5 +186,8 @@ class EnemyCapsuleSystem: System {
             enemy2.position += correction
         }
     }
-    }
+}
 
+extension Notification.Name {
+    static let playerEnemyCollision = Notification.Name("playerEnemyCollision")
+}
