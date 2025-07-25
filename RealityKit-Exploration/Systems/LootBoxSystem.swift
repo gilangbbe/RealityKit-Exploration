@@ -185,8 +185,13 @@ struct LootBoxSystem: System {
     private func collectLootBox(player: Entity, lootBox: Entity, powerUpType: PowerUpType, context: SceneUpdateContext, currentTime: TimeInterval) {
         print("Player collected LootBox: \(powerUpType.name)")
         
-        // Play particle animation around player
-        playKeyApparitionEffect(at: player)
+        // Play appropriate particle animation based on power-up type
+        switch powerUpType {
+        case .timeSlow:
+            playTimeSlowParticleEffect(at: player)
+        case .shockwave:
+            playShockwaveParticleEffect(at: player)
+        }
         
         // Get or create PowerUpComponent
         var powerUpComp = player.components[PowerUpComponent.self] ?? PowerUpComponent()
@@ -293,18 +298,17 @@ struct LootBoxSystem: System {
     
     // MARK: - Particle Effects
     
-    private func playKeyApparitionEffect(at player: Entity) {
+    private func playTimeSlowParticleEffect(at player: Entity) {
         Task {
             do {
-                // Load the key_apparition particle scene
-                if let particleScene = try? await Entity(named: "key_apparition", in: arenaBundle) {
+                // Load the timeslowParticle scene
+                if let particleScene = try? await Entity(named: "timeslowParticle", in: arenaBundle) {
                     // Position the particle effect around the player's location
-                    // Place it slightly above the player to be more visible
                     var effectPosition = player.position
                     effectPosition.y += 0.2 // Slightly above player
                     particleScene.position = effectPosition
                     
-                    // Scale the effect if needed (adjust as needed for your particle system)
+                    // Scale the effect if needed
                     particleScene.scale = SIMD3<Float>(1.0, 1.0, 1.0)
                     
                     // Add the particle effect to the player's parent (scene)
@@ -312,18 +316,50 @@ struct LootBoxSystem: System {
                         playerParent.addChild(particleScene)
                         
                         // Auto-remove the particle effect after a delay
-                        // Adjust duration based on your particle animation length
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
                             particleScene.removeFromParent()
                         }
                     }
                     
-                    print("Key apparition particle effect played around player")
+                    print("Time slow particle effect played around player")
                 } else {
-                    print("Warning: Could not load key_apparition particle scene from Arena bundle")
+                    print("Warning: Could not load timeslowParticle scene from Arena bundle")
                 }
             } catch {
-                print("Error loading key_apparition particle scene: \(error)")
+                print("Error loading timeslowParticle scene: \(error)")
+            }
+        }
+    }
+    
+    private func playShockwaveParticleEffect(at player: Entity) {
+        Task {
+            do {
+                // Load the shockwaveParticle scene
+                if let particleScene = try? await Entity(named: "shockwaveParticle", in: arenaBundle) {
+                    // Position the particle effect around the player's location
+                    var effectPosition = player.position
+                    effectPosition.y += 0.1 // Slightly above ground for shockwave effect
+                    particleScene.position = effectPosition
+                    
+                    // Scale the effect if needed
+                    particleScene.scale = SIMD3<Float>(1.0, 1.0, 1.0)
+                    
+                    // Add the particle effect to the player's parent (scene)
+                    if let playerParent = player.parent {
+                        playerParent.addChild(particleScene)
+                        
+                        // Auto-remove the particle effect after a delay
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                            particleScene.removeFromParent()
+                        }
+                    }
+                    
+                    print("Shockwave particle effect played around player")
+                } else {
+                    print("Warning: Could not load shockwaveParticle scene from Arena bundle")
+                }
+            } catch {
+                print("Error loading shockwaveParticle scene: \(error)")
             }
         }
     }

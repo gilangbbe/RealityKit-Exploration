@@ -4,6 +4,7 @@ import Foundation
 // Component for tracking enemy animation state
 struct EnemyAnimationComponent: Component, Codable {
     var isWalking: Bool = false
+    var isSlowed: Bool = false
     var lastMovementTime: TimeInterval = 0
     var animationChildEntityName: String = ""
     
