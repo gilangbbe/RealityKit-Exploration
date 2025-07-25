@@ -76,7 +76,7 @@ struct GameConfig {
   
     // Player movement
     static let playerSpeed: Float = 0.3
-    static let playerSurfaceOffsetMargin: Float = 0.05
+    static let playerSurfaceOffsetMargin: Float = 0
     static let playerMass: Float = 3.0
     static let playerPushForceMultiplier: Float = 0.5 // Player pushes harder
     static let playerResistance: Float = 3 // Player resists being pushed
@@ -114,7 +114,7 @@ struct GameConfig {
     static let enemyMinSpawnInterval: TimeInterval = 0.6 // Minimum spawn interval (fastest spawning)
     static let enemyMaxCount: Int = 8 // Base max enemies for wave 1
     static let enemyMaxCountIncreasePerWave: Int = 1 // Reduced from 2 for gentler scaling
-    static let enemySpawnYOffset: Float = 0.1
+    static let enemySpawnYOffset: Float = 0.06
     
     // Burst spawning system (spawn multiple enemies at once in later waves)
     // Waves 1-3: Single spawns, Wave 4+: 40% chance for 2-3 enemy bursts

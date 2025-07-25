@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4E3FAA1C2E333F6F00DBCFDA /* Arena in Frameworks */ = {isa = PBXBuildFile; productRef = 4E3FAA1B2E333F6F00DBCFDA /* Arena */; };
 		4E5EF3382E1F5CC700319E79 /* Arena in Frameworks */ = {isa = PBXBuildFile; productRef = 4E5EF3372E1F5CC700319E79 /* Arena */; };
 /* End PBXBuildFile section */
 
@@ -69,6 +70,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4E3FAA1C2E333F6F00DBCFDA /* Arena in Frameworks */,
 				4E5EF3382E1F5CC700319E79 /* Arena in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -131,6 +133,7 @@
 			name = "RealityKit-Exploration";
 			packageProductDependencies = (
 				4E5EF3372E1F5CC700319E79 /* Arena */,
+				4E3FAA1B2E333F6F00DBCFDA /* Arena */,
 			);
 			productName = "RealityKit-Exploration";
 			productReference = 4E5EF3032E1F51BE00319E79 /* RealityKit-Exploration.app */;
@@ -215,7 +218,7 @@
 			mainGroup = 4E5EF2FA2E1F51BE00319E79;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				4E3FA9FD2E3243E600DBCFDA /* XCLocalSwiftPackageReference "../../Arena" */,
+				4E3FAA1A2E333F6F00DBCFDA /* XCLocalSwiftPackageReference "../../Arena" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 4E5EF3042E1F51BE00319E79 /* Products */;
@@ -584,13 +587,17 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		4E3FA9FD2E3243E600DBCFDA /* XCLocalSwiftPackageReference "../../Arena" */ = {
+		4E3FAA1A2E333F6F00DBCFDA /* XCLocalSwiftPackageReference "../../Arena" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../../Arena;
 		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		4E3FAA1B2E333F6F00DBCFDA /* Arena */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Arena;
+		};
 		4E5EF3372E1F5CC700319E79 /* Arena */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Arena;

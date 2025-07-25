@@ -484,7 +484,7 @@ struct ContentView: View {
     private func setupPlayerPhysics(for entity: Entity, constrainedTo cube: Entity) {
         let capsuleBounds = entity.visualBounds(relativeTo: nil)
         let capsuleHeight = capsuleBounds.max.y - capsuleBounds.min.y
-        let surfaceOffset = capsuleHeight / 2.0 + GameConfig.playerSurfaceOffsetMargin
+        let surfaceOffset = capsuleHeight / 2.0 + GameConfig.playerSurfaceOffsetMargin - 0.05
         
         var physicsComponent = PhysicsMovementComponent()
         physicsComponent.mass = GameConfig.playerMass
