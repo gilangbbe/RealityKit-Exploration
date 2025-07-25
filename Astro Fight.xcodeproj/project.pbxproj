@@ -29,38 +29,38 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		4E5EF3032E1F51BE00319E79 /* RealityKit-Exploration.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "RealityKit-Exploration.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		4E5EF3102E1F51BE00319E79 /* RealityKit-ExplorationTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "RealityKit-ExplorationTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		4E5EF31A2E1F51BE00319E79 /* RealityKit-ExplorationUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "RealityKit-ExplorationUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		4E5EF3032E1F51BE00319E79 /* Astro Fight.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Astro Fight.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		4E5EF3102E1F51BE00319E79 /* Astro FightTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Astro FightTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		4E5EF31A2E1F51BE00319E79 /* Astro FightUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Astro FightUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		4EEB98ED2E323D9400F3032C /* Exceptions for "RealityKit-Exploration" folder in "RealityKit-Exploration" target */ = {
+		4E6D05712E3389C1007787D0 /* Exceptions for "Astro Fight" folder in "Astro Fight" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
-			target = 4E5EF3022E1F51BE00319E79 /* RealityKit-Exploration */;
+			target = 4E5EF3022E1F51BE00319E79 /* Astro Fight */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		4E5EF3052E1F51BE00319E79 /* RealityKit-Exploration */ = {
+		4E5EF3052E1F51BE00319E79 /* Astro Fight */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				4EEB98ED2E323D9400F3032C /* Exceptions for "RealityKit-Exploration" folder in "RealityKit-Exploration" target */,
+				4E6D05712E3389C1007787D0 /* Exceptions for "Astro Fight" folder in "Astro Fight" target */,
 			);
-			path = "RealityKit-Exploration";
+			path = "Astro Fight";
 			sourceTree = "<group>";
 		};
-		4E5EF3132E1F51BE00319E79 /* RealityKit-ExplorationTests */ = {
+		4E5EF3132E1F51BE00319E79 /* Astro FightTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "RealityKit-ExplorationTests";
+			path = "Astro FightTests";
 			sourceTree = "<group>";
 		};
-		4E5EF31D2E1F51BE00319E79 /* RealityKit-ExplorationUITests */ = {
+		4E5EF31D2E1F51BE00319E79 /* Astro FightUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "RealityKit-ExplorationUITests";
+			path = "Astro FightUITests";
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -95,9 +95,9 @@
 		4E5EF2FA2E1F51BE00319E79 = {
 			isa = PBXGroup;
 			children = (
-				4E5EF3052E1F51BE00319E79 /* RealityKit-Exploration */,
-				4E5EF3132E1F51BE00319E79 /* RealityKit-ExplorationTests */,
-				4E5EF31D2E1F51BE00319E79 /* RealityKit-ExplorationUITests */,
+				4E5EF3052E1F51BE00319E79 /* Astro Fight */,
+				4E5EF3132E1F51BE00319E79 /* Astro FightTests */,
+				4E5EF31D2E1F51BE00319E79 /* Astro FightUITests */,
 				4E5EF3042E1F51BE00319E79 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -105,9 +105,9 @@
 		4E5EF3042E1F51BE00319E79 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				4E5EF3032E1F51BE00319E79 /* RealityKit-Exploration.app */,
-				4E5EF3102E1F51BE00319E79 /* RealityKit-ExplorationTests.xctest */,
-				4E5EF31A2E1F51BE00319E79 /* RealityKit-ExplorationUITests.xctest */,
+				4E5EF3032E1F51BE00319E79 /* Astro Fight.app */,
+				4E5EF3102E1F51BE00319E79 /* Astro FightTests.xctest */,
+				4E5EF31A2E1F51BE00319E79 /* Astro FightUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -115,9 +115,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		4E5EF3022E1F51BE00319E79 /* RealityKit-Exploration */ = {
+		4E5EF3022E1F51BE00319E79 /* Astro Fight */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 4E5EF3242E1F51BE00319E79 /* Build configuration list for PBXNativeTarget "RealityKit-Exploration" */;
+			buildConfigurationList = 4E5EF3242E1F51BE00319E79 /* Build configuration list for PBXNativeTarget "Astro Fight" */;
 			buildPhases = (
 				4E5EF2FF2E1F51BE00319E79 /* Sources */,
 				4E5EF3002E1F51BE00319E79 /* Frameworks */,
@@ -128,20 +128,20 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				4E5EF3052E1F51BE00319E79 /* RealityKit-Exploration */,
+				4E5EF3052E1F51BE00319E79 /* Astro Fight */,
 			);
-			name = "RealityKit-Exploration";
+			name = "Astro Fight";
 			packageProductDependencies = (
 				4E5EF3372E1F5CC700319E79 /* Arena */,
 				4E3FAA1B2E333F6F00DBCFDA /* Arena */,
 			);
 			productName = "RealityKit-Exploration";
-			productReference = 4E5EF3032E1F51BE00319E79 /* RealityKit-Exploration.app */;
+			productReference = 4E5EF3032E1F51BE00319E79 /* Astro Fight.app */;
 			productType = "com.apple.product-type.application";
 		};
-		4E5EF30F2E1F51BE00319E79 /* RealityKit-ExplorationTests */ = {
+		4E5EF30F2E1F51BE00319E79 /* Astro FightTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 4E5EF3272E1F51BE00319E79 /* Build configuration list for PBXNativeTarget "RealityKit-ExplorationTests" */;
+			buildConfigurationList = 4E5EF3272E1F51BE00319E79 /* Build configuration list for PBXNativeTarget "Astro FightTests" */;
 			buildPhases = (
 				4E5EF30C2E1F51BE00319E79 /* Sources */,
 				4E5EF30D2E1F51BE00319E79 /* Frameworks */,
@@ -153,18 +153,18 @@
 				4E5EF3122E1F51BE00319E79 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				4E5EF3132E1F51BE00319E79 /* RealityKit-ExplorationTests */,
+				4E5EF3132E1F51BE00319E79 /* Astro FightTests */,
 			);
-			name = "RealityKit-ExplorationTests";
+			name = "Astro FightTests";
 			packageProductDependencies = (
 			);
 			productName = "RealityKit-ExplorationTests";
-			productReference = 4E5EF3102E1F51BE00319E79 /* RealityKit-ExplorationTests.xctest */;
+			productReference = 4E5EF3102E1F51BE00319E79 /* Astro FightTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		4E5EF3192E1F51BE00319E79 /* RealityKit-ExplorationUITests */ = {
+		4E5EF3192E1F51BE00319E79 /* Astro FightUITests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 4E5EF32A2E1F51BE00319E79 /* Build configuration list for PBXNativeTarget "RealityKit-ExplorationUITests" */;
+			buildConfigurationList = 4E5EF32A2E1F51BE00319E79 /* Build configuration list for PBXNativeTarget "Astro FightUITests" */;
 			buildPhases = (
 				4E5EF3162E1F51BE00319E79 /* Sources */,
 				4E5EF3172E1F51BE00319E79 /* Frameworks */,
@@ -176,13 +176,13 @@
 				4E5EF31C2E1F51BE00319E79 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				4E5EF31D2E1F51BE00319E79 /* RealityKit-ExplorationUITests */,
+				4E5EF31D2E1F51BE00319E79 /* Astro FightUITests */,
 			);
-			name = "RealityKit-ExplorationUITests";
+			name = "Astro FightUITests";
 			packageProductDependencies = (
 			);
 			productName = "RealityKit-ExplorationUITests";
-			productReference = 4E5EF31A2E1F51BE00319E79 /* RealityKit-ExplorationUITests.xctest */;
+			productReference = 4E5EF31A2E1F51BE00319E79 /* Astro FightUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
@@ -208,7 +208,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 4E5EF2FE2E1F51BE00319E79 /* Build configuration list for PBXProject "RealityKit-Exploration" */;
+			buildConfigurationList = 4E5EF2FE2E1F51BE00319E79 /* Build configuration list for PBXProject "Astro Fight" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -225,9 +225,9 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				4E5EF3022E1F51BE00319E79 /* RealityKit-Exploration */,
-				4E5EF30F2E1F51BE00319E79 /* RealityKit-ExplorationTests */,
-				4E5EF3192E1F51BE00319E79 /* RealityKit-ExplorationUITests */,
+				4E5EF3022E1F51BE00319E79 /* Astro Fight */,
+				4E5EF30F2E1F51BE00319E79 /* Astro FightTests */,
+				4E5EF3192E1F51BE00319E79 /* Astro FightUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -283,12 +283,12 @@
 /* Begin PBXTargetDependency section */
 		4E5EF3122E1F51BE00319E79 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 4E5EF3022E1F51BE00319E79 /* RealityKit-Exploration */;
+			target = 4E5EF3022E1F51BE00319E79 /* Astro Fight */;
 			targetProxy = 4E5EF3112E1F51BE00319E79 /* PBXContainerItemProxy */;
 		};
 		4E5EF31C2E1F51BE00319E79 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 4E5EF3022E1F51BE00319E79 /* RealityKit-Exploration */;
+			target = 4E5EF3022E1F51BE00319E79 /* Astro Fight */;
 			targetProxy = 4E5EF31B2E1F51BE00319E79 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -425,7 +425,7 @@
 				DEVELOPMENT_TEAM = S3AP74B5TH;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "RealityKit-Exploration/Info.plist";
+				INFOPLIST_FILE = "Astro Fight/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Astro Fight";
 				INFOPLIST_KEY_GCSupportsGameMode = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -456,7 +456,7 @@
 				DEVELOPMENT_TEAM = S3AP74B5TH;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "RealityKit-Exploration/Info.plist";
+				INFOPLIST_FILE = "Astro Fight/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Astro Fight";
 				INFOPLIST_KEY_GCSupportsGameMode = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -492,7 +492,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/RealityKit-Exploration.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/RealityKit-Exploration";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Astro Fight.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Astro Fight";
 			};
 			name = Debug;
 		};
@@ -511,7 +511,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/RealityKit-Exploration.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/RealityKit-Exploration";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Astro Fight.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Astro Fight";
 			};
 			name = Release;
 		};
@@ -552,7 +552,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		4E5EF2FE2E1F51BE00319E79 /* Build configuration list for PBXProject "RealityKit-Exploration" */ = {
+		4E5EF2FE2E1F51BE00319E79 /* Build configuration list for PBXProject "Astro Fight" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				4E5EF3222E1F51BE00319E79 /* Debug */,
@@ -561,7 +561,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		4E5EF3242E1F51BE00319E79 /* Build configuration list for PBXNativeTarget "RealityKit-Exploration" */ = {
+		4E5EF3242E1F51BE00319E79 /* Build configuration list for PBXNativeTarget "Astro Fight" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				4E5EF3252E1F51BE00319E79 /* Debug */,
@@ -570,7 +570,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		4E5EF3272E1F51BE00319E79 /* Build configuration list for PBXNativeTarget "RealityKit-ExplorationTests" */ = {
+		4E5EF3272E1F51BE00319E79 /* Build configuration list for PBXNativeTarget "Astro FightTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				4E5EF3282E1F51BE00319E79 /* Debug */,
@@ -579,7 +579,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		4E5EF32A2E1F51BE00319E79 /* Build configuration list for PBXNativeTarget "RealityKit-ExplorationUITests" */ = {
+		4E5EF32A2E1F51BE00319E79 /* Build configuration list for PBXNativeTarget "Astro FightUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				4E5EF32B2E1F51BE00319E79 /* Debug */,
