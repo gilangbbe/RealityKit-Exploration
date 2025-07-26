@@ -6,9 +6,15 @@
 //
 
 import SwiftUI
+import GameKit
 
 @main
 struct RealityKit_ExplorationApp: App {
+    init() {
+        // Initialize GameKit when app starts
+        _ = GameKitManager.shared
+    }
+    
     var body: some Scene {
         WindowGroup {
             ContentView()

@@ -18,29 +18,21 @@ struct MainMenuView: View {
             .id(mainMenuKey)
             .ignoresSafeArea(.all)
             
-            // Background gradient
-//            LinearGradient(
-//                gradient: Gradient(colors: [Color.black, Color.blue.opacity(0.3)]),
-//                startPoint: .topLeading,
-//                endPoint: .bottomTrailing
-//            )
-//            .ignoresSafeArea()
-            
             VStack(spacing: 40) {
                 Spacer()
                     .frame(height: 40)
                 
                 // Game Title
-                VStack(spacing: 20) {
-                    Text("ARENA")
+                VStack(spacing: 8) {
+                    Text("ASTRO")
                         .font(.system(size: 60, weight: .black, design: .rounded))
                         .foregroundColor(.white)
                         .shadow(color: .blue, radius: 10)
                     
-                    Text("COMBAT")
+                    Text("FIGHTS")
                         .font(.system(size: 40, weight: .bold, design: .rounded))
-                        .foregroundColor(.blue)
-                        .shadow(color: .white, radius: 5)
+                        .foregroundColor(.white)
+                        .shadow(color: .blue, radius: 5)
                     
                     Text("Push your enemies off the arena!")
                         .font(.system(size: 18, weight: .medium))

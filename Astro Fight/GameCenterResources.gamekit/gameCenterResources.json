@@ -1,0 +1,34 @@
+{
+  "meta" : {
+    "version" : "2024-11-15"
+  },
+  "resources" : {
+    "leaderboardImages" : {
+      "astrofight.lb.astromaster-en-US" : [
+        {
+          "localID" : "astrofight.lb.astromaster-en-US",
+          "url" : "en-US\/LeaderboardImage-astrofight.lb.astromaster-en-US.png"
+        }
+      ]
+    },
+    "leaderboardLocalizations" : {
+      "astrofight.lb.astromaster" : [
+        {
+          "locale" : "en-US",
+          "localID" : "astrofight.lb.astromaster-en-US",
+          "name" : "Astro Master"
+        }
+      ]
+    },
+    "leaderboards" : [
+      {
+        "archived" : false,
+        "defaultFormatter" : "INTEGER",
+        "referenceName" : "Astro Master",
+        "scoreSortType" : "DESC",
+        "submissionType" : "BEST_SCORE",
+        "vendorIdentifier" : "astrofight.lb.astromaster"
+      }
+    ]
+  }
+}

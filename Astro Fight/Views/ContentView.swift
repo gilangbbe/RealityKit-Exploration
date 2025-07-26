@@ -302,7 +302,7 @@ struct ContentView: View {
             score: self.score,
             enemiesDefeated: self.enemiesDefeated,
             wavesCompleted: max(1, self.currentWave - 1),
-            duration: gameDuration
+            gameDuration: gameDuration
         )
             
         gameState = .gameOver
@@ -317,7 +317,7 @@ struct ContentView: View {
                 score: score,
                 enemiesDefeated: enemiesDefeated,
                 wavesCompleted: max(1, currentWave - 1),
-                duration: gameDuration
+                gameDuration: gameDuration
             )
         }
         

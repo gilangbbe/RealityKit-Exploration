@@ -1,4 +1,5 @@
 import Foundation
+import GameKit
 
 struct GameScore: Codable, Identifiable {
     let id = UUID()
@@ -23,79 +24,88 @@ struct GameScore: Codable, Identifiable {
 }
 
 class ScoreManager: ObservableObject {
-    @Published var scores: [GameScore] = []
+    @Published var bestScore: GameScore?
+    @Published var totalGamesPlayed: Int = 0
+    @Published var totalEnemiesDefeated: Int = 0
+    
     private let userDefaults = UserDefaults.standard
-    private let scoresKey = "GameScores"
+    private let bestScoreKey = "BestScore"
+    private let totalGamesKey = "TotalGames"
+    private let totalEnemiesKey = "TotalEnemies"
     
     init() {
-        loadScores()
+        loadData()
     }
     
-    func addScore(score: Int, enemiesDefeated: Int, wavesCompleted: Int, duration: TimeInterval) {
+    func addScore(score: Int, enemiesDefeated: Int, wavesCompleted: Int, gameDuration: TimeInterval) {
+        // Increment total games played
+        totalGamesPlayed += 1
+        totalEnemiesDefeated += enemiesDefeated
+        
+        // Check if this is a new best score
         let newScore = GameScore(
             score: score,
             enemiesDefeated: enemiesDefeated,
             wavesCompleted: wavesCompleted,
             date: Date(),
-            duration: duration
+            duration: gameDuration
         )
         
-        scores.append(newScore)
-        scores.sort { $0.score > $1.score } // Sort by score descending
-        
-        // Keep only top 50 scores to prevent unlimited growth
-        if scores.count > 50 {
-            scores = Array(scores.prefix(50))
+        if bestScore == nil || score > bestScore!.score {
+            bestScore = newScore
+            // Submit to GameKit only when we have a new best score
+            GameKitManager.shared.submitScore(score)
         }
         
-        saveScores()
+        saveData()
     }
     
-    func clearAllScores() {
-        scores.removeAll()
-        saveScores()
+    func clearBestScore() {
+        bestScore = nil
+        totalGamesPlayed = 0
+        totalEnemiesDefeated = 0
+        saveData()
     }
     
     var highScore: Int {
-        return scores.first?.score ?? 0
-    }
-    
-    var totalGamesPlayed: Int {
-        return scores.count
-    }
-    
-    var averageScore: Double {
-        guard !scores.isEmpty else { return 0 }
-        let total = scores.reduce(0) { $0 + $1.score }
-        return Double(total) / Double(scores.count)
-    }
-    
-    var totalEnemiesDefeated: Int {
-        return scores.reduce(0) { $0 + $1.enemiesDefeated }
+        return bestScore?.score ?? 0
     }
     
     var highestWaveReached: Int {
-        return scores.max { $0.wavesCompleted < $1.wavesCompleted }?.wavesCompleted ?? 0
+        return bestScore?.wavesCompleted ?? 0
     }
     
-    private func saveScores() {
-        do {
-            let data = try JSONEncoder().encode(scores)
-            userDefaults.set(data, forKey: scoresKey)
-        } catch {
-            print("Failed to save scores: \(error)")
+    private func saveData() {
+        // Save best score
+        if let bestScore = bestScore {
+            do {
+                let data = try JSONEncoder().encode(bestScore)
+                userDefaults.set(data, forKey: bestScoreKey)
+            } catch {
+                print("Failed to save best score: \(error)")
+            }
+        } else {
+            userDefaults.removeObject(forKey: bestScoreKey)
         }
-    }
-    
-    private func loadScores() {
-        guard let data = userDefaults.data(forKey: scoresKey) else { return }
         
-        do {
-            scores = try JSONDecoder().decode([GameScore].self, from: data)
-            scores.sort { $0.score > $1.score }
-        } catch {
-            print("Failed to load scores: \(error)")
-            scores = []
+        // Save statistics
+        userDefaults.set(totalGamesPlayed, forKey: totalGamesKey)
+        userDefaults.set(totalEnemiesDefeated, forKey: totalEnemiesKey)
+    }
+    
+    private func loadData() {
+        // Load best score
+        if let data = userDefaults.data(forKey: bestScoreKey) {
+            do {
+                bestScore = try JSONDecoder().decode(GameScore.self, from: data)
+            } catch {
+                print("Failed to load best score: \(error)")
+                bestScore = nil
+            }
         }
+        
+        // Load statistics
+        totalGamesPlayed = userDefaults.integer(forKey: totalGamesKey)
+        totalEnemiesDefeated = userDefaults.integer(forKey: totalEnemiesKey)
     }
 }
