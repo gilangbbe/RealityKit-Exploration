@@ -98,9 +98,24 @@ struct GameConfig {
     static let gravityStrength: Float = 9.8 // Gravity acceleration when off platform
     
     // Collision detection
-    static let playerCollisionRadius: Float = 0.1 // Player collision detection radius
-    static let enemyCollisionRadius: Float = 0.1 // Enemy-enemy collision detection radius
-    static let enemySeparationForce: Float = 0.5 // Force multiplier for enemy separation
+    static let playerCollisionRadius: Float = 0.1
+    static let enemyCollisionRadius: Float = 0.1
+    
+    // Performance Optimization Settings
+    static let maxEnemiesForPerformance: Int = 25 // Maximum enemies before culling distant ones
+    static let enemyUpdateBatchSize: Int = 8 // Number of enemies to process per frame for collisions
+    static let spatialGridSize: Float = 2.0 // Size of spatial grid cells for collision optimization
+    static let collisionCheckFrameSkip: Int = 2 // Check collisions every N frames
+    static let enemyCacheUpdateInterval: TimeInterval = 0.1 // Update enemy cache every 100ms
+    
+    // Spawning limits for performance
+    static let maxSimultaneousEnemies: Int = 20 // Hard limit on total enemies
+    static let adaptiveSpawnRate: Bool = true // Reduce spawn rate when many enemies present
+    static let spawnRateReductionThreshold: Int = 15 // Start reducing spawn rate at this enemy count
+    
+    // Level of Detail (LOD) settings
+    static let enemyLODDistance: Float = 10.0 // Distance at which enemies use simplified behavior
+    static let enableEnemyLOD: Bool = true // Enable LOD system for distant enemies
     
     // Arena boundaries
     static let arenaFallThreshold: Float = -1.0 // Y position below which entities are considered "fallen"

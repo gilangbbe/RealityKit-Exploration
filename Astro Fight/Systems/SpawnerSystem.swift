@@ -19,14 +19,24 @@ class SpawnerSystem: System {
             guard let wave = waveComponent, wave.isWaveActive else { continue }
             guard wave.enemiesSpawnedThisWave < wave.currentWaveEnemyCount else { continue }
             
-            // Update spawn interval for current wave
+            // Performance check: Don't spawn if too many enemies already exist
+            let currentEnemyCount = countActiveEnemies(in: context)
+            if currentEnemyCount >= GameConfig.maxSimultaneousEnemies {
+                continue // Skip spawning to maintain performance
+            }
+            
+            // Adaptive spawn rate based on current enemy count
+            let spawnRateMultiplier = calculateAdaptiveSpawnRate(currentEnemyCount: currentEnemyCount)
+            
+            // Update spawn interval for current wave with performance multiplier
             spawner.updateSpawnIntervalForWave(wave.currentWave)
+            spawner.spawnInterval *= Double(spawnRateMultiplier)
             
             let currentTime = Date()
             let timeSinceLastSpawn = currentTime.timeIntervalSince(spawner.lastSpawnTime)
             
-            // Check for burst spawning opportunity
-            let shouldBurst = spawner.shouldAttemptBurstSpawn(wave: wave.currentWave, currentTime: currentTime)
+            // Check for burst spawning opportunity (reduced when many enemies present)
+            let shouldBurst = spawner.shouldAttemptBurstSpawn(wave: wave.currentWave, currentTime: currentTime) && currentEnemyCount < GameConfig.spawnRateReductionThreshold
             
             if shouldBurst {
                 // Execute burst spawn
@@ -40,21 +50,38 @@ class SpawnerSystem: System {
         }
     }
     
+    private func calculateAdaptiveSpawnRate(currentEnemyCount: Int) -> Float {
+        if !GameConfig.adaptiveSpawnRate {
+            return 1.0
+        }
+        
+        if currentEnemyCount >= GameConfig.spawnRateReductionThreshold {
+            // Progressively slow down spawning as enemy count increases
+            let excess = Float(currentEnemyCount - GameConfig.spawnRateReductionThreshold)
+            let maxExcess = Float(GameConfig.maxSimultaneousEnemies - GameConfig.spawnRateReductionThreshold)
+            let slowdownFactor = 1.0 + (excess / maxExcess) * 2.0 // Up to 3x slower
+            return slowdownFactor
+        }
+        
+        return 1.0
+    }
+    
     private func executeBurstSpawn(spawner: inout SpawnerComponent, wave: WaveComponent, context: SceneUpdateContext, currentTime: Date) {
         guard let surface = spawner.spawnSurface else { return }
         
         let currentEnemyCount = countActiveEnemies(in: context)
-        let waveBasedMaxEnemies = calculateMaxEnemiesForWave(wave.currentWave)
+        let waveBasedMaxEnemies = min(calculateMaxEnemiesForWave(wave.currentWave), GameConfig.maxSimultaneousEnemies)
         let availableSlots = waveBasedMaxEnemies - currentEnemyCount
         let remainingWaveEnemies = wave.currentWaveEnemyCount - wave.enemiesSpawnedThisWave
         
         guard availableSlots > 0 && remainingWaveEnemies > 0 else { return }
         
-        // Calculate burst size considering all constraints
+        // Calculate burst size considering performance limits
         let burstSize = min(
             spawner.calculateBurstSize(wave: wave.currentWave),
             availableSlots,
-            remainingWaveEnemies
+            remainingWaveEnemies,
+            GameConfig.maxSimultaneousEnemies - currentEnemyCount // Performance limit
         )
         
         // Spawn multiple enemies with slight delay between each
@@ -84,7 +111,7 @@ class SpawnerSystem: System {
         guard let surface = spawner.spawnSurface else { return }
         
         let currentEnemyCount = countActiveEnemies(in: context)
-        let waveBasedMaxEnemies = calculateMaxEnemiesForWave(wave.currentWave)
+        let waveBasedMaxEnemies = min(calculateMaxEnemiesForWave(wave.currentWave), GameConfig.maxSimultaneousEnemies)
         
         guard currentEnemyCount < waveBasedMaxEnemies else { return }
         

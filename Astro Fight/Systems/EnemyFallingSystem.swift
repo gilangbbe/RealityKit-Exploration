@@ -65,11 +65,15 @@ struct EnemyFallingSystem: System {
         // Update wave progress
         updateWaveProgress(context: context)
         
+        // Post notification with enemy ID for cache cleanup BEFORE removing from parent
+        NotificationCenter.default.post(
+            name: Notification.Name("enemyDefeated"), 
+            object: enemyComponent.scoreValue,
+            userInfo: ["enemyId": entity.id]
+        )
+        
         // Remove the enemy entity
         entity.removeFromParent()
-        
-        // Post notification for UI update
-        NotificationCenter.default.post(name: .enemyDefeated, object: enemyComponent.scoreValue)
     }
     
     private func updateWaveProgress(context: SceneUpdateContext) {

@@ -1,10 +1,3 @@
-//
-//  GameKitManager.swift
-//  Astro Fight
-//
-//  Created by Copilot on 15/01/25.
-//
-
 import GameKit
 import SwiftUI
 
