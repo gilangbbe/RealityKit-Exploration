@@ -9,7 +9,7 @@ import SwiftUI
 import GameKit
 
 @main
-struct RealityKit_ExplorationApp: App {
+struct AstroFightnApp: App {
     init() {
         // Initialize GameKit when app starts
         _ = GameKitManager.shared

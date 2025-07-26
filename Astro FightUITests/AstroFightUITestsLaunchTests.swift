@@ -7,7 +7,7 @@
 
 import XCTest
 
-final class RealityKit_ExplorationUITestsLaunchTests: XCTestCase {
+final class AstroFightUITestsLaunchTests: XCTestCase {
 
     override class var runsForEachTargetApplicationUIConfiguration: Bool {
         true
