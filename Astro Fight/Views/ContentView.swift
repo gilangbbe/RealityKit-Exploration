@@ -46,6 +46,7 @@ struct ContentView: View {
     @State private var lastGameSnapshot: UIImage? = nil
     
     // Audio players
+    @StateObject private var audioSettings = AudioSettings.shared
     @State private var timeSlowAudioPlayer: AVAudioPlayer?
     @State private var shockwaveAudioPlayer: AVAudioPlayer?
     @State private var punchAudioPlayers: [AVAudioPlayer] = []
@@ -247,6 +248,24 @@ struct ContentView: View {
             }
             return .ignored
         }
+        .onAppear {
+            // Initialize background music when the app starts
+            audioSettings.startBackgroundMusic()
+        }
+        .onDisappear {
+            // Stop background music when app goes to background
+            audioSettings.stopBackgroundMusic()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
+            // Pause background music when app goes to background
+            audioSettings.pauseBackgroundMusic()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
+            // Resume background music when app comes back to foreground
+            if gameState == .playing || gameState == .mainMenu {
+                audioSettings.resumeBackgroundMusic()
+            }
+        }
     }
     
     // MARK: - Game State Management
@@ -270,6 +289,9 @@ struct ContentView: View {
         // Setup audio
         setupAudio()
         
+        // Start background music for gameplay
+        audioSettings.startBackgroundMusic()
+        
         // Track game start time
         gameStartTime = Date()
         
@@ -281,11 +303,13 @@ struct ContentView: View {
     private func pauseGame() {
         gameState = .paused
         GameConfig.isGamePaused = true
+        audioSettings.pauseBackgroundMusic()
     }
     
     private func resumeGame() {
         gameState = .playing
         GameConfig.isGamePaused = false
+        audioSettings.resumeBackgroundMusic()
     }
     
     private func gameOver() {
@@ -323,6 +347,7 @@ struct ContentView: View {
         
         // Stop any playing audio
         stopAllSounds()
+        audioSettings.resumeBackgroundMusic()
         
         gameState = .mainMenu
         GameConfig.isGamePaused = true // Keep game paused when returning to main menu to stop all systems
@@ -686,7 +711,7 @@ struct ContentView: View {
     }
     
     private func playTimeSlowSound(duration: TimeInterval) {
-        guard let player = timeSlowAudioPlayer else {
+        guard audioSettings.shouldPlaySFX(), let player = timeSlowAudioPlayer else {
             return
         }
         
@@ -718,7 +743,7 @@ struct ContentView: View {
     }
     
     private func playShockwaveSound() {
-        guard let player = shockwaveAudioPlayer else {
+        guard audioSettings.shouldPlaySFX(), let player = shockwaveAudioPlayer else {
             return
         }
         
@@ -727,7 +752,7 @@ struct ContentView: View {
     }
     
     private func playRandomPunchSound() {
-        guard !punchAudioPlayers.isEmpty else {
+        guard audioSettings.shouldPlaySFX(), !punchAudioPlayers.isEmpty else {
             return
         }
         

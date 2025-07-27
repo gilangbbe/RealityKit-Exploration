@@ -7,6 +7,7 @@ struct MainMenuView: View {
     
     let onStartGame: () -> Void
     let onShowLeaderboard: () -> Void
+    let onShowSettings: () -> Void
     let scoreManager: ScoreManager
 
     var body: some View {
@@ -107,6 +108,30 @@ struct MainMenuView: View {
                         .shadow(color: .yellow.opacity(0.8), radius: 6)
                         .shadow(color: Color.yellow.opacity(0.8), radius: 12)
                     }
+                    
+                    // Settings Button
+                    Button(action: onShowSettings) {
+                        HStack {
+                            Image(systemName: "gear")
+                                .font(.title3)
+                            Text("SETTINGS")
+                                .font(.title3)
+                                .fontWeight(.semibold)
+                        }
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 30)
+                        .padding(.vertical, 12)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color.black.opacity(0.8))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color.purple.opacity(0.5), lineWidth: 3)
+                                )
+                        )
+                        .shadow(color: .blue.opacity(0.8), radius: 6)
+                        .shadow(color: Color.blue.opacity(0.8), radius: 12)
+                    }
 
                 }
                 
@@ -194,14 +219,11 @@ func setupMenuBackground(content: RealityViewCameraContent) async {
         return camera
     }
 
-
-
-
-
 #Preview {
     MainMenuView(
         onStartGame: { print("Start game tapped") },
         onShowLeaderboard: { print("Show leaderboard tapped") },
+        onShowSettings:  { print("setting tapped") },
         scoreManager: ScoreManager()
     )
 }

@@ -7,13 +7,16 @@ struct MainMenuContainerView: View {
     let onShowLeaderboard: () -> Void
     let onHideLeaderboard: () -> Void
     
+    @State private var showSettings = false
+    
     var body: some View {
         ZStack {
             // Main Menu
-            if !showLeaderboard {
+            if !showLeaderboard && !showSettings {
                 MainMenuView(
                     onStartGame: onStartGame,
                     onShowLeaderboard: onShowLeaderboard,
+                    onShowSettings: { showSettings = true },
                     scoreManager: scoreManager
                 )
             }
@@ -22,6 +25,13 @@ struct MainMenuContainerView: View {
             if showLeaderboard {
                 LeaderboardView(scoreManager: scoreManager) {
                     onHideLeaderboard()
+                }
+            }
+            
+            // Settings View (replaces main menu)
+            if showSettings {
+                SettingsView {
+                    showSettings = false
                 }
             }
         }
