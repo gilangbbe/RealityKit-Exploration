@@ -1,9 +1,11 @@
 import SwiftUI
 import RealityKit
 import Arena
+import GameKit
 
 struct MainMenuView: View {
     @State private var mainMenuKey = UUID()
+    @StateObject private var gameKitManager = GameKitManager.shared
     
     let onStartGame: () -> Void
     let onShowLeaderboard: () -> Void
@@ -18,6 +20,35 @@ struct MainMenuView: View {
             }
             .id(mainMenuKey)
             .ignoresSafeArea(.all)
+            
+            // Game Center Access Point
+            VStack {
+                HStack {
+                    Spacer()
+                    if gameKitManager.isAuthenticated {
+                        GameCenterAccessPointView(gameKitManager: gameKitManager)
+                            .frame(width: 50, height: 50)
+                    } else {
+                        // Fallback Game Center button when not authenticated
+                        Button(action: {
+                            gameKitManager.authenticatePlayer()
+                        }) {
+                            Image(systemName: "gamecontroller.fill")
+                                .font(.title2)
+                                .foregroundColor(.white)
+                                .background(
+                                    Circle()
+                                        .fill(Color.green.opacity(0.8))
+                                        .frame(width: 40, height: 40)
+                                )
+                                .shadow(color: .green.opacity(0.6), radius: 4)
+                        }
+                    }
+                }
+                .padding(.top)
+                .padding(.trailing)
+                Spacer()
+            }
             
             VStack(spacing: 40) {
                 Spacer()
@@ -139,6 +170,21 @@ struct MainMenuView: View {
             }
             .padding()
         }
+        .onAppear {
+            // Configure Game Center access point when main menu appears
+            if gameKitManager.isAuthenticated {
+                GKAccessPoint.shared.location = .topTrailing
+                GKAccessPoint.shared.showHighlights = true
+                GKAccessPoint.shared.isActive = true
+            } else {
+                // Attempt to authenticate if not already authenticated
+                gameKitManager.authenticatePlayer()
+            }
+        }
+        .onDisappear {
+            // Deactivate Game Center access point when leaving main menu
+            GKAccessPoint.shared.isActive = false
+        }
     }
 }
 
@@ -218,6 +264,37 @@ func setupMenuBackground(content: RealityViewCameraContent) async {
         //content.add(cameraEntity)
         return camera
     }
+
+// MARK: - Game Center Access Point
+struct GameCenterAccessPointView: UIViewRepresentable {
+    @ObservedObject var gameKitManager: GameKitManager
+    
+    func makeUIView(context: Context) -> UIView {
+        let containerView = UIView()
+        containerView.backgroundColor = UIColor.clear
+        
+        // Only configure when this view is actually being displayed
+        configureAccessPoint()
+        
+        return containerView
+    }
+    
+    func updateUIView(_ uiView: UIView, context: Context) {
+        // Update the access point when authentication state changes
+        configureAccessPoint()
+    }
+    
+    private func configureAccessPoint() {
+        if gameKitManager.isAuthenticated {
+            // Only activate when this specific view is being used
+            GKAccessPoint.shared.location = .topTrailing
+            GKAccessPoint.shared.showHighlights = true
+            GKAccessPoint.shared.isActive = true
+        } else {
+            GKAccessPoint.shared.isActive = false
+        }
+    }
+}
 
 #Preview {
     MainMenuView(
