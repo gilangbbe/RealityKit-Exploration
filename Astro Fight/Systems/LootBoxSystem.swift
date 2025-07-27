@@ -48,7 +48,7 @@ struct LootBoxSystem: System {
     private func spawnLootBox(surface: Entity, prefab: Entity, container: Entity?) {
         let lootBox = prefab.clone(recursive: true)
         
-        // Get random position on arena surface
+        // Get arena bounds
         let cubeBounds = surface.visualBounds(relativeTo: nil)
         let cubeCenter = surface.position
         let cubeTopY = cubeCenter.y + (cubeBounds.max.y - cubeBounds.min.y) / 2.0
@@ -60,49 +60,16 @@ struct LootBoxSystem: System {
         let arenaMinZ = cubeCenter.z + cubeBounds.min.z + safeMargin
         let arenaMaxZ = cubeCenter.z + cubeBounds.max.z - safeMargin
         
-        // Find a position that doesn't overlap with existing LootBoxes
-        var spawnPosition: SIMD3<Float>?
-        let maxAttempts = GameConfig.lootBoxSpawnAttempts
-        let minDistanceBetweenLootBoxes = GameConfig.lootBoxMinSpawnDistance
+        // Use efficient grid-based position finding
+        let spawnPosition = findOptimalSpawnPosition(
+            arenaMinX: arenaMinX,
+            arenaMaxX: arenaMaxX,
+            arenaMinZ: arenaMinZ,
+            arenaMaxZ: arenaMaxZ,
+            spawnY: cubeTopY + 0.1
+        )
         
-        for _ in 0..<maxAttempts {
-            let randomX = Float.random(in: arenaMinX...arenaMaxX)
-            let randomZ = Float.random(in: arenaMinZ...arenaMaxZ)
-            let spawnY = cubeTopY + 0.1 // Slightly above surface
-            let candidatePosition = SIMD3<Float>(randomX, spawnY, randomZ)
-            
-            // Check if this position is clear of existing LootBoxes
-            if isPositionClearForLootBox(candidatePosition, minDistance: minDistanceBetweenLootBoxes) {
-                spawnPosition = candidatePosition
-                break
-            }
-        }
-        
-        // If we couldn't find a clear position, try with reduced minimum distance
-        if spawnPosition == nil {
-            let reducedMinDistance = minDistanceBetweenLootBoxes * 0.6 // Reduce distance requirement by 40%
-            for _ in 0..<maxAttempts {
-                let randomX = Float.random(in: arenaMinX...arenaMaxX)
-                let randomZ = Float.random(in: arenaMinZ...arenaMaxZ)
-                let spawnY = cubeTopY + 0.1
-                let candidatePosition = SIMD3<Float>(randomX, spawnY, randomZ)
-                
-                if isPositionClearForLootBox(candidatePosition, minDistance: reducedMinDistance) {
-                    spawnPosition = candidatePosition
-                    break
-                }
-            }
-        }
-        
-        // Final fallback: use any position if still no clear spot found
-        if spawnPosition == nil {
-            let fallbackX = Float.random(in: arenaMinX...arenaMaxX)
-            let fallbackZ = Float.random(in: arenaMinZ...arenaMaxZ)
-            spawnPosition = SIMD3<Float>(fallbackX, cubeTopY + 0.1, fallbackZ)
-            print("Warning: Could not find clear position for LootBox after \(maxAttempts * 2) attempts, using fallback position")
-        }
-        
-        lootBox.position = spawnPosition!
+        lootBox.position = spawnPosition
         
         // Add LootBox component with random power-up
         let lootBoxComponent = LootBoxComponent()
@@ -128,30 +95,150 @@ struct LootBoxSystem: System {
         LootBoxAnimationSystem.startAnimation(for: lootBox)
     }
     
-    // Helper method to check if a position is clear for LootBox spawning
-    private func isPositionClearForLootBox(_ candidatePosition: SIMD3<Float>, minDistance: Float) -> Bool {
+    // Efficient grid-based position finding to avoid performance drops
+    private func findOptimalSpawnPosition(
+        arenaMinX: Float,
+        arenaMaxX: Float,
+        arenaMinZ: Float,
+        arenaMaxZ: Float,
+        spawnY: Float
+    ) -> SIMD3<Float> {
+        guard let scene = scene else {
+            // Fallback to random position if no scene available
+            return SIMD3<Float>(
+                Float.random(in: arenaMinX...arenaMaxX),
+                spawnY,
+                Float.random(in: arenaMinZ...arenaMaxZ)
+            )
+        }
+        
+        // Create a grid-based approach for efficient position finding
+        let gridSize: Float = GameConfig.lootBoxMinSpawnDistance
+        let gridCols = Int((arenaMaxX - arenaMinX) / gridSize) + 1
+        let gridRows = Int((arenaMaxZ - arenaMinZ) / gridSize) + 1
+        
+        // Build a set of occupied grid positions for O(1) lookup
+        var occupiedPositions = Set<String>()
+        
+        // Mark positions occupied by existing loot boxes
+        let existingLootBoxes = Array(scene.performQuery(Self.lootBoxQuery))
+        for lootBox in existingLootBoxes {
+            let gridX = Int((lootBox.position.x - arenaMinX) / gridSize)
+            let gridZ = Int((lootBox.position.z - arenaMinZ) / gridSize)
+            // Mark the grid cell and adjacent cells as occupied
+            for dx in -1...1 {
+                for dz in -1...1 {
+                    let adjX = gridX + dx
+                    let adjZ = gridZ + dz
+                    if adjX >= 0 && adjX < gridCols && adjZ >= 0 && adjZ < gridRows {
+                        occupiedPositions.insert("\(adjX),\(adjZ)")
+                    }
+                }
+            }
+        }
+        
+        // Mark positions occupied by players (larger exclusion zone)
+        let players = Array(scene.performQuery(Self.playerQuery))
+        let playerExclusionRadius = GameConfig.lootBoxMinPlayerDistance
+        for player in players {
+            let gridX = Int((player.position.x - arenaMinX) / gridSize)
+            let gridZ = Int((player.position.z - arenaMinZ) / gridSize)
+            let exclusionCells = Int(playerExclusionRadius / gridSize) + 1
+            // Mark larger area around player as occupied
+            for dx in -exclusionCells...exclusionCells {
+                for dz in -exclusionCells...exclusionCells {
+                    let adjX = gridX + dx
+                    let adjZ = gridZ + dz
+                    if adjX >= 0 && adjX < gridCols && adjZ >= 0 && adjZ < gridRows {
+                        occupiedPositions.insert("\(adjX),\(adjZ)")
+                    }
+                }
+            }
+        }
+        
+        // Find available positions
+        var availablePositions: [SIMD3<Float>] = []
+        for row in 0..<gridRows {
+            for col in 0..<gridCols {
+                let key = "\(col),\(row)"
+                if !occupiedPositions.contains(key) {
+                    let x = arenaMinX + Float(col) * gridSize + gridSize * 0.5
+                    let z = arenaMinZ + Float(row) * gridSize + gridSize * 0.5
+                    // Add some randomness within the grid cell
+                    let randomOffsetX = Float.random(in: -gridSize*0.3...gridSize*0.3)
+                    let randomOffsetZ = Float.random(in: -gridSize*0.3...gridSize*0.3)
+                    let position = SIMD3<Float>(
+                        min(max(x + randomOffsetX, arenaMinX), arenaMaxX),
+                        spawnY,
+                        min(max(z + randomOffsetZ, arenaMinZ), arenaMaxZ)
+                    )
+                    availablePositions.append(position)
+                }
+            }
+        }
+        
+        // Return random position from available positions, or fallback
+        if !availablePositions.isEmpty {
+            return availablePositions.randomElement()!
+        } else {
+            // If no grid positions available, use fallback with minimal checks
+            return findFallbackPosition(
+                arenaMinX: arenaMinX,
+                arenaMaxX: arenaMaxX,
+                arenaMinZ: arenaMinZ,
+                arenaMaxZ: arenaMaxZ,
+                spawnY: spawnY
+            )
+        }
+    }
+    
+    // Lightweight fallback position finder
+    private func findFallbackPosition(
+        arenaMinX: Float,
+        arenaMaxX: Float,
+        arenaMinZ: Float,
+        arenaMaxZ: Float,
+        spawnY: Float
+    ) -> SIMD3<Float> {
+        // Try only 3 quick attempts, then give up and place anywhere
+        for _ in 0..<3 {
+            let x = Float.random(in: arenaMinX...arenaMaxX)
+            let z = Float.random(in: arenaMinZ...arenaMaxZ)
+            let position = SIMD3<Float>(x, spawnY, z)
+            
+            // Quick check - only verify against nearest entities
+            if isPositionQuickCheck(position) {
+                return position
+            }
+        }
+        
+        // Final fallback - just place anywhere
+        return SIMD3<Float>(
+            Float.random(in: arenaMinX...arenaMaxX),
+            spawnY,
+            Float.random(in: arenaMinZ...arenaMaxZ)
+        )
+    }
+    
+    // Quick position check with minimal performance impact
+    private func isPositionQuickCheck(_ position: SIMD3<Float>) -> Bool {
         guard let scene = scene else { return true }
         
-        // Check distance from existing LootBoxes
-        let existingLootBoxes = scene.performQuery(Self.lootBoxQuery)
-        for lootBox in existingLootBoxes {
-            let distance = simd_distance(candidatePosition, lootBox.position)
+        let minDistance = GameConfig.lootBoxMinSpawnDistance * 0.5 // Reduced requirement for fallback
+        
+        // Only check closest entities to avoid performance hit
+        let existingLootBoxes = Array(scene.performQuery(Self.lootBoxQuery))
+        let maxCheckCount = min(existingLootBoxes.count, 5) // Limit checks to 5 closest
+        
+        for (index, lootBox) in existingLootBoxes.enumerated() {
+            if index >= maxCheckCount { break }
+            let distance = simd_distance(position, lootBox.position)
             if distance < minDistance {
-                return false // Too close to existing LootBox
+                return false
             }
         }
         
-        // Check distance from player to avoid spawning too close
-        let players = scene.performQuery(Self.playerQuery)
-        let minPlayerDistance = GameConfig.lootBoxMinPlayerDistance
-        for player in players {
-            let distance = simd_distance(candidatePosition, player.position)
-            if distance < minPlayerDistance {
-                return false // Too close to player
-            }
-        }
-        
-        return true // Position is clear
+        return true
     }
     
     private func handleLootBoxCollection(context: SceneUpdateContext, currentTime: TimeInterval) {
