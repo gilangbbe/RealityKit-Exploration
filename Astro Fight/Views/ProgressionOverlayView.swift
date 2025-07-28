@@ -89,12 +89,7 @@ struct ProgressionOverlayView: View {
                         }
                         .accessibilityLabel("Resume game")
                         .accessibilityHint("Returns to the game")
-                        
-                        Text("Tap anywhere to close • Press Tab for quick access")
-                            .font(.caption)
-                            .foregroundColor(.gray)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 8)
+
                     }
                     .padding(.horizontal, 24)
                 }

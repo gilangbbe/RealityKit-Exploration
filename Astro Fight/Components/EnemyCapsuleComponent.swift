@@ -55,7 +55,7 @@ enum EnemyType: String, CaseIterable, Codable {
         case .phase4:
             return EnemyStats(
                 speed: 0.3,
-                mass: 1.5,
+                mass: 1.4,
                 pushForce: 0.6,
                 scoreValue: 150,
                 health: 1
@@ -63,8 +63,8 @@ enum EnemyType: String, CaseIterable, Codable {
         case .phase5:
             return EnemyStats(
                 speed: 0.4,
-                mass: 1.8,
-                pushForce: 0.8,
+                mass: 1.6,
+                pushForce: 0.7,
                 scoreValue: 200,
                 health: 1
             )

@@ -43,8 +43,8 @@ struct GameConfig {
     // Wave System (rebalanced for hyper-casual 5-minute sessions)
     static let baseEnemiesPerWave: Int = 4 // Reduced from 5 to 4 for quicker waves
     static let enemyHealthIncreasePerWave: Int = 1
-    static let enemySpeedIncreasePerWave: Float = 0.08 // Reduced from 0.1 for gentler progression
-    static let enemyMassIncreasePerWave: Float = 0.08 // Reduced from 0.1 for balance
+    static let enemySpeedIncreasePerWave: Float = 0.05 // Reduced from 0.1 for gentler progression
+    static let enemyMassIncreasePerWave: Float = 0.05 // Reduced from 0.1 for balance
     static let enemyCountIncreasePerWave: Int = 1
     static let waveClearDelay: TimeInterval = 2.5 // Reduced from 3.0 for faster pacing
     static let waveScoreMultiplier: Int = 60 // Increased from 50 for better reward feedback
@@ -59,12 +59,12 @@ struct GameConfig {
     static let playerUpgradeDiminishingFactor: Float = 0.85 // Stronger diminishing from 0.95 to 0.85
     
     // Enemy scaling to match player progression (tuned for hyper-casual)
-    static let enemyScalingPerWave: Float = 0.12 // Reduced from 0.15 to 0.12 (12% per wave)
+    static let enemyScalingPerWave: Float = 0.05 // Reduced from 0.15 to 0.12 (12% per wave)
     static let enemyMaxScalingWaves: Int = 12 // Reduced from 15 to 12 for 5-minute sessions
     static let enemyForceScalingPerWave: Float = 0.15 // Reduced from 0.2 to 0.15 (15% per wave)
     
     // Diminishing returns for other systems (tuned for hyper-casual gameplay)
-    static let enemyCountDiminishingFactor: Float = 0.75 // Stronger diminishing from 0.8 to 0.75
+    static let enemyCountDiminishingFactor: Float = 0.90 // Stronger diminishing from 0.8 to 0.75
     static let waveScoreDiminishingFactor: Float = 0.88 // Slightly stronger from 0.9 to 0.88
     static let maxEnemiesDiminishingFactor: Float = 0.8 // Slightly stronger from 0.85 to 0.8
     
