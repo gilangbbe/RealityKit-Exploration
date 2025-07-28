@@ -50,6 +50,7 @@ struct GameModalOverlaysView: View {
                 UpgradeChoiceView(
                     upgradeChoices: upgradeChoices,
                     currentWave: currentWave,
+                    playerProgression: playerProgression,
                     onChoiceMade: onUpgradeChoice
                 )
             }
@@ -75,7 +76,13 @@ struct GameModalOverlaysView: View {
         enemiesDefeated: 47,
         currentWave: 8,
         upgradeChoices: [.resilience, .force, .speed],
-        playerProgression: PlayerProgressionComponent(),
+        playerProgression: {
+            var comp = PlayerProgressionComponent()
+            comp.upgradesApplied[.resilience] = 3
+            comp.upgradesApplied[.force] = 1
+            comp.upgradesApplied[.speed] = 5 // Maxed out
+            return comp
+        }(),
         lastSnapShot: nil,
         onResume: {},
         onMainMenu: {},

@@ -35,6 +35,8 @@ struct UpgradeIconView: View {
     let level: Int
     let isCompact: Bool
     
+    private let maxLevel = 5
+    
     var body: some View {
         ZStack {
             Circle()
@@ -42,14 +44,26 @@ struct UpgradeIconView: View {
                 .frame(width: 24, height: 24) // Slightly larger for better visibility
             
             Circle()
-                .stroke(upgradeColor, lineWidth: 1.5)
+                .stroke(upgradeColor, lineWidth: isMaxed ? 2.0 : 1.5)
                 .frame(width: 24, height: 24)
             
-            Image(systemName: upgradeType.icon)
-                .font(.system(size: 12, weight: .bold))
-                .foregroundColor(upgradeColor)
+            if isMaxed {
+                // Show "MAX" indicator for maxed upgrades
+                Text("MAX")
+                    .font(.system(size: 6, weight: .bold))
+                    .foregroundColor(.white)
+                    .background(
+                        RoundedRectangle(cornerRadius: 2)
+                            .fill(upgradeColor)
+                            .frame(width: 18, height: 8)
+                    )
+            } else {
+                Image(systemName: upgradeType.icon)
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundColor(upgradeColor)
+            }
             
-            if level > 0 {
+            if level > 0 && !isMaxed {
                 VStack {
                     Spacer()
                     HStack {
@@ -66,21 +80,25 @@ struct UpgradeIconView: View {
             }
         }
         .frame(width: 24, height: 24) // Fixed frame to prevent any expansion
-        .accessibilityLabel("\(upgradeType.name), level \(level)")
+        .accessibilityLabel(isMaxed ? "\(upgradeType.name), maxed out" : "\(upgradeType.name), level \(level)")
+    }
+    
+    private var isMaxed: Bool {
+        return level >= maxLevel
     }
     
     private var upgradeColor: Color {
         switch upgradeType {
         case .resilience:
-            return level > 0 ? .blue : .gray
+            return level > 0 ? (isMaxed ? .gold : .blue) : .gray
         case .force:
-            return level > 0 ? .red : .gray
+            return level > 0 ? (isMaxed ? .gold : .red) : .gray
         case .speed:
-            return level > 0 ? .green : .gray
+            return level > 0 ? (isMaxed ? .gold : .green) : .gray
         case .slowDuration:
-            return level > 0 ? .purple : .gray
+            return level > 0 ? (isMaxed ? .gold : .purple) : .gray
         case .shockwavePower:
-            return level > 0 ? .orange : .gray
+            return level > 0 ? (isMaxed ? .gold : .orange) : .gray
         }
     }
 }

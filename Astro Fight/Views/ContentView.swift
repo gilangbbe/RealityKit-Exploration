@@ -216,6 +216,21 @@ struct ContentView: View {
                 }
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .allUpgradesMaxed)) { _ in
+            // All upgrades are maxed - show a notification and continue the game
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                // Show a temporary message that all upgrades are maxed
+                activePowerUp = "All Upgrades Maxed!"
+                
+                // Clear the message after a delay
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                    activePowerUp = nil
+                }
+                
+                // Continue the game without pausing
+                GameConfig.isGamePaused = false
+            }
+        }
         .onReceive(NotificationCenter.default.publisher(for: .timeSlowActivated)) { notification in
             if let timeSlowInfo = notification.object as? [String: Any],
                let endTime = timeSlowInfo["endTime"] as? TimeInterval,

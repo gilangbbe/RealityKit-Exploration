@@ -67,6 +67,9 @@ struct PlayerProgressionComponent: Component, Codable {
     // Tracking upgrade counts for better balance
     var upgradesApplied: [PlayerUpgradeType: Int] = [:]
     
+    // Maximum level for each upgrade
+    static let maxUpgradeLevel: Int = 5
+    
     // Base values for calculating current stats
     var baseResistance: Float = GameConfig.playerResistance
     var baseForce: Float = GameConfig.playerPushForceMultiplier
@@ -102,6 +105,12 @@ struct PlayerProgressionComponent: Component, Codable {
     mutating func applyChosenUpgrade(_ upgradeType: PlayerUpgradeType) {
         wavesCompleted += 1
         
+        // Check if upgrade is already at max level
+        let currentLevel = upgradesApplied[upgradeType, default: 0]
+        if currentLevel >= Self.maxUpgradeLevel {
+            return // Cannot upgrade beyond max level
+        }
+        
         // Track upgrade count for this type
         upgradesApplied[upgradeType, default: 0] += 1
         
@@ -128,40 +137,83 @@ struct PlayerProgressionComponent: Component, Codable {
         }
     }
     
-    // Generate 3 random upgrade choices, avoiding too much repetition
+    // Generate 3 random upgrade choices, avoiding maxed out upgrades
     func generateUpgradeChoices() -> [PlayerUpgradeType] {
         var choices: [PlayerUpgradeType] = []
-        var availableUpgrades = PlayerUpgradeType.allCases
+        
+        // Filter out maxed upgrades first
+        var availableUpgrades = PlayerUpgradeType.allCases.filter { upgradeType in
+            let currentLevel = upgradesApplied[upgradeType, default: 0]
+            return currentLevel < Self.maxUpgradeLevel
+        }
+        
+        // If all upgrades are maxed, return empty array (should rarely happen)
+        if availableUpgrades.isEmpty {
+            return []
+        }
         
         // Reduce probability of already heavily upgraded options (more aggressive for balance)
-        availableUpgrades = availableUpgrades.filter { upgradeType in
+        let weightedUpgrades = availableUpgrades.compactMap { upgradeType -> (PlayerUpgradeType, Float)? in
             let upgradeCount = upgradesApplied[upgradeType, default: 0]
-            if upgradeCount >= 4 { // Increased threshold from 3 to 4
-                return Float.random(in: 0...1) < 0.2 // Reduced from 30% to 20% chance
-            } else if upgradeCount >= 2 { // Add intermediate threshold
-                return Float.random(in: 0...1) < 0.7 // 70% chance for moderately upgraded
+            var weight: Float = 1.0
+            
+            if upgradeCount >= 4 {
+                weight = 0.3 // 30% chance for level 4 upgrades
+            } else if upgradeCount >= 2 {
+                weight = 0.7 // 70% chance for level 2-3 upgrades
             }
-            return true
+            
+            return (upgradeType, weight)
         }
         
-        // Select 3 random choices
+        // Select 3 random choices based on weights
+        var remainingUpgrades = weightedUpgrades
+        
         for _ in 0..<min(3, availableUpgrades.count) {
-            if let randomUpgrade = availableUpgrades.randomElement() {
-                choices.append(randomUpgrade)
-                availableUpgrades.removeAll { $0 == randomUpgrade }
+            guard !remainingUpgrades.isEmpty else { break }
+            
+            // Calculate total weight
+            let totalWeight = remainingUpgrades.reduce(0) { $0 + $1.1 }
+            let randomValue = Float.random(in: 0...totalWeight)
+            
+            var currentWeight: Float = 0
+            var selectedIndex = 0
+            
+            for (index, (_, weight)) in remainingUpgrades.enumerated() {
+                currentWeight += weight
+                if randomValue <= currentWeight {
+                    selectedIndex = index
+                    break
+                }
             }
+            
+            let selectedUpgrade = remainingUpgrades[selectedIndex].0
+            choices.append(selectedUpgrade)
+            remainingUpgrades.remove(at: selectedIndex)
         }
         
-        // Fill remaining slots if needed (ensure we always have 3 choices)
-        while choices.count < 3 {
-            if let randomUpgrade = PlayerUpgradeType.allCases.randomElement() {
-                if !choices.contains(randomUpgrade) {
-                    choices.append(randomUpgrade)
-                }
+        // If we couldn't get 3 choices due to weighting, fill with remaining available upgrades
+        while choices.count < 3 && choices.count < availableUpgrades.count {
+            let remaining = availableUpgrades.filter { !choices.contains($0) }
+            if let randomUpgrade = remaining.randomElement() {
+                choices.append(randomUpgrade)
+            } else {
+                break
             }
         }
         
         return choices
+    }
+    
+    // Helper method to check if an upgrade is at max level
+    func isUpgradeMaxed(_ upgradeType: PlayerUpgradeType) -> Bool {
+        let currentLevel = upgradesApplied[upgradeType, default: 0]
+        return currentLevel >= Self.maxUpgradeLevel
+    }
+    
+    // Get the current level of a specific upgrade
+    func getUpgradeLevel(_ upgradeType: PlayerUpgradeType) -> Int {
+        return upgradesApplied[upgradeType, default: 0]
     }
     
     // MARK: - Codable Implementation

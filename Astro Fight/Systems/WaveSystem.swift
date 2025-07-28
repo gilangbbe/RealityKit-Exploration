@@ -65,9 +65,17 @@ class WaveSystem: System {
             if let progression = entity.components[PlayerProgressionComponent.self] {
                 let choices = progression.generateUpgradeChoices()
                 
-                // Send upgrade choices to UI
-                DispatchQueue.main.async {
-                    NotificationCenter.default.post(name: .showUpgradeChoice, object: choices)
+                // Check if any upgrades are available
+                if choices.isEmpty {
+                    // All upgrades are maxed out - show a special notification or skip upgrade choice
+                    DispatchQueue.main.async {
+                        NotificationCenter.default.post(name: .allUpgradesMaxed, object: nil)
+                    }
+                } else {
+                    // Send upgrade choices to UI
+                    DispatchQueue.main.async {
+                        NotificationCenter.default.post(name: .showUpgradeChoice, object: choices)
+                    }
                 }
             }
             break // Only one player
@@ -79,4 +87,5 @@ extension Notification.Name {
     static let waveStarted = Notification.Name("waveStarted")
     static let waveBonus = Notification.Name("waveBonus")
     static let showUpgradeChoice = Notification.Name("showUpgradeChoice")
+    static let allUpgradesMaxed = Notification.Name("allUpgradesMaxed")
 }
