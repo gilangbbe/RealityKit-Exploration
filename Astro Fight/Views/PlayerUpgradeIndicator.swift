@@ -71,6 +71,8 @@ struct PlayerUpgradeIndicator: View {
             return .purple
         case "Devastating Shockwave":
             return .orange
+        case "Swift Movement":
+            return .green
         default:
             return .gray
         }
@@ -86,6 +88,8 @@ struct PlayerUpgradeIndicator: View {
             return "clock.arrow.circlepath"
         case "Devastating Shockwave":
             return "burst.fill"
+        case "Swift Movement":
+            return "bolt.fill"
         // Legacy support
         case "Speed Boost":
             return "bolt.fill"

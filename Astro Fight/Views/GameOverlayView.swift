@@ -31,6 +31,7 @@ struct GameOverlayView: View {
             )
             .frame(height: 120)
             .ignoresSafeArea(edges: .top)
+            .edgesIgnoringSafeArea(.all)
             .allowsHitTesting(false)
             
             VStack {

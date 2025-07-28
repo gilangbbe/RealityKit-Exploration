@@ -226,7 +226,7 @@
 			mainGroup = 4E5EF2FA2E1F51BE00319E79;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				4E3FAA1A2E333F6F00DBCFDA /* XCLocalSwiftPackageReference "../../Arena" */,
+				4E299D412E371A7300A050C1 /* XCLocalSwiftPackageReference "../../Arena" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 4E5EF3042E1F51BE00319E79 /* Products */;
@@ -442,6 +442,7 @@
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UIRequiredDeviceCapabilities = gamekit;
+				INFOPLIST_KEY_UIStatusBarHidden = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
@@ -477,6 +478,7 @@
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UIRequiredDeviceCapabilities = gamekit;
+				INFOPLIST_KEY_UIStatusBarHidden = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
@@ -607,7 +609,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		4E3FAA1A2E333F6F00DBCFDA /* XCLocalSwiftPackageReference "../../Arena" */ = {
+		4E299D412E371A7300A050C1 /* XCLocalSwiftPackageReference "../../Arena" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../../Arena;
 		};

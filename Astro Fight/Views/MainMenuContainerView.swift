@@ -11,8 +11,8 @@ struct MainMenuContainerView: View {
     
     var body: some View {
         ZStack {
-            // Main Menu
-            if !showLeaderboard && !showSettings {
+            // Main Menu (always visible behind modal)
+            if !showLeaderboard {
                 MainMenuView(
                     onStartGame: onStartGame,
                     onShowLeaderboard: onShowLeaderboard,
@@ -27,13 +27,14 @@ struct MainMenuContainerView: View {
                     onHideLeaderboard()
                 }
             }
-            
-            // Settings View (replaces main menu)
-            if showSettings {
-                SettingsView {
-                    showSettings = false
-                }
+        }
+        // Settings Modal
+        .sheet(isPresented: $showSettings) {
+            SettingsView {
+                showSettings = false
             }
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
         }
     }
 }
