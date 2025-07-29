@@ -8,5 +8,7 @@
 	<true/>
 	<key>UIGameCenterLeaderboardsSupported</key>
 	<true/>
+	<key>UIViewControllerBasedStatusBarAppearance</key>
+	<false/>
 </dict>
 </plist>

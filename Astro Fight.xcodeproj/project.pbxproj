@@ -226,7 +226,7 @@
 			mainGroup = 4E5EF2FA2E1F51BE00319E79;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				4E299D412E371A7300A050C1 /* XCLocalSwiftPackageReference "../../Arena" */,
+				4E4D08AA2E3868C50051F6C1 /* XCLocalSwiftPackageReference "../../../Downloads/Arena" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 4E5EF3042E1F51BE00319E79 /* Products */;
@@ -609,9 +609,9 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		4E299D412E371A7300A050C1 /* XCLocalSwiftPackageReference "../../Arena" */ = {
+		4E4D08AA2E3868C50051F6C1 /* XCLocalSwiftPackageReference "../../../Downloads/Arena" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = ../../Arena;
+			relativePath = ../../../Downloads/Arena;
 		};
 /* End XCLocalSwiftPackageReference section */
 
