@@ -17,11 +17,13 @@ The game is a showcase of modern iOS development, using RealityKit's powerful En
 
 ## 🌟 See Astro Fights in Action\! 📸
 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
-    <img src="https://drive.google.com/uc?id=------" alt="Screenshot 1" style="width: 70%;"/>
-    <img src="https://drive.google.com/uc?id=------" alt="Screenshot 2" style="width: 70%;"/>
-    <img src="https://drive.google.com/uc?id=------" alt="Screenshot 3" style="width: 70%;"/>
-    <img src="https://drive.google.com/uc?id=------" alt="Screenshot 4" style="width: 70%;"/>
-    <img src="https://drive.google.com/uc?id=------" alt="Screenshot 5" style="width: 70%;"/>
+    <img src="https://drive.google.com/uc?id=1JxYV_tpiOHfRlWFTqlRPQdEuPJMMw96h" alt="Screenshot 1" style="width: 30%;"/>
+    <img src="https://drive.google.com/uc?id=1QMvp_QX7pn0pM_Pxvlz4VpyDjVT-2YDi" alt="Screenshot 2" style="width: 30%;"/>
+    <img src="https://drive.google.com/uc?id=1cGITTMug7qIVcwe9_4s3jz6rjdxJuMPp" alt="Screenshot 3" style="width: 30%;"/>
+    <img src="https://drive.google.com/uc?id=1VKL7xCQ43g67Js2C33NRfhOGxxO0mGEh" alt="Screenshot 4" style="width: 30%;"/>
+    <img src="https://drive.google.com/uc?id=1w9mW16n4qoEZnx2ePoWLRllQDNu_nrqK" alt="Screenshot 5" style="width: 30%;"/>
+    <img src="https://drive.google.com/uc?id=1UtQqpJ5IhEdzLxgUPXOhYrXmSKEPP1td" alt="Screenshot 5" style="width: 30%;"/>
+    <img src="https://drive.google.com/uc?id=18JNA83gVUOLv3dQukTMUMnv0gXP-fYs8" alt="Screenshot 5" style="width: 30%;"/>
 </div>
 
 ## 🧑‍💻 How It Works
