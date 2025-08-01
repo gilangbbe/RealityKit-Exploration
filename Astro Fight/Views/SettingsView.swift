@@ -1,10 +1,3 @@
-//
-//  SettingsView.swift
-//  Astro Fight
-//
-//  Created by Copilot on 28/07/25.
-//
-
 import SwiftUI
 
 struct SettingsView: View {
